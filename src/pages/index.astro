@@ -1,6 +1,40 @@
 ---
 import Base from '../layouts/Base.astro';
+import Hero from '../components/astro/Hero.astro';
+import ToolCard from '../components/astro/ToolCard.astro';
+import FeatureGrid from '../components/astro/FeatureGrid.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'Organization', name: 'localdobe', url: 'https://localdobe.com' },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: 'localdobe', url: 'https://localdobe.com' },
+];
 ---
-<Base title="localdobe — Free local PDF tools" description="Free PDF tools that run entirely in your browser." canonicalPath="/">
-  <h1 class="p-8 text-3xl font-bold">localdobe</h1>
+<Base title="localdobe — free local PDF tools, no watermark, no upload"
+  description="Merge, split, compress, and edit PDFs free — entirely in your browser. No watermarks, no uploads, no signup. Your files never leave your device."
+  canonicalPath="/" {jsonLd}>
+  <Hero />
+  <section class="mx-auto mt-16 grid max-w-5xl gap-5 px-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ToolCard href="/merge-pdf" title="Merge PDF" desc="Combine multiple PDFs into one, in the order you choose." icon="📎" />
+    <ToolCard href="/split-pdf" title="Split PDF" desc="Extract pages or break a PDF into separate files." icon="✂️" />
+    <ToolCard href="/compress-pdf" title="Compress PDF" desc="Shrink file size with a real compression engine (pdfcpu → WASM)." icon="🗜️" />
+    <ToolCard href="/edit-pdf" title="Edit PDF" desc="Retype any text, add new text, rotate and resize pages." icon="✏️" />
+    <ToolCard href="/watermark-pdf" title="Watermark & Stamp" desc="Add text or image watermarks and stamps — or remove them." icon="💧" />
+    <ToolCard href="/validate-pdf-signature" title="Check Signatures" desc="Validate a PDF's digital signature and inspect the evidence." icon="🔏" />
+    <ToolCard href="/protect-pdf" title="Protect PDF" desc="Encrypt a PDF with AES-256 — the password never leaves your device." icon="🔒" />
+    <ToolCard href="/unlock-pdf" title="Unlock PDF" desc="Remove a password from a PDF you own, using the password you know." icon="🔓" />
+  </section>
+  <FeatureGrid />
+  <section class="mx-auto mt-24 max-w-5xl px-4">
+    <h2 class="text-2xl font-bold">From the blog</h2>
+    <div class="mt-6 grid gap-5 sm:grid-cols-3">
+      {posts.map((p) => (
+        <a href={`/blog/${p.id}`} class="rounded-xl border border-slate-200 p-5 hover:border-accent">
+          <h3 class="font-semibold">{p.data.title}</h3>
+          <p class="mt-2 text-sm text-muted">{p.data.description}</p>
+        </a>
+      ))}
+    </div>
+  </section>
 </Base>
