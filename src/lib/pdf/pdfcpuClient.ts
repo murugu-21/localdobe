@@ -8,6 +8,7 @@ type Settle = { resolve: (r: { bytes?: Uint8Array; report?: string }) => void; r
 
 let worker: Worker | null = null;
 let nextId = 1;
+let engineWarm = false;
 const pending = new Map<number, Settle>();
 
 function getWorker(): Worker {
@@ -25,6 +26,7 @@ function getWorker(): Worker {
       pending.clear();
       worker?.terminate();
       worker = null;
+      engineWarm = false; // a respawned worker re-inits the wasm engine from scratch
     };
   }
   return worker;
@@ -51,11 +53,11 @@ async function callForBytes(cmd: PdfcpuCmd, bytes: Uint8Array, config?: unknown,
   return res.bytes;
 }
 
-export function compressPdf(bytes: Uint8Array, preset: CompressPreset, onStatus?: (s: string) => void): Promise<Uint8Array> {
-  onStatus?.('Loading PDF engine…');
-  const promise = callForBytes('optimize', bytes, presetConfig(preset));
-  onStatus?.('Compressing…');
-  return promise;
+export async function compressPdf(bytes: Uint8Array, preset: CompressPreset, onStatus?: (s: string) => void): Promise<Uint8Array> {
+  onStatus?.(engineWarm ? 'Compressing…' : 'Loading PDF engine — first run downloads it…');
+  const out = await callForBytes('optimize', bytes, presetConfig(preset));
+  engineWarm = true;
+  return out;
 }
 
 export function addTextWatermark(bytes: Uint8Array, text: string, onTop: boolean, opts: TextWatermarkOpts): Promise<Uint8Array> {
