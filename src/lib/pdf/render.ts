@@ -22,7 +22,7 @@ export async function openPdf(bytes: Uint8Array): Promise<PDFDocumentProxy> {
   } catch (err) {
     // getDocument() spawns a dedicated worker before parsing; if parsing fails,
     // nothing else will ever destroy it, so terminate it explicitly here.
-    void task.destroy();
+    void task.destroy().catch(() => {});
     throw err;
   }
 }

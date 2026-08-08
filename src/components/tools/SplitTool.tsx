@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,25 +28,29 @@ export default function SplitTool() {
 
   async function onFile([file]: File[]) {
     setPhase('working'); setError(null); setResult(null); setSelected(new Set()); setRangeText('');
+    let doc: PDFDocumentProxy | null = null;
+    let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      const { openPdf, renderPageToCanvas, closePdf } = await import('../../lib/pdf/render');
-      const doc = await openPdf(bytes);
+      const render = await import('../../lib/pdf/render');
+      closePdf = render.closePdf;
+      doc = await render.openPdf(bytes);
       const thumbs: string[] = [];
       for (let i = 1; i <= doc.numPages; i++) {
         const page = await doc.getPage(i);
         const canvas = document.createElement('canvas');
-        await renderPageToCanvas(page, canvas, 0.3);
+        await render.renderPageToCanvas(page, canvas, 0.3);
         thumbs.push(canvas.toDataURL());
         page.cleanup();
         if (abort.current) return;
       }
       setLoaded({ bytes, name: file.name.replace(/\.pdf$/i, ''), pageCount: doc.numPages, thumbs });
       setPhase('idle');
-      await closePdf(doc);
     } catch {
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
+    } finally {
+      if (doc && closePdf) void closePdf(doc).catch(() => {});
     }
   }
 
