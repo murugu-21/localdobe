@@ -1,0 +1,53 @@
+---
+import '../styles/global.css';
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  jsonLd?: object[];
+}
+const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
+const canonical = new URL(canonicalPath, Astro.site).href;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="alternate" type="application/rss+xml" title="localdobe blog" href="/rss.xml" />
+    {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+  </head>
+  <body class="bg-white text-ink antialiased">
+    <header class="border-b border-slate-100">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <a href="/" class="text-lg font-bold tracking-tight">local<span class="text-accent">dobe</span></a>
+        <div class="flex gap-6 text-sm font-medium text-muted">
+          <a href="/merge-pdf" class="hover:text-ink">Merge</a>
+          <a href="/split-pdf" class="hover:text-ink">Split</a>
+          <a href="/compress-pdf" class="hover:text-ink">Compress</a>
+          <a href="/edit-pdf" class="hover:text-ink">Edit</a>
+          <a href="/watermark-pdf" class="hover:text-ink">Watermark</a>
+          <a href="/validate-pdf-signature" class="hover:text-ink">Signatures</a>
+          <a href="/protect-pdf" class="hover:text-ink">Protect</a>
+          <a href="/unlock-pdf" class="hover:text-ink">Unlock</a>
+          <a href="/blog" class="hover:text-ink">Blog</a>
+        </div>
+      </nav>
+    </header>
+    <main><slot /></main>
+    <footer class="mt-24 border-t border-slate-100 py-10 text-center text-sm text-muted">
+      <p class="font-medium">No watermarks. No uploads. No signup.</p>
+      <p class="mt-2">
+        © 2026 localdobe · <a href="/privacy" class="underline">Privacy</a> · <a href="/about" class="underline">About</a> · <a href="/blog" class="underline">Blog</a>
+      </p>
+    </footer>
+  </body>
+</html>
