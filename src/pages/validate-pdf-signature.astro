@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import SignatureTool from '../components/tools/SignatureTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'What does "integrity intact" mean?', a: 'The signed portion of the document hasn’t been modified since signing. That’s the cryptographic core of a PDF signature.' },
+  { q: 'Why does a valid signature show "not fully verified"?', a: 'Full verification also checks the signer’s certificate chain against trusted authorities. Browsers don’t expose an OS certificate store, so trust-chain checks may be limited. Integrity checking is unaffected.' },
+  { q: 'Does removing a signature change the document?', a: 'No. It strips the signature object; page content is untouched. The output is simply no longer signed.' },
+  { q: 'Is my contract uploaded anywhere?', a: 'No — validation runs in a WebAssembly engine in your browser. Ideal for documents too sensitive for online tools.' },
+];
+const description = 'Check whether a PDF\'s digital signature is intact, see signer evidence, and remove signatures — free and offline. Your document never leaves your browser.';
+---
+<Base title="Validate PDF signature — check & remove, free | localdobe" {description} canonicalPath="/validate-pdf-signature"
+  jsonLd={[webAppJsonLd('Validate PDF signature', '/validate-pdf-signature', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Check a PDF's digital signature" sub="Validate integrity, inspect signature evidence, or remove signatures — locally.">
+    <SignatureTool client:load slot="tool" />
+    <h2>What signature validation actually checks</h2>
+    <p>A PDF digital signature answers two different questions, and it's easy to conflate them. The first is <strong>integrity</strong>: has the signed content changed since it was signed? That's a cryptographic hash comparison — deterministic, and something localdobe can check fully on your device. The second is <strong>identity trust</strong>: is the certificate that produced the signature actually issued to who it claims, by an authority you trust? That check depends on validating a certificate chain against a trust store — the list of certificate authorities your operating system or browser trusts.</p>
+    <p>Browsers don't expose that OS-level trust store to web pages, so a signature that's fully intact can still show as "not fully verified" here — that's a statement about what could be checked in-browser, not a defect in the signature. If you need full chain-of-trust verification for legal purposes, use desktop software (like Adobe Acrobat) that has access to your system's certificate store. localdobe is the right tool for checking whether a signed document has been tampered with.</p>
+    <h2>Why local checking matters for signed documents</h2>
+    <p>Documents worth signing — contracts, notarized filings, signed invoices — are exactly the documents you don't want sitting on a third-party server. Most "free" online signature checkers upload your PDF to validate it, which means a contract's full contents (and its cryptographic signature) pass through someone else's infrastructure before you get an answer. localdobe validates and strips signatures using a WebAssembly PDF engine running entirely inside your browser tab: your document is never transmitted, logged, or stored anywhere.</p>
+    <p>Want the details? Read <a href="/blog/pdf-digital-signatures-explained">how PDF digital signatures actually work</a> and <a href="/blog/are-online-pdf-tools-safe">what actually happens to your files on online PDF tools</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
