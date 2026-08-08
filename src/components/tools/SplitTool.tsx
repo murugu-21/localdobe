@@ -29,7 +29,7 @@ export default function SplitTool() {
     setPhase('working'); setError(null); setResult(null); setSelected(new Set()); setRangeText('');
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      const { openPdf, renderPageToCanvas } = await import('../../lib/pdf/render');
+      const { openPdf, renderPageToCanvas, closePdf } = await import('../../lib/pdf/render');
       const doc = await openPdf(bytes);
       const thumbs: string[] = [];
       for (let i = 1; i <= doc.numPages; i++) {
@@ -37,10 +37,12 @@ export default function SplitTool() {
         const canvas = document.createElement('canvas');
         await renderPageToCanvas(page, canvas, 0.3);
         thumbs.push(canvas.toDataURL());
+        page.cleanup();
         if (abort.current) return;
       }
       setLoaded({ bytes, name: file.name.replace(/\.pdf$/i, ''), pageCount: doc.numPages, thumbs });
       setPhase('idle');
+      await closePdf(doc);
     } catch {
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
@@ -95,7 +97,7 @@ export default function SplitTool() {
 
   return (
     <div className="space-y-6">
-      {!loaded && <FileDropzone label="Choose a PDF to split" onFiles={onFile} />}
+      {!loaded && phase !== 'working' && <FileDropzone label="Choose a PDF to split" onFiles={onFile} />}
       {phase === 'working' && !loaded && <ProgressBar value={null} />}
       {loaded && (
         <>

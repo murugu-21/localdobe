@@ -16,7 +16,24 @@ export function getPdfjs() {
 export async function openPdf(bytes: Uint8Array): Promise<PDFDocumentProxy> {
   const pdfjs = await getPdfjs();
   // pdf.js transfers the buffer to its worker; hand it a copy so callers keep theirs.
-  return pdfjs.getDocument({ data: bytes.slice() }).promise;
+  const task = pdfjs.getDocument({ data: bytes.slice() });
+  try {
+    return await task.promise;
+  } catch (err) {
+    // getDocument() spawns a dedicated worker before parsing; if parsing fails,
+    // nothing else will ever destroy it, so terminate it explicitly here.
+    void task.destroy();
+    throw err;
+  }
+}
+
+/**
+ * Terminates the dedicated worker behind an opened document. `PDFDocumentProxy`
+ * has no `destroy()` of its own (removed upstream) — the loading task it came
+ * from does. Callers of `openPdf` must call this when done with the document.
+ */
+export async function closePdf(doc: PDFDocumentProxy): Promise<void> {
+  await doc.loadingTask.destroy();
 }
 
 export async function renderPageToCanvas(page: PDFPageProxy, canvas: HTMLCanvasElement, scale: number): Promise<void> {
