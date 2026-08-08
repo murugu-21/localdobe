@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import MergeTool from '../components/tools/MergeTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Is this merge tool really free?', a: 'Yes. No watermarks, no page limits, no signup. The tool runs in your browser, so it costs us almost nothing to offer.' },
+  { q: 'Are my PDFs uploaded to a server?', a: 'No. Merging happens locally in your browser using WebAssembly-era JavaScript. Your files never leave your device — you can even disconnect from the internet after the page loads.' },
+  { q: 'Can I change the order of the files?', a: 'Yes. After adding files, use the arrows to reorder them before merging.' },
+  { q: 'Is there a file size limit?', a: 'Only your device’s memory. Files in the hundreds of megabytes work on most modern computers.' },
+];
+const description = 'Merge PDF files free, with no watermark and no upload. Combining happens locally in your browser — your files never leave your device.';
+---
+<Base title="Merge PDF — free, local, no watermark | localdobe" {description} canonicalPath="/merge-pdf"
+  jsonLd={[webAppJsonLd('Merge PDF', '/merge-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Merge PDF files" sub="Combine multiple PDFs into one — right here in your browser.">
+    <MergeTool client:load slot="tool" />
+    <h2>How to merge PDF files</h2>
+    <ol>
+      <li>Drop two or more PDF files into the box above (or click to browse).</li>
+      <li>Drag the arrows to put them in the order you want.</li>
+      <li>Click <strong>Merge</strong> and download your combined PDF.</li>
+    </ol>
+    <h2>Why merging locally matters</h2>
+    <p>Most “free” PDF sites upload your documents to their servers. That means your contracts, statements, and records sit on someone else’s machine, subject to their retention policy. localdobe is different: the merge runs inside your browser tab using the same technology (WebAssembly and modern JavaScript) that powers web apps like Figma. Nothing is transmitted, logged, or stored.</p>
+    <p>Want the details? Read <a href="/blog/merge-pdfs-without-uploading">how to merge PDFs without uploading them anywhere</a> and <a href="/blog/are-online-pdf-tools-safe">what actually happens to your files on online PDF tools</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
