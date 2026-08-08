@@ -8,5 +8,5 @@ export function buildTextWatermarkDesc(o: TextWatermarkOpts): string {
 
 /** pdfcpu image watermark description string; scale is relative to page (0..1]. */
 export function buildImageWatermarkDesc(o: ImageWatermarkOpts): string {
-  return `op:${o.opacity}, rot:${o.rotation}, sc:${o.scale} rel`;
+  return `op:${o.opacity}, rot:${o.rotation}, scale:${o.scale} rel`;
 }

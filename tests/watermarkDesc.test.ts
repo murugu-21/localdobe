@@ -7,5 +7,5 @@ test('text desc includes size, opacity, rotation, color', () => {
 
 test('image desc includes opacity, rotation, relative scale', () => {
   expect(buildImageWatermarkDesc({ opacity: 0.7, rotation: 0, scale: 0.5 }))
-    .toBe('op:0.7, rot:0, sc:0.5 rel');
+    .toBe('op:0.7, rot:0, scale:0.5 rel');
 });
