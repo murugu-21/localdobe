@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+const description = "localdobe is a set of free PDF tools that run entirely in your browser — no uploads, no watermarks, no signup. Here's why it exists and how it works.";
+---
+<Base title="About — localdobe" {description} canonicalPath="/about">
+  <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12">
+    <h1>About localdobe</h1>
+    <p>
+      localdobe is a small collection of PDF tools — merge, split, compress, edit,
+      watermark, protect, unlock, and signature validation — that all run locally in your
+      browser. No file you work with ever touches a server.
+    </p>
+    <h2>Why this exists</h2>
+    <p>
+      Most "free" online PDF tools aren't really free: they upload your document to a
+      server, hold it hostage behind a paywall, stamp a watermark on your output, or cap
+      how many pages you can process without an account. That's a bad trade for something
+      as simple as merging two PDFs. Modern browsers can do this work themselves, so
+      localdobe just does the work on your machine instead of asking you to trust ours.
+    </p>
+    <h2>The tech</h2>
+    <p>
+      The tools are built on a mix of open-source libraries running as WebAssembly and
+      JavaScript in your browser tab: <strong>pdf-lib</strong> handles document assembly
+      like merging and page manipulation, <strong>pdfcpu</strong> (compiled to WebAssembly)
+      powers compression, encryption, and watermarking, and <strong>pdf.js</strong> renders
+      pages so you can preview and edit them. None of it requires a plugin, an account, or
+      a network round-trip for your file data.
+    </p>
+    <h2>Being honest about it</h2>
+    <p>
+      We'd rather you understand how this works than just trust a badge that says
+      "private." Read the <a href="/privacy">privacy page</a> for the specifics on what
+      does and doesn't leave your device, or check the <a href="/blog">blog</a> for
+      deeper dives into individual tools.
+    </p>
+  </article>
+</Base>

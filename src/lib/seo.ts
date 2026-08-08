@@ -14,6 +14,19 @@ export function webAppJsonLd(name: string, path: string, description: string): o
   };
 }
 
+export function articleJsonLd(title: string, description: string, slug: string, pubDate: Date): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    datePublished: pubDate.toISOString(),
+    url: `${SITE}/blog/${slug}`,
+    author: { '@type': 'Organization', name: 'localdobe' },
+    publisher: { '@type': 'Organization', name: 'localdobe', url: SITE },
+  };
+}
+
 export function faqJsonLd(items: { q: string; a: string }[]): object {
   return {
     '@context': 'https://schema.org',

@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+const description = 'localdobe processes every PDF locally in your browser. No file ever reaches a server. Here is exactly what that means and what little data does exist.';
+---
+<Base title="Privacy — localdobe" {description} canonicalPath="/privacy">
+  <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12">
+    <h1>Privacy</h1>
+    <p>
+      The short version: your files never leave your device. Every tool on localdobe —
+      merge, split, compress, edit, watermark, protect, unlock, and signature validation —
+      runs entirely in your browser using WebAssembly and JavaScript. When you drop a PDF
+      into a tool, it's read into memory on your machine, processed there, and handed back
+      to you as a download. At no point does it travel over the network to us or anyone else.
+      You can verify this yourself: open your browser's network tab while using a tool, and
+      you'll see no upload of file data.
+    </p>
+    <h2>What we don't do</h2>
+    <p>
+      We run no analytics of any kind — no Google Analytics, no Plausible, no tracking
+      pixels, nothing that watches what you do on this site. We don't set cookies. We don't
+      have accounts, so there's nothing to log in to and nothing tied to an identity.
+    </p>
+    <h2>What actually happens on the wire</h2>
+    <p>
+      The static site itself (HTML, CSS, JavaScript, and the WebAssembly modules the tools
+      use) is served by Cloudflare. Like any CDN, Cloudflare's edge network may log standard
+      HTTP request metadata — the page URL you requested, your approximate location from IP,
+      timestamp, and similar operational data — the same way any web server does. That
+      logging covers which pages were requested, never the contents of any file you process.
+      Your PDFs are not part of that traffic at all, because they never leave your browser.
+    </p>
+    <h2>Questions</h2>
+    <p>
+      If anything here is unclear, or you want to check our claims against the code, reach
+      out or open an issue on GitHub. We'd rather you verify this than take our word for it.
+    </p>
+  </article>
+</Base>
