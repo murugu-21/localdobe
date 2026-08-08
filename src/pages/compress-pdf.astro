@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import CompressTool from '../components/tools/CompressTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'How much smaller will my PDF get?', a: 'It depends on the file. PDFs with duplicated fonts, images, or content streams shrink the most — often 20–70%. Already-optimized PDFs may not shrink at all, and we’ll tell you honestly when that happens.' },
+  { q: 'Is quality reduced?', a: 'No. localdobe removes redundancy (duplicate fonts, unused objects, repeated streams) rather than recompressing your images, so pages look identical.' },
+  { q: 'Why is the first compression slow?', a: 'Your browser downloads the compression engine once (a few MB compressed), then caches it. After that it starts instantly — even offline.' },
+  { q: 'Is my PDF uploaded?', a: 'No. The engine runs inside a Web Worker in your browser. Your file never touches a server.' },
+];
+const description = 'Compress PDF files free with no upload and no watermark. Powered by pdfcpu compiled to WebAssembly — compression runs entirely on your device.';
+---
+<Base title="Compress PDF — free, offline, no watermark | localdobe" {description} canonicalPath="/compress-pdf"
+  jsonLd={[webAppJsonLd('Compress PDF', '/compress-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Compress a PDF" sub="Shrink your PDF with a real compression engine running in your browser.">
+    <CompressTool client:load slot="tool" />
+    <h2>How to compress a PDF</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Pick a compression level — Light, Balanced, or Maximum.</li>
+      <li>Click <strong>Compress PDF</strong> and download the smaller file.</li>
+    </ol>
+    <h2>How it works</h2>
+    <p>localdobe’s compression is powered by <a href="/blog/webassembly-pdf-tools">pdfcpu, compiled to WebAssembly</a> and run inside a Web Worker in your browser. Instead of uploading your document to a server for processing, the same battle-tested Go PDF engine that powers pdfcpu’s command-line tool runs directly on your device — no upload, no queue, no server round-trip. The first run downloads the engine once (a one-time download, cached after that); every run after that starts instantly, even offline.</p>
+    <p>Compression itself works by removing redundancy rather than recompressing images: duplicate fonts, unused objects, and repeated content streams are deduplicated and stripped out. Want the full technical breakdown? Read <a href="/blog/pdf-compression-explained">how PDF compression actually works</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
