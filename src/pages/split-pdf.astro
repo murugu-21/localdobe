@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import SplitTool from '../components/tools/SplitTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Can I extract just one page?', a: 'Yes — click its thumbnail (or type its number) and hit Split.' },
+  { q: 'How do I split every page into its own file?', a: 'Choose “Every page as its own PDF”. You’ll get a zip with one PDF per page, created locally.' },
+  { q: 'Does splitting reduce quality?', a: 'No. Pages are copied losslessly — fonts, images, and vectors are untouched.' },
+  { q: 'Are my files uploaded?', a: 'Never. The split happens in your browser; your PDF stays on your device.' },
+];
+const description = 'Split a PDF or extract specific pages free, with no watermark and no upload. Everything runs locally in your browser.';
+---
+<Base title="Split PDF — extract pages free, no upload | localdobe" {description} canonicalPath="/split-pdf"
+  jsonLd={[webAppJsonLd('Split PDF', '/split-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Split a PDF" sub="Extract pages or break a PDF apart — locally, in your browser.">
+    <SplitTool client:load slot="tool" />
+    <h2>How to split a PDF</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Click the thumbnails of the pages you want, or type a range like <code>1-3, 5, 7-</code>.</li>
+      <li>Click <strong>Split PDF</strong> and download the result.</li>
+    </ol>
+    <h2>Why splitting locally matters</h2>
+    <p>Most “free” PDF splitters upload your document to their servers before handing back a few pages. That means a full copy of your file — including the pages you didn’t ask for — sits on someone else’s machine. localdobe splits entirely inside your browser tab using pdf.js and WebAssembly-era JavaScript: nothing is transmitted, logged, or stored.</p>
+    <p>Want the details? Read <a href="/blog/split-pdf-into-separate-pages">how to split a PDF into separate pages</a> and <a href="/blog/extract-pages-from-pdf">how to extract specific pages from a PDF</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
