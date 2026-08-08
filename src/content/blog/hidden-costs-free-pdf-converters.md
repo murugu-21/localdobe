@@ -33,6 +33,14 @@ localdobe's tools take a different approach: operations like merging, compressin
 
 It's also, not coincidentally, why the output has no watermark and no page limit: none of those restrictions exist to recoup a server cost that was never incurred in the first place. You can try this directly on the [merge PDF](/merge-pdf) or [compress PDF](/compress-pdf) tools, or browse [localdobe's full set of local PDF tools](/) — all of them process your files on your own device, watermark-free, with nothing to sign up for.
 
+## How to avoid all four costs at once
+
+You don't have to audit each converter site's watermark policy, funnel tactics, retention window, and terms of service individually — skipping the upload step removes all four costs in one move, since every one of them depends on your file (or your attention) reaching a server in the first place:
+
+1. Go to [localdobe's tools](/) and pick the operation you need — merge, split, compress, watermark, and more are all there.
+2. Drop your file in and run the operation. It processes on your device, in your browser tab, using the same JavaScript and WebAssembly your browser already runs the page with.
+3. Download the result. There's no watermark to pay to remove, no email capture, no server-side copy of your file to worry about, and no terms-of-service clause governing data that was never transmitted.
+
 ## What to actually check before uploading
 
 A few concrete things to look for before trusting a converter site with anything sensitive: whether the operation completes with your Wi-Fi disconnected (a genuine local tool keeps working; a server-based one won't); whether the site states a retention or deletion policy explicitly; and whether the free tier's limitation (watermark, page cap, forced signup) is something you're comfortable with for the document in question. For a routine file, none of this matters much. For anything you'd think twice about handing to a stranger, it's worth the thirty seconds it takes to check.

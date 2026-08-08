@@ -16,6 +16,8 @@ Both add visual content to a PDF page, but where that content sits relative to t
 
 If your watermark keeps disappearing behind images or dark backgrounds, you probably want a stamp instead — it's a one-toggle switch, not a different tool.
 
+Here's a concrete case where the choice actually matters: an invoice with a dense table of line items that needs to be marked "PAID" before it's archived. A background watermark would end up mostly hidden under the table's fill color and the numbers printed on top of it — readable at the margins, invisible where it counts. A stamp, drawn over the content instead, keeps "PAID" fully legible no matter how busy the page underneath is. Whenever the marking needs to survive contact with a dense, image-heavy, or table-filled page, reach for a stamp rather than a watermark.
+
 ## How to add a watermark or stamp
 
 On the [watermark PDF tool](/watermark-pdf):

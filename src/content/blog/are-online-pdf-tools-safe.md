@@ -36,6 +36,8 @@ A few quick checks before trusting a PDF site with something sensitive:
 2. **Try it offline.** Load the page, disconnect from Wi-Fi, and attempt the operation. A genuinely local tool keeps working. A server-based one will fail or hang.
 3. **Read the retention line in the privacy policy**, if there is one. "Files are deleted after 24 hours" is a server-based tool being reasonably transparent. No mention of retention at all is a bigger yellow flag than a bad policy — it usually means nobody's thought about it, or nobody wants to commit to an answer.
 
+Or skip the audit entirely: [merge](/merge-pdf) and [compress](/compress-pdf) your files with tools that never open a network connection to do the job, and there's no upload behavior left to inspect in the first place.
+
 ## Not every document needs this level of caution
 
 A flyer you're merging with a meme isn't worth worrying about. But a signed lease, a filled-out medical intake form, a W-2, or a contract with a client is a different category of document — the kind where "probably fine" isn't quite the assurance you want. For that category, tools that never upload the file at all remove the question entirely, rather than asking you to trust a privacy policy you haven't read on a site you found through a search result.
