@@ -21,13 +21,21 @@ export default function MergeTool() {
   }
 
   function move(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= entries.length) return;
     setEntries((prev) => {
       const next = [...prev];
-      const j = i + dir;
-      if (j < 0 || j >= next.length) return prev;
       [next[i], next[j]] = [next[j], next[i]];
       return next;
     });
+    setPhase('idle');
+    setResult(null);
+  }
+
+  function remove(id: number) {
+    setEntries((prev) => prev.filter((x) => x.id !== id));
+    setPhase('idle');
+    setResult(null);
   }
 
   async function merge() {
@@ -55,9 +63,9 @@ export default function MergeTool() {
             <li key={e.id} className="flex items-center gap-3 px-4 py-3">
               <span className="w-6 text-sm text-muted">{i + 1}.</span>
               <span className="flex-1 truncate text-sm font-medium">{e.file.name}</span>
-              <Button type="button" variant="ghost" size="sm" aria-label="Move up" onClick={() => move(i, -1)}>↑</Button>
-              <Button type="button" variant="ghost" size="sm" aria-label="Move down" onClick={() => move(i, 1)}>↓</Button>
-              <Button type="button" variant="ghost" size="sm" aria-label="Remove" className="text-red-500 hover:text-red-600" onClick={() => setEntries((p) => p.filter((x) => x.id !== e.id))}>✕</Button>
+              <Button type="button" variant="ghost" size="sm" aria-label="Move up" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
+              <Button type="button" variant="ghost" size="sm" aria-label="Move down" onClick={() => move(i, 1)} disabled={i === entries.length - 1}>↓</Button>
+              <Button type="button" variant="ghost" size="sm" aria-label="Remove" className="text-red-500 hover:text-red-600" onClick={() => remove(e.id)}>✕</Button>
             </li>
           ))}
         </ul>
