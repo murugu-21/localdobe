@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import EditTool from '../components/tools/edit/EditTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Can I really edit existing text?', a: 'Yes. Click any text, retype it, and export. Under the hood the original text is covered and redrawn with a metric-compatible font, so small edits look seamless.' },
+  { q: 'Will the font match exactly?', a: 'Usually very closely. We use Liberation fonts, which share exact widths with Arial, Times New Roman, and Courier — the fonts behind most documents. Decorative fonts are approximated.' },
+  { q: 'Is my document uploaded?', a: 'No. Rendering, editing, and export all run in your browser.' },
+  { q: 'Does it add a watermark?', a: 'Never. Your exported PDF contains only your document and your edits.' },
+  { q: 'Can I rotate or resize pages?', a: 'Yes. Each page has rotate buttons (90° steps), and the toolbar’s page-size menu scales the whole document by percentage or fits it to A4/Letter.' },
+];
+const description = 'Edit text in a PDF free — no upload, no watermark, no Acrobat. Click any text and type, rotate and resize pages; everything happens locally in your browser.';
+---
+<Base title="Edit PDF text — free, local, no watermark | localdobe" {description} canonicalPath="/edit-pdf"
+  jsonLd={[webAppJsonLd('Edit PDF', '/edit-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Edit a PDF" sub="Click any text and retype it. Add new text, rotate and resize pages. All in your browser.">
+    <EditTool client:load slot="tool" />
+    <h2>How to edit a PDF</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Click any existing text to edit it in place, or click <strong>+ Add text</strong> and then click the page to place a new text box.</li>
+      <li>Rotate a page with the ⟲ ⟳ buttons in its corner, or scale the whole document with the page-size menu.</li>
+      <li>Click <strong>Export PDF</strong> and download the result.</li>
+    </ol>
+    <h2>How in-browser PDF editing works</h2>
+    <p>PDFs don't store paragraphs the way a word processor does — they store individual, precisely positioned runs of glyphs. There's no reflowable "text box" to type into. So when you edit a line here, localdobe draws a solid rectangle over the original glyphs and redraws your new text on top, in a font chosen to match the original as closely as possible (Liberation Sans, Serif, or Mono, all metric-compatible with the most common document fonts).</p>
+    <p>This approach shines for the edits people actually need most: fixing a typo, updating a date or a name, filling in a blank on a form, or swapping one line of text for another. It's less suited to rewriting whole paragraphs — surrounding text won't reflow around your edit, and if the original had a patterned or image background instead of a solid color, the cover rectangle may not blend in perfectly. For that kind of heavy restructuring, you'd want the original source file and a word processor.</p>
+    <p>Want the details? Read <a href="/blog/edit-pdf-without-acrobat">how to edit a PDF without Acrobat</a> and <a href="/blog/free-pdf-editors-watermarks">why so many "free" PDF editors add their own watermark</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>

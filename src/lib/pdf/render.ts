@@ -36,8 +36,14 @@ export async function closePdf(doc: PDFDocumentProxy): Promise<void> {
   await doc.loadingTask.destroy();
 }
 
-export async function renderPageToCanvas(page: PDFPageProxy, canvas: HTMLCanvasElement, scale: number): Promise<void> {
-  const viewport = page.getViewport({ scale });
+export async function renderPageToCanvas(
+  page: PDFPageProxy,
+  canvas: HTMLCanvasElement,
+  scale: number,
+  rotationDelta?: number,
+): Promise<void> {
+  const rotation = (((page.rotate + (rotationDelta ?? 0)) % 360) + 360) % 360;
+  const viewport = page.getViewport({ scale, rotation });
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
   const ctx = canvas.getContext('2d');
