@@ -25,7 +25,7 @@ export default function CompressTool() {
 
   async function onFile([f]: File[]) {
     setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes: new Uint8Array(await f.arrayBuffer()) });
-    setPhase('idle'); setOut(null); setError(null);
+    setPhase('idle'); setOut(null); setError(null); setStatus('');
   }
 
   async function run() {
@@ -55,7 +55,10 @@ export default function CompressTool() {
               <button
                 type="button"
                 key={p.value}
-                onClick={() => setPreset(p.value)}
+                onClick={() => {
+                  setPreset(p.value);
+                  if (phase === 'done') { setPhase('idle'); setOut(null); }
+                }}
                 className={cn(
                   'rounded-xl border-2 p-4 text-left transition',
                   preset === p.value ? 'border-primary bg-primary/5' : 'border-border',
@@ -81,9 +84,7 @@ export default function CompressTool() {
           {phase === 'working' && (
             <div className="space-y-2">
               <ProgressBar value={null} />
-              <p className="text-center text-sm text-muted-foreground">
-                {status} First run downloads the compression engine once (a one-time download, cached after that).
-              </p>
+              <p className="text-center text-sm text-muted-foreground">{status}</p>
             </div>
           )}
         </>
