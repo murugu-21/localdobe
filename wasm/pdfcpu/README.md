@@ -45,3 +45,17 @@ All are installed on `globalThis` by the WASM module once instantiated and `go.r
 See `main.go` for exact config JSON shapes and `smoke.mjs` for usage examples of each.
 Panics inside pdfcpu are recovered by the `wrap()` helper and surfaced as
 `{ ok: false, error: "pdfcpu panic: ..." }` rather than crashing the worker.
+
+## Cache-busting on rebuild
+
+`public/_headers` marks `/wasm/*` as `immutable, max-age=31536000` — browsers and
+Cloudflare's edge will happily cache `pdfcpu.wasm` for a year. Unlike `/_astro/*`
+assets (which Astro content-hashes into the filename automatically), `pdfcpu.wasm`
+and the font files under `public/fonts/` are NOT hashed, so overwriting the file in
+place will not bust caches for existing visitors.
+
+When bumping the pdfcpu version and rebuilding this WASM module, rename the output
+file (e.g. `pdfcpu-v2.wasm`) and update the fetch URL in
+`src/workers/pdfcpu.worker.ts` (`fetch('/wasm/pdfcpu.wasm')`) to match. Leave the old
+file in place for one deploy cycle if you want in-flight tabs to keep working, then
+remove it.
