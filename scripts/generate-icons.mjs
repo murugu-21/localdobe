@@ -1,6 +1,9 @@
 // One-off icon generator for the PWA manifest.
 // Draws "ld" as hand-built vector paths (no font/fontconfig dependency) so
 // the output is deterministic across environments, then rasterizes with sharp.
+// sharp is intentionally NOT a project dependency (its platform-specific optional
+// deps break cross-platform `npm ci`); install it ad hoc before running:
+//   npm i -D sharp --no-save && node scripts/generate-icons.mjs
 import sharp from 'sharp';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

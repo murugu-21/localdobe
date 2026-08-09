@@ -46,7 +46,6 @@
     "@vite-pwa/astro": "^1.2.0",
     "@vitest/coverage-v8": "^4.1.10",
     "shadcn": "^4.16.2",
-    "sharp": "^0.35.3",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10",
     "wrangler": "^4.120.0"
