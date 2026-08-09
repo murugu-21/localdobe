@@ -1,4 +1,30 @@
+# All crawlers welcome, including AI assistants and their training/retrieval bots.
 User-agent: *
 Allow: /
 
+# Explicit welcome for common AI crawlers (redundant with * but unambiguous).
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://localdobe.com/sitemap-index.xml
+
+# Machine-readable site summary for AI assistants:
+# https://localdobe.com/llms.txt
