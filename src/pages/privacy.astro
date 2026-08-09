@@ -1,33 +1,118 @@
 ---
 import Base from '../layouts/Base.astro';
-const description = 'localdobe processes every PDF locally in your browser. No file ever reaches a server. Here is exactly what that means and what little data does exist.';
+const description = 'localdobe processes every PDF locally in your browser — files never reach a server. This policy details exactly what data exists: hosting logs, cookieless analytics, and on-device storage.';
 ---
-<Base title="Privacy — localdobe" {description} canonicalPath="/privacy">
+<Base title="Privacy Policy — localdobe" {description} canonicalPath="/privacy">
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
-    <h1>Privacy</h1>
+    <h1>Privacy Policy</h1>
+    <p><em>Last updated: August 9, 2026</em></p>
     <p>
-      The short version: your files never leave your device. Every tool on localdobe —
-      merge, split, compress, edit, watermark, protect, unlock, and signature validation —
-      runs entirely in your browser using WebAssembly and JavaScript. When you drop a PDF
-      into a tool, it's read into memory on your machine, processed there, and handed back
-      to you as a download. At no point does it travel over the network to us or anyone else.
-      You can verify this yourself: open your browser's network tab while using a tool, and
-      you'll see no upload of file data.
+      The short version: <strong>your files never leave your device.</strong> Every tool on
+      localdobe — merge, split, compress, edit, watermark, protect, unlock, and signature
+      validation — runs entirely in your browser using WebAssembly and JavaScript. When you
+      drop a PDF into a tool, it's read into memory on your machine, processed there, and
+      handed back to you as a download. At no point does your file — or any data derived
+      from its contents — travel over the network to us or anyone else.
     </p>
-    <h2>What we don't do</h2>
     <p>
-      We run no analytics of any kind — no Google Analytics, no Plausible, no tracking
-      pixels, nothing that watches what you do on this site. We don't set cookies. We don't
-      have accounts, so there's nothing to log in to and nothing tied to an identity.
+      The rest of this page describes, completely, the data that <em>does</em> exist when
+      you use this site: standard hosting logs, cookieless page-view analytics, and a few
+      preferences stored on your own device.
     </p>
-    <h2>What actually happens on the wire</h2>
+
+    <h2>1. Your files</h2>
     <p>
-      The static site itself (HTML, CSS, JavaScript, and the WebAssembly modules the tools
-      use) is served by Cloudflare. Like any CDN, Cloudflare's edge network may log standard
-      HTTP request metadata — the page URL you requested, your approximate location from IP,
-      timestamp, and similar operational data — the same way any web server does. That
-      logging covers which pages were requested, never the contents of any file you process.
-      Your PDFs are not part of that traffic at all, because they never leave your browser.
+      Files you process with localdobe's tools are opened in your browser's memory,
+      transformed on your device, and offered back as a download. They are never uploaded,
+      never logged, never cached on a server, and never seen by us. Passwords you enter in
+      the Protect and Unlock tools are used only inside your browser's memory for the
+      encryption or decryption operation and are likewise never transmitted or stored.
+      After the page has loaded a tool once, most operations work with your network
+      disconnected — the clearest proof that processing is local.
+    </p>
+
+    <h2>2. Hosting and server logs (Cloudflare)</h2>
+    <p>
+      The static site — HTML, CSS, JavaScript, fonts, and the WebAssembly modules the tools
+      use — is served by <a href="https://www.cloudflare.com/">Cloudflare</a>. Like any
+      content delivery network, Cloudflare's edge may process and briefly log standard HTTP
+      request metadata: the URL requested, your IP address, user-agent string, referrer,
+      and timestamp. This covers <em>which pages and assets were requested</em> — never the
+      contents of any file you process, because your files are not part of that traffic.
+      Cloudflare processes this data as described in the
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>.
+    </p>
+
+    <h2>3. Analytics (Cloudflare Web Analytics — cookieless)</h2>
+    <p>
+      We use <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a>
+      to understand aggregate site usage — which pages are visited and how fast they load.
+      We chose it because it is one of the least invasive analytics products available:
+    </p>
+    <ul>
+      <li>it sets <strong>no cookies</strong> and uses no localStorage;</li>
+      <li>it does <strong>not fingerprint</strong> your device or track you across sites;</li>
+      <li>it collects page-view events only: the page URL, referrer, browser and device
+        type, country-level location, and performance timings;</li>
+      <li>it never sees your files or anything you do inside a tool — it has no access to
+        file names, file contents, or tool inputs.</li>
+    </ul>
+    <p>
+      This works via a small script served from <code>cloudflareinsights.com</code>. If you
+      block it with an ad-blocker or a browser like Brave, every tool on this site continues
+      to work exactly the same — we think that's how it should be. Analytics data is
+      processed by Cloudflare under the
+      <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>.
+    </p>
+
+    <h2>4. Data stored on your device</h2>
+    <p>
+      localdobe stores a small amount of data <em>in your browser, on your device</em>, none
+      of which is transmitted to anyone:
+    </p>
+    <ul>
+      <li><strong>Theme preference</strong> — if you toggle dark mode, your choice is kept in
+        <code>localStorage</code> so the site remembers it.</li>
+      <li><strong>Offline caches</strong> — a service worker caches the site's pages and
+        engines so the tools work offline and load faster. This is standard browser cache
+        storage.</li>
+    </ul>
+    <p>
+      You can remove all of it at any time through your browser's site-data settings
+      (usually under "Cookies and site data" → localdobe.com → clear), which fully resets
+      the site.
+    </p>
+
+    <h2>5. What we don't collect</h2>
+    <p>
+      We have no accounts, no sign-ups, and no way to associate site usage with an identity.
+      We set no cookies of our own. We run no advertising, no third-party trackers, and no
+      session-recording or heat-mapping tools. We never sell or share data — we hold none
+      to sell.
+    </p>
+
+    <h2>6. Your rights</h2>
+    <p>
+      Because localdobe itself stores no personal data about you, there is nothing for us to
+      access, correct, export, or delete on request — the data described in sections 2 and 3
+      is processed by Cloudflare, and requests concerning it can be directed to Cloudflare
+      under its privacy policy. Data stored on your device (section 4) is under your direct
+      control through your browser.
+    </p>
+
+    <h2>7. Children</h2>
+    <p>
+      This site provides document utilities and does not target children. We do not
+      knowingly collect personal information from anyone, children included — the site has
+      no mechanism to do so.
+    </p>
+
+    <h2>8. Changes to this policy</h2>
+    <p>
+      If how the site works ever changes in a way that affects this page — a new analytics
+      tool, a new third party, anything that touches data — we will update this policy and
+      the "last updated" date above. The core promise will not change: your files are
+      processed on your device, full stop.
     </p>
   </article>
 </Base>
