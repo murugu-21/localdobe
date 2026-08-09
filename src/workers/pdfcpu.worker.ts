@@ -31,7 +31,11 @@ function init(): Promise<void> {
       await new Promise((r) => setTimeout(r, 25));
     }
     if (typeof globalThis.__pdfcpuOptimize !== 'function') throw new Error('pdfcpu wasm failed to start');
-  })();
+  })().catch((err) => {
+    // Don't cache a failed init — let the next message retry instantiation.
+    wasmReady = null;
+    throw err;
+  });
   return wasmReady;
 }
 

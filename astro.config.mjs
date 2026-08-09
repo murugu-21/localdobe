@@ -35,7 +35,7 @@ export default defineConfig({
       workbox: {
         globDirectory: 'dist',
         // Precache the app shell: pages, JS, CSS, fonts, images — NOT the wasm.
-        globPatterns: ['**/*.{html,js,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest}'],
+        globPatterns: ['**/*.{html,js,mjs,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest}'],
         globIgnores: ['wasm/**'],
         // pdfcpu.wasm caches on first use so most visitors never download it.
         runtimeCaching: [

@@ -8,7 +8,8 @@ interface Props {
   jsonLd?: object[];
 }
 const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
-const canonical = new URL(canonicalPath, Astro.site).href;
+const canonicalHref = new URL(canonicalPath, Astro.site).href;
+const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref}/`;
 ---
 <!doctype html>
 <html lang="en">
@@ -37,7 +38,7 @@ const canonical = new URL(canonicalPath, Astro.site).href;
     <header class="border-b border-slate-100">
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <a href="/" class="text-lg font-bold tracking-tight">local<span class="text-accent">dobe</span></a>
-        <div class="flex gap-6 text-sm font-medium text-muted">
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-muted">
           <a href="/merge-pdf" class="hover:text-ink">Merge</a>
           <a href="/split-pdf" class="hover:text-ink">Split</a>
           <a href="/compress-pdf" class="hover:text-ink">Compress</a>

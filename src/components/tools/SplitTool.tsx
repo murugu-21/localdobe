@@ -61,6 +61,7 @@ export default function SplitTool() {
       return next;
     });
     setRangeText('');
+    if (phase === 'done') { setPhase('idle'); setResult(null); }
   }
 
   async function run() {
@@ -125,7 +126,10 @@ export default function SplitTool() {
           <div className="flex flex-wrap items-center gap-4">
             <RadioGroup
               value={mode}
-              onValueChange={(v) => setMode(v as Mode)}
+              onValueChange={(v) => {
+                setMode(v as Mode);
+                if (phase === 'done') { setPhase('idle'); setResult(null); }
+              }}
               className="flex w-auto flex-row flex-wrap items-center gap-4"
             >
               <Label className="flex items-center gap-2 text-sm font-normal">
@@ -140,7 +144,10 @@ export default function SplitTool() {
             {mode === 'extract' && (
               <Input
                 value={rangeText}
-                onChange={(e) => setRangeText(e.target.value)}
+                onChange={(e) => {
+                  setRangeText(e.target.value);
+                  if (phase === 'done') { setPhase('idle'); setResult(null); }
+                }}
                 placeholder="or type ranges: 1-3, 5, 7-"
                 className="flex-1"
                 data-testid="range-input"

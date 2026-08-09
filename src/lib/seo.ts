@@ -1,11 +1,17 @@
 const SITE = 'https://localdobe.com';
 
+// Cloudflare Workers assets 308-redirects slash-less paths to their trailing-slash
+// form, and the sitemap always emits trailing slashes — keep JSON-LD urls in sync.
+function withTrailingSlash(url: string): string {
+  return url.endsWith('/') ? url : `${url}/`;
+}
+
 export function webAppJsonLd(name: string, path: string, description: string): object {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name,
-    url: `${SITE}${path}`,
+    url: withTrailingSlash(`${SITE}${path}`),
     description,
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Any',
@@ -21,7 +27,7 @@ export function articleJsonLd(title: string, description: string, slug: string, 
     headline: title,
     description,
     datePublished: pubDate.toISOString(),
-    url: `${SITE}/blog/${slug}`,
+    url: withTrailingSlash(`${SITE}/blog/${slug}`),
     author: { '@type': 'Organization', name: 'localdobe' },
     publisher: { '@type': 'Organization', name: 'localdobe', url: SITE },
   };
