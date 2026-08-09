@@ -25,8 +25,20 @@ export default function EditTool() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Uint8Array | null>(null);
   const [fallbackCount, setFallbackCount] = useState(0);
+  const [fitTick, setFitTick] = useState(0);
   const session = useRef(new EditSession());
   const docRef = useRef<PDFDocumentProxy | null>(null);
+
+  // Re-fit page canvases to the container when the window resizes (debounced).
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onResize = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setFitTick((t) => t + 1), 150);
+    };
+    window.addEventListener('resize', onResize);
+    return () => { clearTimeout(timer); window.removeEventListener('resize', onResize); };
+  }, []);
 
   // Close the previously opened pdf.js document's worker whenever a new one replaces it,
   // and on unmount — `openPdf` spawns a dedicated worker per document that nothing else
@@ -133,7 +145,7 @@ export default function EditTool() {
           )}
           <div className="overflow-x-auto rounded-xl bg-surface p-4">
             {Array.from({ length: doc.numPages }, (_, i) => (
-              <PageEditor key={i} doc={doc} pageIndex={i} session={session.current}
+              <PageEditor key={i} doc={doc} pageIndex={i} session={session.current} fitTick={fitTick}
                 addTextMode={addTextMode} onDirty={() => setDirty(!session.current.isEmpty)} />
             ))}
           </div>

@@ -6,11 +6,18 @@ import { textItemToPdfBox } from '../../../lib/pdf/edit/coords';
 import { classifyFont, cssFontStack, type FontClass } from '../../../lib/pdf/edit/fontMatch';
 import type { EditSession, NewTextBox } from '../../../lib/pdf/edit/session';
 
-const SCALE = 1.5;
+const MAX_SCALE = 1.5;
+const MIN_SCALE = 0.35;
+const CONTAINER_PADDING = 32; // matches the p-4 wrapper in EditTool
 
 interface SpanInfo {
   itemKey: string; str: string;
+  /** What the span shows on mount: an existing session edit's text, else the original. */
+  initialText: string;
   cssLeft: number; cssTop: number; cssFontSize: number;
+  /** Rendered width of the ORIGINAL text — edited spans keep this as min-width so
+   *  shorter replacements still cover the original canvas pixels beneath. */
+  cssWidth: number;
   pdf: { x: number; y: number; fontSize: number; width: number; height: number };
   fontClass: FontClass;
 }
@@ -21,15 +28,19 @@ interface Props {
   session: EditSession;
   addTextMode: boolean;
   onDirty: () => void;
+  /** Bumped by EditTool on window resize so pages re-fit to the container width. */
+  fitTick: number;
 }
 
-export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Props) {
+export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty, fitTick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<PageViewport | null>(null);
   const [spans, setSpans] = useState<SpanInfo[]>([]);
   const [pageHeightPt, setPageHeightPt] = useState(792);
   const [rotDelta, setRotDelta] = useState(0);
+  const [scale, setScale] = useState(MAX_SCALE);
+  const [editedKeys, setEditedKeys] = useState<Set<string>>(new Set());
   const [boxIndexes, setBoxIndexes] = useState<number[]>([]);
 
   useEffect(() => {
@@ -37,33 +48,50 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
     (async () => {
       const page = await doc.getPage(pageIndex + 1);
       if (!canvasRef.current || cancelled) return;
-      await renderPageToCanvas(page, canvasRef.current, SCALE, rotDelta);
       const rotation = (((page.rotate + rotDelta) % 360) + 360) % 360;
-      const viewport = page.getViewport({ scale: SCALE, rotation });
+      // Fit the page to the available container width (capped at MAX_SCALE) so
+      // phones and narrow windows don't get a horizontally scrolling canvas.
+      const base = page.getViewport({ scale: 1, rotation });
+      const avail = containerRef.current?.parentElement
+        ? containerRef.current.parentElement.clientWidth - CONTAINER_PADDING
+        : base.width * MAX_SCALE;
+      const s = Math.max(MIN_SCALE, Math.min(MAX_SCALE, avail / base.width));
+      await renderPageToCanvas(page, canvasRef.current, s, rotDelta);
+      const viewport = page.getViewport({ scale: s, rotation });
       viewportRef.current = viewport;
-      setPageHeightPt(viewport.height / SCALE);
+      setScale(s);
+      setPageHeightPt(viewport.height / s);
       const content = await page.getTextContent();
       const pdfjs = await import('pdfjs-dist');
       const result: SpanInfo[] = [];
+      const alreadyEdited = new Set<string>();
       content.items.forEach((item, i) => {
         if (!('str' in item) || item.str.trim() === '') return;
+        const itemKey = `${pageIndex}:${i}`;
+        const existingEdit = session.editFor(itemKey);
+        if (existingEdit) alreadyEdited.add(itemKey);
         const tx = pdfjs.Util.transform(viewport.transform, item.transform);
         const cssFontSize = Math.hypot(tx[2], tx[3]);
         const styleName = content.styles[item.fontName]?.fontFamily ?? item.fontName;
         result.push({
-          itemKey: `${pageIndex}:${i}`,
+          itemKey,
           str: item.str,
+          initialText: existingEdit?.text ?? item.str,
           cssLeft: tx[4],
           cssTop: tx[5] - cssFontSize,
           cssFontSize,
+          cssWidth: item.width * s,
           pdf: textItemToPdfBox(item),
           fontClass: classifyFont(styleName),
         });
       });
-      if (!cancelled) setSpans(result);
+      if (!cancelled) {
+        setSpans(result);
+        setEditedKeys(alreadyEdited);
+      }
     })();
     return () => { cancelled = true; };
-  }, [doc, pageIndex, rotDelta]);
+  }, [doc, pageIndex, rotDelta, fitTick, session]);
 
   function rotate(delta: 90 | -90) {
     session.rotatePage(pageIndex, delta);
@@ -72,14 +100,23 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
   }
 
   function onSpanInput(span: SpanInfo, el: HTMLElement) {
+    const text = el.textContent ?? '';
     session.recordEdit({
       page: pageIndex,
       itemKey: span.itemKey,
       original: span.str,
-      text: el.textContent ?? '',
+      text,
       ...span.pdf,
       fontClass: span.fontClass,
       cover: { r: 1, g: 1, b: 1 },
+    });
+    // Keep edited spans permanently opaque so the preview shows the NEW text
+    // instead of falling back to the transparent overlay (original canvas text).
+    setEditedKeys((prev) => {
+      const next = new Set(prev);
+      if (text === span.str) next.delete(span.itemKey);
+      else next.add(span.itemKey);
+      return next;
     });
     onDirty();
   }
@@ -117,10 +154,25 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
           // Colors here are pinned to the always-white rendered PDF canvas beneath this span,
           // not to the site theme — text-ink would go near-white in dark mode and vanish
           // against this white/yellow highlight, so these stay hardcoded slate deliberately.
-          className="absolute origin-top-left whitespace-pre text-transparent caret-black outline-none
-            hover:bg-yellow-100/60 hover:text-slate-900 focus:bg-white focus:text-slate-900 focus:ring-1 focus:ring-accent"
-          style={{ left: s.cssLeft, top: s.cssTop, fontSize: s.cssFontSize, fontFamily: cssFontStack(s.fontClass), lineHeight: 1 }}
-        >{s.str}</span>
+          // Edited spans stay opaque (white bg over the original canvas text) so the
+          // preview reflects the edit instead of reverting on blur.
+          className={`absolute origin-top-left whitespace-pre caret-black outline-none
+            focus:bg-white focus:text-slate-900 focus:ring-1 focus:ring-accent ${
+              editedKeys.has(s.itemKey)
+                ? 'bg-white text-slate-900 ring-1 ring-accent/40'
+                : 'text-transparent hover:bg-yellow-100/60 hover:text-slate-900'
+            }`}
+          style={{
+            left: s.cssLeft,
+            top: s.cssTop,
+            fontSize: s.cssFontSize,
+            fontFamily: cssFontStack(s.fontClass),
+            lineHeight: 1,
+            minWidth: editedKeys.has(s.itemKey) ? s.cssWidth : undefined,
+            // Cover the original text's descenders (which extend below the baseline).
+            paddingBottom: editedKeys.has(s.itemKey) ? s.cssFontSize * 0.25 : undefined,
+          }}
+        >{s.initialText}</span>
       ))}
       {boxIndexes.map((i) => {
         const b = session.boxesRaw[i];
@@ -137,9 +189,9 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
             // otherwise inherit body's theme-flipping text-ink and vanish in dark mode.
             className="absolute min-w-8 border border-dashed border-accent bg-white/80 px-0.5 text-slate-900 outline-none"
             style={{
-              left: b.x * SCALE,
-              top: (pageHeightPt - b.y) * SCALE - b.fontSize * SCALE,
-              fontSize: b.fontSize * SCALE,
+              left: b.x * scale,
+              top: (pageHeightPt - b.y) * scale - b.fontSize * scale,
+              fontSize: b.fontSize * scale,
               fontFamily: cssFontStack(b.fontClass),
               lineHeight: 1.3,
             }}

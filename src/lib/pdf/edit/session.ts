@@ -46,6 +46,8 @@ export class EditSession {
   rotationOf(page: number): PageRotation { return this.rotationMap.get(page) ?? 0; }
 
   get edits(): TextEdit[] { return [...this.editMap.values()]; }
+  /** The recorded edit for one text item, if any — used by the UI to restore/paint edited spans. */
+  editFor(itemKey: string): TextEdit | undefined { return this.editMap.get(itemKey); }
   get boxes(): NewTextBox[] { return this.boxList.filter((b) => b.text.trim() !== ''); }
   /** All boxes including empty ones still being typed — the UI needs real indexes into this array. */
   get boxesRaw(): NewTextBox[] { return this.boxList; }
