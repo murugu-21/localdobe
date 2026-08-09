@@ -37,7 +37,7 @@ export default defineConfig({
         // Precache the app shell: pages, JS, CSS, fonts, images, and small hashed wasm
         // assets (e.g. the ~4.6MB pdfium.wasm bundled via `?url` import into _astro/) —
         // NOT the 20MB pdfcpu.wasm, which lives under /wasm/ and is excluded below.
-        globPatterns: ['**/*.{html,js,mjs,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest,wasm,pem}'],
+        globPatterns: ['**/*.{html,js,mjs,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest,wasm}'],
         globIgnores: ['wasm/**'],
         // pdfcpu.wasm caches on first use so most visitors never download it.
         runtimeCaching: [

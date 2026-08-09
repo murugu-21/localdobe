@@ -111,7 +111,9 @@ shimCertDirFs();
 let trustReady: Promise<void> | null = null;
 function installTrustFile(): Promise<void> {
   trustReady ??= (async () => {
-    const res = await fetch('/trust/aatl.pem');
+    // Served with a .txt extension so Cloudflare brotli-compresses it (~41% smaller);
+    // the in-shim name stays aatl.pem because pdfcpu picks its parser by extension.
+    const res = await fetch('/trust/aatl.pem.txt');
     if (!res.ok) throw new Error(`trust list fetch: ${res.status}`);
     certFiles.set('aatl.pem', new Uint8Array(await res.arrayBuffer()));
   })().catch(() => {

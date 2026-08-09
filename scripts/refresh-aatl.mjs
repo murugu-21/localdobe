@@ -61,5 +61,5 @@ const header = [
 ].join('\n');
 
 await mkdir(new URL('../public/trust/', import.meta.url), { recursive: true });
-await writeFile(new URL('../public/trust/aatl.pem', import.meta.url), header + pemBlocks.join(''));
-console.log(`wrote public/trust/aatl.pem — ${anchors.length} trust anchors from ${identities.length} identities`);
+await writeFile(new URL('../public/trust/aatl.pem.txt', import.meta.url), header + pemBlocks.join(''));
+console.log(`wrote public/trust/aatl.pem.txt — ${anchors.length} trust anchors from ${identities.length} identities`);
