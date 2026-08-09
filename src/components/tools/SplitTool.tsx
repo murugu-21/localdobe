@@ -162,6 +162,9 @@ export default function SplitTool() {
                 value={rangeText}
                 onChange={(e) => {
                   setRangeText(e.target.value);
+                  // Typed ranges take precedence over thumbnail selection — clear it
+                  // so the UI never shows two competing inputs at once.
+                  if (e.target.value.trim() !== '' && selected.size > 0) setSelected(new Set());
                   if (phase === 'done') { setPhase('idle'); setResult(null); }
                 }}
                 placeholder="or type ranges: 1-3, 5, 7-"
