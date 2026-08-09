@@ -13,6 +13,9 @@ import '../../src/workers/go/wasm_exec.js';
     size: 0, blksize: 4096, blocks: 0, atimeMs: 0, mtimeMs: 0, ctimeMs: 0,
     isDirectory: () => true,
   };
+  // wasm_exec.js stubs constants.O_DIRECTORY as -1, which Go's syscall.Open treats
+  // as "unsupported" and rejects directory opens BEFORE calling fs.open below.
+  fs.constants.O_DIRECTORY = 65536;
   const orig = { lstat: fs.lstat, stat: fs.stat, open: fs.open, fstat: fs.fstat, readdir: fs.readdir, close: fs.close };
   fs.lstat = (path, cb) => (path === CERT_DIR ? cb(null, dirStat) : orig.lstat.call(fs, path, cb));
   fs.stat = (path, cb) => (path === CERT_DIR ? cb(null, dirStat) : orig.stat.call(fs, path, cb));
@@ -37,7 +40,7 @@ const res = globalThis.__pdfcpuOptimize(new Uint8Array(input), JSON.stringify({ 
 if (!res.ok) throw new Error(res.error);
 console.log(`optimize: in=${input.length} out=${res.bytes.length}`);
 
-const wm = globalThis.__pdfcpuWatermark(new Uint8Array(input), JSON.stringify({ mode: 'addText', onTop: false, text: 'DRAFT', desc: 'points:48, op:0.4, rot:45' }), null);
+const wm = globalThis.__pdfcpuWatermark(new Uint8Array(input), JSON.stringify({ mode: 'addText', onTop: true, text: 'DRAFT', desc: 'points:48, op:0.4, rot:45' }), null);
 if (!wm.ok) throw new Error(wm.error);
 const unwm = globalThis.__pdfcpuWatermark(wm.bytes, JSON.stringify({ mode: 'remove', onTop: false, text: '', desc: '' }), null);
 if (!unwm.ok) throw new Error(unwm.error);

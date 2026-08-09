@@ -35,6 +35,11 @@ function shimCertDirFs(): void {
     size: 0, blksize: 4096, blocks: 0, atimeMs: 0, mtimeMs: 0, ctimeMs: 0,
     isDirectory: () => true,
   };
+  // wasm_exec.js stubs constants.O_DIRECTORY as -1, which Go's syscall.Open treats
+  // as "unsupported" and rejects directory opens BEFORE calling fs.open — so the
+  // /certs shim below never gets a chance. Any non-negative value fixes that; the
+  // flag is only ever forwarded back into fs.open, which ignores it.
+  fs.constants.O_DIRECTORY = 65536;
   const orig = { lstat: fs.lstat, stat: fs.stat, open: fs.open, fstat: fs.fstat, readdir: fs.readdir, close: fs.close };
   fs.lstat = (path: string, cb: FsCb) => (path === CERT_DIR ? cb(null, dirStat) : orig.lstat.call(fs, path, cb));
   fs.stat = (path: string, cb: FsCb) => (path === CERT_DIR ? cb(null, dirStat) : orig.stat.call(fs, path, cb));

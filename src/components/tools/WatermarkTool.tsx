@@ -21,10 +21,6 @@ export default function WatermarkTool() {
   const [file, setFile] = useState<{ name: string; bytes: Uint8Array } | null>(null);
   const [action, setAction] = useState<Action>('text');
   const [text, setText] = useState('CONFIDENTIAL');
-  // Default to stamp (on top): most real-world PDFs (scans, generated docs) paint
-  // an opaque background over the whole page, making behind-content watermarks
-  // invisible. Users opt into classic behind-content placement explicitly.
-  const [onTop, setOnTop] = useState(true); // false = watermark (behind), true = stamp (on top)
   const [opacity, setOpacity] = useState(0.4);
   const [rotation, setRotation] = useState(45);
   const [fontSize, setFontSize] = useState(48);
@@ -50,7 +46,6 @@ export default function WatermarkTool() {
     setFile(null);
     setAction('text');
     setText('CONFIDENTIAL');
-    setOnTop(true);
     setOpacity(0.4);
     setRotation(45);
     setFontSize(48);
@@ -72,10 +67,10 @@ export default function WatermarkTool() {
       if (action === 'remove') {
         out = await client.removeWatermarks(file.bytes);
       } else if (action === 'text') {
-        out = await client.addTextWatermark(file.bytes, text, onTop, { opacity, rotation, fontSize, colorHex });
+        out = await client.addTextWatermark(file.bytes, text, { opacity, rotation, fontSize, colorHex });
       } else {
         if (!image) { setError('Choose a PNG or JPG image first.'); setPhase('error'); return; }
-        out = await client.addImageWatermark(file.bytes, image, onTop, { opacity, rotation, scale: imageScale });
+        out = await client.addImageWatermark(file.bytes, image, { opacity, rotation, scale: imageScale });
       }
       setResult(out);
       setPhase('done');
@@ -85,7 +80,7 @@ export default function WatermarkTool() {
     }
   }
 
-  const suffix = action === 'remove' ? 'no-watermark' : onTop ? 'stamped' : 'watermarked';
+  const suffix = action === 'remove' ? 'no-watermark' : 'watermarked';
 
   return (
     <div className="space-y-6">
@@ -208,26 +203,10 @@ export default function WatermarkTool() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Placement</Label>
-                <RadioGroup
-                  value={onTop ? 'stamp' : 'watermark'}
-                  onValueChange={(v) => { setOnTop(v === 'stamp'); resetIfDone(); }}
-                  className="flex flex-col gap-2"
-                >
-                  <Label className="flex items-start gap-2 text-sm font-normal">
-                    <RadioGroupItem value="stamp" className="mt-0.5" />
-                    <span>On top of content (stamp) — always visible</span>
-                  </Label>
-                  <Label className="flex items-start gap-2 text-sm font-normal">
-                    <RadioGroupItem value="watermark" className="mt-0.5" />
-                    <span>
-                      Behind content (classic watermark) — invisible on PDFs with opaque
-                      backgrounds, such as scans and many generated documents
-                    </span>
-                  </Label>
-                </RadioGroup>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                The watermark is drawn over the page so it stays visible on every PDF. Lower the
+                opacity for a subtle background look, or raise it for a bold stamp.
+              </p>
             </div>
           )}
           {action === 'remove' && (
@@ -242,7 +221,7 @@ export default function WatermarkTool() {
               size="lg"
               className="w-full"
             >
-              {action === 'remove' ? 'Remove watermarks' : onTop ? 'Add stamp' : 'Add watermark'}
+              {action === 'remove' ? 'Remove watermarks' : 'Add watermark'}
             </Button>
           )}
           {phase === 'working' && <ProgressBar value={null} />}

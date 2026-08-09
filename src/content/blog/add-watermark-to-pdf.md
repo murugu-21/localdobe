@@ -9,14 +9,14 @@ Marking a document as "DRAFT," branding a report with a company logo, or stampin
 
 ## Watermark vs. stamp: what's the actual difference
 
-Both add visual content to a PDF page, but where that content sits relative to the page's existing content is different:
+In everyday use, the two words describe the same thing at different intensities:
 
-- A **watermark** is drawn behind the existing page content — typically faint enough that it doesn't obscure whatever's already on the page, but present enough to be noticed. This is the right choice for background branding like a company logo or a "DRAFT" label across a document that's still being reviewed.
-- A **stamp** is drawn on top of the page content instead, so it stays fully visible even over images, filled tables, or dense text. This is the right choice for something that must be seen no matter what, like "APPROVED," "CONFIDENTIAL," or a review date stamped over an already-signed contract.
+- A **watermark** is faint and translucent — present enough to be noticed, but not so bold that it obscures the page. This is the right look for background branding like a company logo or a "DRAFT" label across a document that's still being reviewed.
+- A **stamp** is bold and fully opaque, made to be seen no matter what, like "APPROVED," "CONFIDENTIAL," or a review date stamped over an already-signed contract.
 
-If your watermark keeps disappearing behind images or dark backgrounds, you probably want a stamp instead — it's a one-toggle switch, not a different tool.
+You may see tools offer to place the mark "behind the page content" for a classic watermark. In practice that rarely works: most PDFs — scans, Word exports, anything printed from a browser — paint a solid background across the entire page, so anything placed underneath it is simply invisible. That's why this tool always draws the mark over the page and uses **opacity** to control how subtle it looks. A low opacity gives the faded watermark effect on every document; full opacity gives a stamp.
 
-Here's a concrete case where the choice actually matters: an invoice with a dense table of line items that needs to be marked "PAID" before it's archived. A background watermark would end up mostly hidden under the table's fill color and the numbers printed on top of it — readable at the margins, invisible where it counts. A stamp, drawn over the content instead, keeps "PAID" fully legible no matter how busy the page underneath is. Whenever the marking needs to survive contact with a dense, image-heavy, or table-filled page, reach for a stamp rather than a watermark.
+Here's a concrete case where the intensity matters: an invoice with a dense table of line items that needs to be marked "PAID" before it's archived. At low opacity, the mark stays polite — readable, but letting the numbers underneath show through. At high opacity it becomes a proper stamp, fully legible no matter how busy the page underneath is. Whenever the marking needs to survive contact with a dense, image-heavy, or table-filled page, turn the opacity up.
 
 ## How to add a watermark or stamp
 
@@ -24,7 +24,7 @@ On the [watermark PDF tool](/watermark-pdf):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Choose **Add text** or **Add image**, and enter or upload what you want stamped onto the pages.
-3. Adjust opacity, rotation, and position, and toggle "Stamp (draw on top of content)" if you need it to stay visible over existing page content.
+3. Adjust opacity, rotation, and size — low opacity for a subtle watermark, high opacity for a bold stamp.
 4. Click the action button and download the result.
 
 Everything runs locally, entirely inside your browser — the PDF you're marking never gets uploaded anywhere to have text or an image drawn onto it.

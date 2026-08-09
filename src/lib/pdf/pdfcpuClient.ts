@@ -60,12 +60,16 @@ export async function compressPdf(bytes: Uint8Array, preset: CompressPreset, onS
   return out;
 }
 
-export function addTextWatermark(bytes: Uint8Array, text: string, onTop: boolean, opts: TextWatermarkOpts): Promise<Uint8Array> {
-  return callForBytes('watermark', bytes, { mode: 'addText', onTop, text, desc: buildTextWatermarkDesc(opts) });
+// Watermarks are always drawn on top of the page content: most real-world PDFs
+// (scans, browser/Word exports) paint an opaque background over the whole page,
+// which makes behind-content watermarks invisible. Translucency comes from the
+// opacity in the desc string, not from z-order.
+export function addTextWatermark(bytes: Uint8Array, text: string, opts: TextWatermarkOpts): Promise<Uint8Array> {
+  return callForBytes('watermark', bytes, { mode: 'addText', onTop: true, text, desc: buildTextWatermarkDesc(opts) });
 }
 
-export function addImageWatermark(bytes: Uint8Array, image: Uint8Array, onTop: boolean, opts: ImageWatermarkOpts): Promise<Uint8Array> {
-  return callForBytes('watermark', bytes, { mode: 'addImage', onTop, text: '', desc: buildImageWatermarkDesc(opts) }, image);
+export function addImageWatermark(bytes: Uint8Array, image: Uint8Array, opts: ImageWatermarkOpts): Promise<Uint8Array> {
+  return callForBytes('watermark', bytes, { mode: 'addImage', onTop: true, text: '', desc: buildImageWatermarkDesc(opts) }, image);
 }
 
 export function removeWatermarks(bytes: Uint8Array): Promise<Uint8Array> {

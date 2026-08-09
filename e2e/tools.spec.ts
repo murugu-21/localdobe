@@ -22,6 +22,34 @@ async function extractPageTexts(bytes: Uint8Array): Promise<string[]> {
   return out;
 }
 
+/** Renders page 1 to RGBA pixels — for asserting a watermark is actually VISIBLE.
+ *  (Text extraction can't catch invisibility: a watermark drawn behind an opaque
+ *  page background still extracts fine while showing nothing.) */
+async function renderPagePixels(bytes: Uint8Array): Promise<Uint8ClampedArray> {
+  const { createCanvas } = await import('@napi-rs/canvas');
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
+  const pdfPage = await doc.getPage(1);
+  const viewport = pdfPage.getViewport({ scale: 1 });
+  const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+  const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  await pdfPage.render({ canvasContext: ctx, viewport }).promise;
+  const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  // @ts-ignore pdfjs v6 removed PDFDocumentProxy#destroy(); destroy via the loading task.
+  if (typeof doc.loadingTask?.destroy === 'function') await doc.loadingTask.destroy();
+  return pixels;
+}
+
+function countDifferingPixels(a: Uint8ClampedArray, b: Uint8ClampedArray): number {
+  let n = 0;
+  for (let i = 0; i < Math.min(a.length, b.length); i += 4) {
+    if (Math.abs(a[i] - b[i]) > 8 || Math.abs(a[i + 1] - b[i + 1]) > 8 || Math.abs(a[i + 2] - b[i + 2]) > 8) n++;
+  }
+  return n;
+}
+
 async function runAndDownload(page: Page): Promise<Download> {
   const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('download-result').click();
@@ -82,14 +110,32 @@ test('edit: replace text, rotate page, and export', async ({ page }) => {
   expect(text).not.toContain('Hello World from localdobe');
 });
 
-test('watermark: add text watermark produces valid pdf with same page count', async ({ page }) => {
+test('watermark: added text watermark is visibly rendered', async ({ page }) => {
   await page.goto('/watermark-pdf');
-  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  // opaque.pdf paints its own full-page background (like scans and Word/browser
+  // exports); a watermark drawn beneath it renders as a no-op. Real-world docs
+  // are the norm here, so visibility must be asserted against this fixture.
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/opaque.pdf');
   await page.getByTestId('wm-text').fill('E2E DRAFT');
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
-  const bytes = await downloadBytes(await runAndDownload(page));
-  expect((await PDFDocument.load(new Uint8Array(bytes))).getPageCount()).toBe(2);
+  const bytes = new Uint8Array(await downloadBytes(await runAndDownload(page)));
+  expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  // The watermark must change what the page LOOKS like, not just what it contains.
+  const before = await renderPagePixels(new Uint8Array(await readFile('e2e/.fixtures/opaque.pdf')));
+  const after = await renderPagePixels(bytes);
+  expect(countDifferingPixels(before, after)).toBeGreaterThan(1000);
+});
+
+test('signatures: signed pdf reports signature evidence, not an engine error', async ({ page }) => {
+  await page.goto('/validate-pdf-signature');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/signed.pdf');
+  // The trust-pool + signature-parse path only runs for signed PDFs; it must produce
+  // a report (even for an unverifiable signature), never an error.
+  await expect(page.getByTestId('sig-report')).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByTestId('sig-report')).toContainText(/signature/i);
+  await expect(page.getByTestId('sig-report')).not.toContainText(/no digital signatures/i);
+  await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
 test('signatures: unsigned pdf reports no signatures', async ({ page }) => {

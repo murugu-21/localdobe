@@ -6,7 +6,7 @@ import WatermarkTool from '../components/tools/WatermarkTool';
 import { webAppJsonLd, faqJsonLd } from '../lib/seo';
 
 const faq = [
-  { q: 'What’s the difference between a watermark and a stamp?', a: 'A watermark is drawn behind the page content; a stamp is drawn on top. Use stamps for "APPROVED"-style marks that must stay visible over images.' },
+  { q: 'What’s the difference between a watermark and a stamp?', a: 'Just how bold they look. Both are drawn over the page so they stay visible on every document — lower the opacity for a subtle watermark, raise it for an "APPROVED"-style stamp.' },
   { q: 'Can I remove any watermark?', a: 'Only watermarks stored as separate objects in the PDF (the kind added by tools like this one). If a watermark was flattened into the page or baked into an image, it can’t be cleanly removed.' },
   { q: 'Is my PDF uploaded?', a: 'No. Watermarking runs entirely inside your browser.' },
   { q: 'Does this add its own watermark?', a: 'Never. Ironically, we’re the watermark tool that doesn’t watermark your file.' },
@@ -24,7 +24,7 @@ const description = 'Add a text or image watermark or stamp to a PDF — or remo
       <li>Adjust opacity, rotation, and other settings, then click the button to run it and download the result.</li>
     </ol>
     <h2>Watermark vs stamp</h2>
-    <p>A <strong>watermark</strong> is drawn behind the page content — the text or logo below the existing content, faint enough to identify a document without obscuring it. A <strong>stamp</strong> is drawn on top of the page content instead, so it stays visible even over images, tables, or filled-in areas. Use a watermark for background branding like "DRAFT" across a report, and a stamp for something that must be seen no matter what's underneath, like "APPROVED" over a signed contract. Toggle the "Stamp (draw on top of content)" option to switch between the two.</p>
+    <p>The only real difference is how bold the mark looks. This tool always draws your text or image <strong>over</strong> the page content, because most PDFs — scans, Word exports, anything printed from a browser — paint a solid background across the whole page, and a mark placed underneath that background would never show up. Translucency is what gives a watermark its classic faded look: keep the opacity low for background branding like "DRAFT" across a report, or push it up for something that must be impossible to miss, like "APPROVED" over a signed contract.</p>
     <h2>Removing watermarks: what's actually possible</h2>
     <p>Removal only works on watermarks and stamps that exist as separate PDF objects — the kind added by tools like this one, and most watermarking software that follows the PDF spec properly. If a watermark was flattened into the page content or baked directly into a scanned image, there's no clean way to strip it back out without also destroying the underlying content. We'd rather tell you that up front than pretend our remove button is magic.</p>
     <p>Want the details? Read <a href="/blog/add-watermark-to-pdf">how to add a watermark to a PDF</a> and <a href="/blog/free-pdf-editors-watermarks">why so many "free" PDF editors add their own watermark</a>.</p>
