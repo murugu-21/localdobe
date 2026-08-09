@@ -63,16 +63,18 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
           </svg>
           <span>local<span class="text-accent">dobe</span></span>
         </a>
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-muted">
-          <a href="/merge-pdf" class="hover:text-ink">Merge</a>
-          <a href="/split-pdf" class="hover:text-ink">Split</a>
-          <a href="/compress-pdf" class="hover:text-ink">Compress</a>
-          <a href="/edit-pdf" class="hover:text-ink">Edit</a>
-          <a href="/watermark-pdf" class="hover:text-ink">Watermark</a>
-          <a href="/validate-pdf-signature" class="hover:text-ink">Signatures</a>
-          <a href="/protect-pdf" class="hover:text-ink">Protect</a>
-          <a href="/unlock-pdf" class="hover:text-ink">Unlock</a>
-          <a href="/blog" class="hover:text-ink">Blog</a>
+        <div class="flex items-center gap-2 md:gap-6">
+          <div class="hidden items-center gap-x-6 text-sm font-medium text-muted md:flex">
+            <a href="/merge-pdf" class="hover:text-ink">Merge</a>
+            <a href="/split-pdf" class="hover:text-ink">Split</a>
+            <a href="/compress-pdf" class="hover:text-ink">Compress</a>
+            <a href="/edit-pdf" class="hover:text-ink">Edit</a>
+            <a href="/watermark-pdf" class="hover:text-ink">Watermark</a>
+            <a href="/validate-pdf-signature" class="hover:text-ink">Signatures</a>
+            <a href="/protect-pdf" class="hover:text-ink">Protect</a>
+            <a href="/unlock-pdf" class="hover:text-ink">Unlock</a>
+            <a href="/blog" class="hover:text-ink">Blog</a>
+          </div>
           <button
             type="button"
             id="theme-toggle"
@@ -88,8 +90,51 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
               <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
             </svg>
           </button>
+          <button
+            type="button"
+            id="nav-toggle"
+            data-testid="nav-toggle"
+            aria-label="Open menu"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+            class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink md:hidden"
+          >
+            <svg id="nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg id="nav-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </div>
       </nav>
+      <div id="mobile-nav" class="hidden border-t border-border md:hidden">
+        <div class="mx-auto grid max-w-6xl gap-1 px-4 py-3 text-base font-medium text-muted">
+          <a href="/merge-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Merge</a>
+          <a href="/split-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Split</a>
+          <a href="/compress-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Compress</a>
+          <a href="/edit-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Edit</a>
+          <a href="/watermark-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Watermark</a>
+          <a href="/validate-pdf-signature" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Signatures</a>
+          <a href="/protect-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Protect</a>
+          <a href="/unlock-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Unlock</a>
+          <a href="/blog" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
+        </div>
+      </div>
+      <script>
+        const navToggle = document.getElementById('nav-toggle');
+        const mobileNav = document.getElementById('mobile-nav');
+        const iconOpen = document.getElementById('nav-icon-open');
+        const iconClose = document.getElementById('nav-icon-close');
+        navToggle?.addEventListener('click', () => {
+          const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+          navToggle.setAttribute('aria-expanded', String(!expanded));
+          navToggle.setAttribute('aria-label', expanded ? 'Open menu' : 'Close menu');
+          mobileNav?.classList.toggle('hidden', expanded);
+          iconOpen?.classList.toggle('hidden', !expanded);
+          iconClose?.classList.toggle('hidden', expanded);
+        });
+      </script>
     </header>
     <main><slot /></main>
     <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
