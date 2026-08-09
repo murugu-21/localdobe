@@ -49,7 +49,18 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
   <body class="bg-background text-ink antialiased">
     <header class="border-b border-border">
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-lg font-bold tracking-tight">local<span class="text-accent">dobe</span></a>
+        <a href="/" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+          {/* Inline "ld" mark — same geometry as the PWA icon (scripts/generate-icons.mjs) */}
+          <svg viewBox="0 0 512 512" class="h-6 w-6 shrink-0" aria-hidden="true">
+            <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="#2563eb" />
+            <g fill="#ffffff">
+              <rect x="145" y="120" width="46" height="260" rx="23" />
+              <rect x="345" y="120" width="46" height="260" rx="23" />
+              <path fill-rule="evenodd" d="M 300 208 a 92 92 0 1 0 0.1 0 Z M 300 248 a 52 52 0 1 0 0.1 0 Z" />
+            </g>
+          </svg>
+          <span>local<span class="text-accent">dobe</span></span>
+        </a>
         <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-muted">
           <a href="/merge-pdf" class="hover:text-ink">Merge</a>
           <a href="/split-pdf" class="hover:text-ink">Split</a>
