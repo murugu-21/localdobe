@@ -150,8 +150,9 @@ export default function SignatureTool() {
             </Button>
           )}
           <p className="text-xs text-muted-foreground">
-            Integrity checks run fully on your device. Trust-chain verification against certificate authorities may be
-            limited in-browser (there’s no OS certificate store), so a valid signature can show as “not fully verified”.
+            Everything runs on your device: integrity checks are fully cryptographic, and the signer’s certificate
+            chain is verified against the same publicly published trust list Adobe Acrobat uses (bundled locally).
+            The one check that needs the internet — whether a certificate was later revoked — is skipped and noted.
             Removing a signature strips it from the file without altering page content.
           </p>
         </>

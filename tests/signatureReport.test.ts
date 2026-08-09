@@ -94,3 +94,14 @@ test('empty report -> empty array', () => {
   expect(parseSignatureReport('[]')).toEqual([]);
   expect(parseSignatureReport('null')).toEqual([]);
 });
+
+test('revocation-only uncertainty (Reason 4096) is elevated to valid, like Acrobat', () => {
+  const [r] = parseSignatureReport(JSON.stringify([entry({ Status: 1, Reason: 4096 })]));
+  expect(r.status).toBe('valid');
+  expect(r.notes.some((n) => /revoked/i.test(n))).toBe(true); // the caveat stays visible
+});
+
+test('revocation bit combined with a real problem stays unknown', () => {
+  const [r] = parseSignatureReport(JSON.stringify([entry({ Status: 1, Reason: 4096 | 128 })]));
+  expect(r.status).toBe('unknown');
+});

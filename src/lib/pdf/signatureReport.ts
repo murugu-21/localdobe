@@ -31,7 +31,7 @@ const REASON_NOTES: [number, string][] = [
   [16, 'The signing time could not be verified.'],
   [32, 'The signing timestamp could not be verified.'],
   [64, 'The signer’s certificate is invalid.'],
-  [128, 'The signer’s certificate authority isn’t in this tool’s built-in trust list, so the signer’s identity couldn’t be independently confirmed. The signature itself may still be perfectly genuine.'],
+  [128, 'The signer’s certificate authority isn’t in Adobe’s published trust list (which this tool checks against), so the signer’s identity couldn’t be independently confirmed. The signature itself may still be perfectly genuine.'],
   [256, 'The signer’s certificate (or one of its parent certificates) has expired.'],
   [512, 'The signer’s certificate has been revoked.'],
   [1024, 'The signature could not be fully processed.'],
@@ -78,10 +78,17 @@ export function parseSignatureReport(json: string): SignatureReport[] {
       .filter((c): c is Record<string, unknown> => !!c && typeof c === 'object')
       .find((c) => c.Leaf === true);
 
-    const status: SignatureStatus =
+    let status: SignatureStatus =
       raw.Status === 2 ? 'valid' : raw.Status === 4 ? 'invalid' : 'unknown';
 
     const reason = typeof raw.Reason === 'number' ? raw.Reason : 0;
+    // Revocation-only uncertainty (bit 4096, nothing else): the signature crypto
+    // verified AND the certificate chain resolved to a bundled trust anchor — the
+    // only unanswerable question offline is "was the certificate revoked?".
+    // pdfcpu conservatively reports Status unknown here; Acrobat presents the same
+    // situation as a valid signature with a revocation caveat. We do the same —
+    // the caveat stays visible in the notes below.
+    if (status === 'unknown' && reason === 4096) status = 'valid';
     const notes = REASON_NOTES.filter(([bit]) => reason & bit).map(([, note]) => note);
     for (const p of Array.isArray(raw.Problems) ? raw.Problems : []) {
       if (typeof p !== 'string' || p.trim() === '') continue;

@@ -13,7 +13,8 @@
     "check": "astro check && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "refresh-aatl": "node scripts/refresh-aatl.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
