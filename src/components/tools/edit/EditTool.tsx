@@ -125,13 +125,15 @@ export default function EditTool() {
   return (
     <div>
       {!doc && <FileDropzone label="Choose a PDF to edit" onFiles={onFile} />}
+      {/* Rendered outside the doc block: open failures (corrupt or password-protected
+          files) leave doc null, and their error must still be visible. */}
+      {error && <p role="alert" className="my-4 text-sm text-destructive">{error}</p>}
       {doc && (
         <>
           <ExportBar dirty={dirty} exporting={exporting} addTextMode={addTextMode} resizeValue={resizeValue}
             onToggleAddText={() => setAddTextMode((m) => !m)} onResizeChange={onResizeChange} onExport={exportPdf}
             onClear={clear} />
           {exporting && <div className="mb-4"><ProgressBar value={null} /></div>}
-          {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
           {result && (
             <div className="mb-6">
               <DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." />

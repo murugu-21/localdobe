@@ -1,10 +1,11 @@
 import { presetConfig, type CompressPreset } from './compressPresets';
+import { friendlyEngineError } from './engineErrors';
 import { buildTextWatermarkDesc, buildImageWatermarkDesc, type TextWatermarkOpts, type ImageWatermarkOpts } from './watermarkDesc';
 import { parseSignatureReport, type SignatureReport } from './signatureReport';
 import type { PdfcpuCmd } from '../../workers/pdfcpu.worker';
 
 type Response = { id: number; ok: true; bytes?: ArrayBuffer; report?: string } | { id: number; ok: false; error: string };
-type Settle = { resolve: (r: { bytes?: Uint8Array; report?: string }) => void; reject: (e: Error) => void };
+type Settle = { cmd: PdfcpuCmd; resolve: (r: { bytes?: Uint8Array; report?: string }) => void; reject: (e: Error) => void };
 
 let worker: Worker | null = null;
 let nextId = 1;
@@ -19,7 +20,7 @@ function getWorker(): Worker {
       if (!entry) return;
       pending.delete(e.data.id);
       if (e.data.ok) entry.resolve({ bytes: e.data.bytes ? new Uint8Array(e.data.bytes) : undefined, report: e.data.report });
-      else entry.reject(new Error(e.data.error));
+      else entry.reject(new Error(friendlyEngineError(entry.cmd, e.data.error)));
     };
     worker.onerror = () => {
       for (const { reject } of pending.values()) reject(new Error('The PDF engine crashed — the file may be too large for this device.'));
@@ -42,7 +43,7 @@ function call(cmd: PdfcpuCmd, bytes: Uint8Array, config?: unknown, extraBytes?: 
     transfer.push(extra);
   }
   return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject });
+    pending.set(id, { cmd, resolve, reject });
     getWorker().postMessage({ id, cmd, bytes: buffer, config, extraBytes: extra }, transfer);
   });
 }

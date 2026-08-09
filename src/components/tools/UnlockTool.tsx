@@ -40,9 +40,7 @@ export default function UnlockTool() {
       setResult(await decryptPdf(file.bytes, password));
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error && /password/i.test(err.message)
-        ? 'That password didn’t work. Double-check it — unlocking requires the correct password.'
-        : err instanceof Error ? err.message : 'Decryption failed.');
+      setError(err instanceof Error ? err.message : 'Decryption failed.');
       setPhase('error');
     }
   }

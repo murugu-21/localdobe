@@ -55,7 +55,7 @@ and the font files under `public/fonts/` are NOT hashed, so overwriting the file
 place will not bust caches for existing visitors.
 
 When rebuilding this WASM module, rename the output file (current name:
-`pdfcpu-v2.wasm`; bump the suffix) and update the Makefile's `-o` path, the fetch
+`pdfcpu-v3.wasm`; bump the suffix) and update the Makefile's `-o` path, the fetch
 URL in `src/workers/pdfcpu.worker.ts`, `smoke.mjs`, and DEPLOY.md to match. The
 `.gitattributes` LFS pattern (`public/wasm/*.wasm`) covers any name. Leave the old
 file in place for one deploy cycle if you want in-flight tabs to keep working, then

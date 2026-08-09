@@ -36,6 +36,11 @@ func okBytes(out *bytes.Buffer) js.Value {
 func newConf() *model.Configuration {
 	conf := model.NewDefaultConfiguration()
 	conf.ValidationMode = model.ValidationRelaxed
+	// The wasm build has no usable network stack (Go's resolver can't do DNS in a
+	// browser, and CRL/OCSP endpoints are plain-http + cross-origin anyway), so
+	// revocation checks can only fail noisily. Offline mode skips them and reports
+	// a single clean "unable to perform revocation checking" problem instead.
+	conf.Offline = true
 	return conf
 }
 

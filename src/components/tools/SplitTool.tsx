@@ -84,7 +84,11 @@ export default function SplitTool() {
         ranges = Array.from({ length: loaded.pageCount }, (_, i) => [i]);
       } else if (rangeText.trim()) {
         try {
-          ranges = parsePageRanges(rangeText, loaded.pageCount);
+          // Extract mode always yields ONE document — same as thumbnail selection.
+          // "2-3, 5" means pages 2, 3, and 5 together, not separate files (the
+          // "every page" mode covers multi-file output).
+          const pages = parsePageRanges(rangeText, loaded.pageCount).flat();
+          ranges = [[...new Set(pages)]];
         } catch (e) {
           if (e instanceof RangeSyntaxError) { setError(e.message); setPhase('error'); return; }
           throw e;

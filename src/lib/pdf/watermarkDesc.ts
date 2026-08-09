@@ -10,3 +10,19 @@ export function buildTextWatermarkDesc(o: TextWatermarkOpts): string {
 export function buildImageWatermarkDesc(o: ImageWatermarkOpts): string {
   return `op:${o.opacity}, rot:${o.rotation}, scale:${o.scale} rel`;
 }
+
+// Characters above U+00FF that WinAnsi (the encoding of the built-in watermark font)
+// can represent. Anything else is SILENTLY DROPPED by the engine — the watermark
+// simply doesn't render — so unsupported text must be rejected before running.
+const WINANSI_EXTRAS = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+
+/** Returns the characters in `text` that the watermark font cannot draw ([] = all fine). */
+export function unsupportedWatermarkChars(text: string): string[] {
+  const bad = new Set<string>();
+  for (const ch of text) {
+    const code = ch.codePointAt(0)!;
+    if (code <= 0xff || WINANSI_EXTRAS.has(ch)) continue;
+    bad.add(ch);
+  }
+  return [...bad];
+}

@@ -56,7 +56,7 @@ let wasmReady: Promise<void> | null = null;
 function init(): Promise<void> {
   wasmReady ??= (async () => {
     const go = new Go();
-    const result = await WebAssembly.instantiateStreaming(fetch('/wasm/pdfcpu-v2.wasm'), go.importObject);
+    const result = await WebAssembly.instantiateStreaming(fetch('/wasm/pdfcpu-v3.wasm'), go.importObject);
     void go.run(result.instance); // resolves only on exit; do not await
     // Wait until the Go side has registered the bridge functions.
     for (let i = 0; i < 200 && typeof globalThis.__pdfcpuOptimize !== 'function'; i++) {

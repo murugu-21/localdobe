@@ -138,6 +138,39 @@ test('signatures: signed pdf reports signature evidence, not an engine error', a
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
+test('edit: corrupt file shows a visible error', async ({ page }) => {
+  await page.goto('/edit-pdf');
+  await page.getByTestId('file-input').setInputFiles({
+    name: 'broken.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.7 not really a pdf'),
+  });
+  // The open failure leaves doc null — the error must render anyway (regression:
+  // it used to be inside the doc-only block and never appeared).
+  await expect(page.getByRole('alert')).toContainText(/could not open/i, { timeout: 30_000 });
+});
+
+test('split: typed ranges extract into ONE pdf, same as thumbnails', async ({ page }) => {
+  await page.goto('/split-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  await page.getByTestId('range-input').fill('2-3, 5');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
+  const download = await runAndDownload(page);
+  expect(download.suggestedFilename()).toMatch(/\.pdf$/);
+  const bytes = new Uint8Array(await downloadBytes(download));
+  expect((await PDFDocument.load(bytes)).getPageCount()).toBe(3);
+});
+
+test('watermark: unsupported characters are rejected with a clear message', async ({ page }) => {
+  await page.goto('/watermark-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await page.getByTestId('wm-text').fill('机密');
+  await page.getByTestId('run-tool').click();
+  // Regression: the engine silently drops undrawable characters, producing a
+  // "successful" download with no watermark — the UI must reject the text instead.
+  await expect(page.getByRole('alert')).toContainText(/can't draw/i, { timeout: 30_000 });
+  await expect(page.getByTestId('download-result')).not.toBeVisible();
+});
+
 test('signatures: unsigned pdf reports no signatures', async ({ page }) => {
   await page.goto('/validate-pdf-signature');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');

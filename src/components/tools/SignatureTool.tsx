@@ -86,26 +86,54 @@ export default function SignatureTool() {
               data-testid="sig-report"
               className={cn(
                 'rounded-xl border p-5 text-sm',
-                sig.ok
-                  ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
-                  : 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950',
+                sig.status === 'valid' && 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950',
+                sig.status === 'invalid' && 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950',
+                sig.status === 'unknown' && 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950',
               )}
             >
-              <p className="font-semibold">{sig.ok ? '✓ Signature intact' : '⚠ Signature could not be fully verified'}</p>
-              <dl className="mt-2 space-y-1">
-                <div><dt className="inline font-medium">Signer:</dt> <dd className="inline">{sig.signer}</dd></div>
-                {sig.signedAt && <div><dt className="inline font-medium">Signed at:</dt> <dd className="inline">{sig.signedAt}</dd></div>}
-                <div><dt className="inline font-medium">Coverage:</dt> <dd className="inline">{sig.coversDoc ? 'entire document' : 'a revision of the document'}</dd></div>
+              <p className="font-semibold">
+                {sig.status === 'valid' && '✓ Signature is valid'}
+                {sig.status === 'invalid' && '✕ Signature is not valid'}
+                {sig.status === 'unknown' && '⚠ Signature found — couldn’t be fully verified'}
+              </p>
+              <dl className="mt-3 space-y-1.5">
+                <div><dt className="inline font-medium">Signed by:</dt> <dd className="inline">{sig.signer}</dd></div>
+                {sig.authority && (
+                  <div><dt className="inline font-medium">Issuing authority:</dt> <dd className="inline">{sig.authority}</dd></div>
+                )}
+                {sig.signedAt && <div><dt className="inline font-medium">Signed on:</dt> <dd className="inline">{sig.signedAt}</dd></div>}
+                {sig.certValidUntil && (
+                  <div>
+                    <dt className="inline font-medium">Certificate valid:</dt>{' '}
+                    <dd className="inline">
+                      {sig.certValidFrom} – {sig.certValidUntil}
+                      {sig.certExpired && <span className="ml-1 font-medium text-red-700 dark:text-red-300">(expired)</span>}
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="inline font-medium">Changes since signing:</dt>{' '}
+                  <dd className="inline">
+                    {sig.docChanges === 'untouched' && 'none — the document is exactly as signed'}
+                    {sig.docChanges === 'modified' && 'the document WAS changed after signing'}
+                    {sig.docChanges === 'unknown' && 'could not be determined'}
+                  </dd>
+                </div>
+                {sig.fieldName && (
+                  <div>
+                    <dt className="inline font-medium">Signature field:</dt>{' '}
+                    <dd className="inline">{sig.fieldName}{sig.pageNr ? ` (page ${sig.pageNr})` : ''}</dd>
+                  </div>
+                )}
               </dl>
-              {sig.problems.length > 0 && (
-                <ul className="mt-2 list-inside list-disc text-amber-900 dark:text-amber-200">
-                  {sig.problems.map((p, j) => <li key={j}>{p}</li>)}
-                </ul>
+              {sig.notes.length > 0 && (
+                <div className="mt-3">
+                  <p className="font-medium">What this means:</p>
+                  <ul className="mt-1 list-inside list-disc space-y-1">
+                    {sig.notes.map((p, j) => <li key={j}>{p}</li>)}
+                  </ul>
+                </div>
               )}
-              <details className="mt-3">
-                <summary className="cursor-pointer text-xs text-muted-foreground">Raw signature evidence</summary>
-                <pre className="mt-2 overflow-x-auto rounded bg-background p-3 text-xs">{JSON.stringify(sig.raw, null, 2)}</pre>
-              </details>
             </div>
           ))}
           {report.length > 0 && !removed && (

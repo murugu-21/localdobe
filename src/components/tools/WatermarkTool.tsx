@@ -67,6 +67,15 @@ export default function WatermarkTool() {
       if (action === 'remove') {
         out = await client.removeWatermarks(file.bytes);
       } else if (action === 'text') {
+        // The engine silently drops characters its built-in font can't draw — a fully
+        // unsupported text would "succeed" with no visible watermark at all.
+        const { unsupportedWatermarkChars } = await import('../../lib/pdf/watermarkDesc');
+        const bad = unsupportedWatermarkChars(text);
+        if (bad.length > 0) {
+          setError(`The watermark font can't draw these characters: ${bad.join(' ')} — letters, numbers, and Western European accents work. For other scripts or symbols, add your text as an image instead.`);
+          setPhase('error');
+          return;
+        }
         out = await client.addTextWatermark(file.bytes, text, { opacity, rotation, fontSize, colorHex });
       } else {
         if (!image) { setError('Choose a PNG or JPG image first.'); setPhase('error'); return; }

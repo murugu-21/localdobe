@@ -26,7 +26,7 @@ import '../../src/workers/go/wasm_exec.js';
 }
 
 const go = new globalThis.Go();
-const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu-v2.wasm'), go.importObject);
+const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu-v3.wasm'), go.importObject);
 go.run(instance);
 // Build a quick fixture PDF with pdf-lib from the repo root node_modules.
 // Note: pdf-lib's ESM build (es/index.js) uses extensionless internal imports that
