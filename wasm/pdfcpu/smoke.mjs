@@ -1,8 +1,29 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import '../../src/workers/go/wasm_exec.js';
 
+// Mirror of the /certs fs shim in src/workers/pdfcpu.worker.ts — the Go side
+// sets model.TrustedCertDir='/certs' and signature validation walks it; the
+// wasm_exec stub fs would fail the walk (ENOSYS), so present an empty dir.
+{
+  const CERT_DIR = '/certs';
+  const CERT_FD = 424242;
+  const fs = globalThis.fs;
+  const dirStat = {
+    dev: 0, ino: 1, mode: 0o40755, nlink: 1, uid: 0, gid: 0, rdev: 0,
+    size: 0, blksize: 4096, blocks: 0, atimeMs: 0, mtimeMs: 0, ctimeMs: 0,
+    isDirectory: () => true,
+  };
+  const orig = { lstat: fs.lstat, stat: fs.stat, open: fs.open, fstat: fs.fstat, readdir: fs.readdir, close: fs.close };
+  fs.lstat = (path, cb) => (path === CERT_DIR ? cb(null, dirStat) : orig.lstat.call(fs, path, cb));
+  fs.stat = (path, cb) => (path === CERT_DIR ? cb(null, dirStat) : orig.stat.call(fs, path, cb));
+  fs.open = (path, flags, mode, cb) => (path === CERT_DIR ? cb(null, CERT_FD) : orig.open.call(fs, path, flags, mode, cb));
+  fs.fstat = (fd, cb) => (fd === CERT_FD ? cb(null, dirStat) : orig.fstat.call(fs, fd, cb));
+  fs.readdir = (path, cb) => (path === CERT_DIR ? cb(null, []) : orig.readdir.call(fs, path, cb));
+  fs.close = (fd, cb) => (fd === CERT_FD ? cb(null) : orig.close.call(fs, fd, cb));
+}
+
 const go = new globalThis.Go();
-const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu.wasm'), go.importObject);
+const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu-v2.wasm'), go.importObject);
 go.run(instance);
 // Build a quick fixture PDF with pdf-lib from the repo root node_modules.
 // Note: pdf-lib's ESM build (es/index.js) uses extensionless internal imports that

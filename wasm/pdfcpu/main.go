@@ -182,6 +182,15 @@ func decrypt(args []js.Value) js.Value {
 
 func main() {
 	api.DisableConfigDir()
+	// DisableConfigDir leaves model.TrustedCertDir empty, and signature
+	// validation unconditionally walks that directory to build its trust pool
+	// (pkg/api/sign.go -> pdfcpu.LoadCertificates). WalkDir("") fails with
+	// EINVAL under js/wasm, breaking validation for every SIGNED pdf.
+	// Point it at a fixed virtual path instead; the JS host (worker/smoke)
+	// shims globalThis.fs to present /certs as an empty directory, yielding
+	// an empty trust pool — integrity checks run fully, trust-chain
+	// verification stays unavailable (which the UI already discloses).
+	model.TrustedCertDir = "/certs"
 	js.Global().Set("__pdfcpuOptimize", wrap(optimize))
 	js.Global().Set("__pdfcpuWatermark", wrap(watermark))
 	js.Global().Set("__pdfcpuValidateSignatures", wrap(validateSignatures))

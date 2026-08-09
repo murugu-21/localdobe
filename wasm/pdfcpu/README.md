@@ -54,8 +54,24 @@ assets (which Astro content-hashes into the filename automatically), `pdfcpu.was
 and the font files under `public/fonts/` are NOT hashed, so overwriting the file in
 place will not bust caches for existing visitors.
 
-When bumping the pdfcpu version and rebuilding this WASM module, rename the output
-file (e.g. `pdfcpu-v2.wasm`) and update the fetch URL in
-`src/workers/pdfcpu.worker.ts` (`fetch('/wasm/pdfcpu.wasm')`) to match. Leave the old
+When rebuilding this WASM module, rename the output file (current name:
+`pdfcpu-v2.wasm`; bump the suffix) and update the Makefile's `-o` path, the fetch
+URL in `src/workers/pdfcpu.worker.ts`, `smoke.mjs`, and DEPLOY.md to match. The
+`.gitattributes` LFS pattern (`public/wasm/*.wasm`) covers any name. Leave the old
 file in place for one deploy cycle if you want in-flight tabs to keep working, then
 remove it.
+
+## The /certs fs shim (signature validation)
+
+pdfcpu's signature validation builds a trust pool by walking
+`model.TrustedCertDir` (`pkg/api/sign.go` → `pdfcpu.LoadCertificates`), and there
+is no API to skip it. With `DisableConfigDir()` that path is empty and the walk
+fails under js/wasm (`lstat "": Invalid argument`) — which broke validation for
+every signed PDF. `main.go` therefore sets `model.TrustedCertDir = "/certs"`, and
+every JS host that instantiates this module (`src/workers/pdfcpu.worker.ts`,
+`smoke.mjs`) shims `globalThis.fs` to present `/certs` as an empty directory
+(lstat/stat/open/fstat/readdir/close — the exact syscalls Go's
+`syscall/fs_js.go` makes for a directory walk). Result: an empty trust pool —
+integrity checks run fully; trust-chain verification remains unavailable
+in-browser, which the tool's UI discloses. If you add a new JS host, copy the
+shim.

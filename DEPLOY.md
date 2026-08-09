@@ -5,7 +5,7 @@ Cloudflare Workers static assets, configured in `wrangler.jsonc`. Deploys run vi
 **Cloudflare's direct git integration (Workers Builds)** — Cloudflare clones the
 repo and builds on every push to `main`. There is no GitHub Actions deploy job.
 
-Note: `public/wasm/pdfcpu.wasm` (~20 MB) is tracked with **Git LFS**. The remote
+Note: `public/wasm/pdfcpu-v2.wasm` (~20 MB) is tracked with **Git LFS**. The remote
 you connect must host the LFS objects (GitHub LFS does this automatically on push),
 and Cloudflare's build image ships `git-lfs`, so the clone materializes the real
 file. Verify this after the first deploy (step 4 below).
@@ -26,7 +26,7 @@ file. Verify this after the first deploy (step 4 below).
    (`routes: [{ pattern: "localdobe.com", custom_domain: true }]`) can attach.
    The first successful deploy provisions the custom-domain binding automatically.
 4. **Verify the LFS file deployed correctly**: after the first build,
-   `curl -sI https://localdobe.com/wasm/pdfcpu.wasm | grep -i content-length`
+   `curl -sI https://localdobe.com/wasm/pdfcpu-v2.wasm | grep -i content-length`
    must report ~20 MB — if it's a few hundred bytes, the build cloned an LFS
    *pointer* instead of the object; prepend `git lfs pull && ` to the build
    command in the Cloudflare build settings and redeploy.
