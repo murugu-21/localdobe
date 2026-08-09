@@ -44,8 +44,8 @@ npm run preview     # serve the dist/ build locally, for e2e/PWA/Lighthouse chec
 runs `npm run build && npm run preview` before the suite starts (reusing an already-running
 preview server outside CI), so it always exercises a fresh production build.
 
-CI (`.github/workflows/deploy.yml`) runs `npm run check && npm test && npm run test:e2e && npm run build`
-on every push to `main`, then deploys on success.
+There is no CI test job — run `npm run check && npm test && npm run test:e2e` locally before
+pushing (deploys are handled by Cloudflare's git integration, which only runs the build).
 
 ## Architecture
 
@@ -92,8 +92,9 @@ node smoke.mjs
 
 ## Deploying
 
-localdobe.com deploys to Cloudflare Workers static assets (`wrangler.jsonc`) via GitHub Actions
-on every push to `main`. One-time manual setup (Cloudflare API token as a repo secret, DNS)
+localdobe.com deploys to Cloudflare Workers static assets (`wrangler.jsonc`) via Cloudflare's
+direct git integration (Workers Builds) on every push to `main`. Note that `public/wasm/pdfcpu.wasm`
+is tracked with Git LFS. One-time manual setup (connecting the repo in the Cloudflare dashboard, DNS)
 is required before the first deploy — see **`DEPLOY.md`** for the full checklist and cache-header
 details (`public/_headers`).
 
