@@ -29,7 +29,7 @@ Some free tools' terms of service include broad language about rights to process
 
 ## What the local alternative actually removes
 
-localdobe's tools take a different approach: operations like merging, compressing, splitting, and watermarking run entirely inside your browser using JavaScript and WebAssembly, with no upload step at all. That's not a policy promise about how your data will be handled after upload — it removes the upload, and everything downstream of it, entirely. There's no server retaining your file, no terms-of-service clause to parse about data usage rights over content that was never transmitted, and no funnel to monetize your attention because there's no account or email capture required to use the tool.
+localdobe's tools take a different approach: operations like merging, compressing, splitting, and watermarking run entirely inside your browser, with no upload step at all. That's not a policy promise about how your data will be handled after upload — it removes the upload, and everything downstream of it, entirely. There's no server retaining your file, no terms-of-service clause to parse about data usage rights over content that was never transmitted, and no funnel to monetize your attention because there's no account or email capture required to use the tool.
 
 It's also, not coincidentally, why the output has no watermark and no page limit: none of those restrictions exist to recoup a server cost that was never incurred in the first place. You can try this directly on the [merge PDF](/merge-pdf) or [compress PDF](/compress-pdf) tools, or browse [localdobe's full set of local PDF tools](/) — all of them process your files on your own device, watermark-free, with nothing to sign up for.
 
@@ -38,7 +38,7 @@ It's also, not coincidentally, why the output has no watermark and no page limit
 You don't have to audit each converter site's watermark policy, funnel tactics, retention window, and terms of service individually — skipping the upload step removes all four costs in one move, since every one of them depends on your file (or your attention) reaching a server in the first place:
 
 1. Go to [localdobe's tools](/) and pick the operation you need — merge, split, compress, watermark, and more are all there.
-2. Drop your file in and run the operation. It processes on your device, in your browser tab, using the same JavaScript and WebAssembly your browser already runs the page with.
+2. Drop your file in and run the operation. It processes on your device, right there in your browser tab.
 3. Download the result. There's no watermark to pay to remove, no email capture, no server-side copy of your file to worry about, and no terms-of-service clause governing data that was never transmitted.
 
 ## What to actually check before uploading

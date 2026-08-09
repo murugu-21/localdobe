@@ -15,7 +15,7 @@ On the [protect PDF tool](/protect-pdf):
 2. Enter and confirm a password.
 3. Click **Protect PDF** and download the encrypted file.
 
-The encryption happens using AES-256 — a well-established symmetric encryption standard, the same class used by banks and governments for sensitive data — running inside a WebAssembly engine in your browser. The password you typed and the file you're protecting both stay on your device throughout.
+The encryption happens using AES-256 — a well-established symmetric encryption standard, the same class used by banks and governments for sensitive data — running entirely inside your browser. The password you typed and the file you're protecting both stay on your device throughout.
 
 ## Why local encryption specifically matters here
 

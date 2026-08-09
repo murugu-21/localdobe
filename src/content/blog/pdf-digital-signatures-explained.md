@@ -35,7 +35,7 @@ On the [validate PDF signature tool](/validate-pdf-signature):
 
 ## Why local checking matters for signed documents specifically
 
-Documents worth signing are, almost by definition, documents worth protecting: contracts, notarized filings, signed invoices, legal agreements. Uploading one of these to a server just to check whether it's been tampered with means handing over the exact document (and its signature) to a third party for the sake of a yes-or-no answer you could get without that exposure. localdobe validates and can remove signatures entirely inside a WebAssembly engine running in your browser tab — the document is never transmitted, logged, or stored on any server in the process.
+Documents worth signing are, almost by definition, documents worth protecting: contracts, notarized filings, signed invoices, legal agreements. Uploading one of these to a server just to check whether it's been tampered with means handing over the exact document (and its signature) to a third party for the sake of a yes-or-no answer you could get without that exposure. localdobe validates and can remove signatures entirely inside your browser tab — the document is never transmitted, logged, or stored on any server in the process.
 
 ## The short version
 

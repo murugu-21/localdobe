@@ -9,7 +9,7 @@ const faq = [
   { q: 'Why does local encryption matter for a password?', a: 'Uploading your file and your password to someone else’s server to “protect” it defeats the point — you’ve just handed both the document and the key to a third party. localdobe encrypts the PDF inside your browser, so the password never leaves your device.' },
   { q: 'What is AES-256 encryption?', a: 'AES-256 is a widely trusted symmetric encryption standard (the same class used by banks and governments) that scrambles the PDF’s contents so it can only be opened with the correct password.' },
   { q: 'Can I recover a forgotten password?', a: 'No. Because the password never leaves your device and isn’t stored anywhere, there’s no way for us — or anyone — to recover it. Write it down somewhere safe. If you already know the password and just need to remove it, use the unlock PDF tool instead.' },
-  { q: 'Is my PDF uploaded anywhere?', a: 'No. Encryption runs in a WebAssembly engine inside your browser; the file and password never leave your device.' },
+  { q: 'Is my PDF uploaded anywhere?', a: 'No. Encryption runs entirely inside your browser; the file and password never leave your device.' },
 ];
 const description = 'Add a password to a PDF free, with AES-256 encryption running entirely in your browser. No upload, no signup — the password never leaves your device.';
 ---
@@ -24,7 +24,7 @@ const description = 'Add a password to a PDF free, with AES-256 encryption runni
       <li>Click <strong>Protect PDF</strong> and download the encrypted file.</li>
     </ol>
     <h2>Why local encryption matters for passwords</h2>
-    <p>Sending a PDF and a password to a server to have it “protected” is backwards — you’re trusting a stranger’s server with the exact secret meant to keep the file private. localdobe encrypts your PDF with AES-256 entirely inside your browser tab using WebAssembly: the file and the password never leave your device, and nothing is transmitted, logged, or stored.</p>
+    <p>Sending a PDF and a password to a server to have it “protected” is backwards — you’re trusting a stranger’s server with the exact secret meant to keep the file private. localdobe encrypts your PDF with AES-256 entirely inside your browser tab: the file and the password never leave your device, and nothing is transmitted, logged, or stored.</p>
     <h2>Don’t forget your password</h2>
     <p>Because the password never leaves your device, there’s no account, no reset link, and no way for anyone to recover it if you forget it. Store it somewhere safe. If you already know the password on a protected PDF and just want to remove it, head to the <a href="/unlock-pdf">unlock PDF tool</a> instead.</p>
     <p>Want the details? Read <a href="/blog/password-protect-pdf">how to password-protect a PDF</a>.</p>

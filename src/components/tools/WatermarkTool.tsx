@@ -231,7 +231,7 @@ export default function WatermarkTool() {
             </div>
           )}
           {action === 'remove' && (
-            <p className="text-sm text-muted-foreground">Removes watermarks and stamps that exist as separate PDF objects (the kind pdfcpu-style tools add). Watermarks flattened into page images can’t be removed.</p>
+            <p className="text-sm text-muted-foreground">Removes watermarks and stamps that were added as separate layers (the kind most watermarking tools add). Watermarks flattened into page images can’t be removed.</p>
           )}
           {phase !== 'done' && (
             <Button

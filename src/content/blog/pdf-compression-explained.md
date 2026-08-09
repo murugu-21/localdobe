@@ -28,7 +28,7 @@ None of this is visible when you open the PDF and look at it. It's structural we
 There are two fundamentally different strategies a "PDF compressor" can use, and they have very different consequences:
 
 1. **Recompress images.** Lower the resolution or apply more aggressive lossy compression to embedded photos. This can produce large size reductions, but it's a real quality trade-off — text stays sharp, but photos and scanned pages come out visibly softer or blockier than the original.
-2. **Remove redundancy.** Deduplicate repeated font embeds, strip unused objects, and eliminate repeated content streams, without touching the actual image or text data. This is what localdobe's [compress PDF tool](/compress-pdf) does, using pdfcpu — a mature PDF processing library — compiled to WebAssembly and run inside a Web Worker in your browser.
+2. **Remove redundancy.** Deduplicate repeated font embeds, strip unused objects, and eliminate repeated content streams, without touching the actual image or text data. This is what localdobe's [compress PDF tool](/compress-pdf) does, using trusted, open-source PDF software that runs entirely inside your browser.
 
 The redundancy-removal approach is more honest about its limits: it can only shrink a file by however much genuine redundancy that file actually contains. A cleanly generated PDF with no duplicate fonts and no orphaned objects might not shrink at all, and a good compressor should say so rather than pretending to have done something. A PDF that's been through several rounds of editing and merging, on the other hand, can often shrink by 20–70%, because that's roughly how much of its size turns out to be accumulated overhead rather than content.
 
@@ -38,7 +38,7 @@ The redundancy-removal approach is more honest about its limits: it can only shr
 2. Choose a compression level — Light, Balanced, or Maximum.
 3. Click **Compress PDF** and download the result.
 
-Because this runs on a real compression engine inside your browser via WebAssembly rather than a server, there's no upload involved and no queue to wait in — the first run downloads the engine once, and every run after that is instant. For more on how a compiled Go library ends up running inside a browser tab at all, see our post on [WebAssembly and how it powers local PDF tools](/blog/webassembly-pdf-tools).
+Because this runs on a real compression engine inside your browser rather than on a server, there's no upload involved and no queue to wait in — the first run downloads the engine once, and every run after that is instant. Curious how professional-grade PDF software ends up running inside a browser tab at all? See our post on [WebAssembly and how it powers local PDF tools](/blog/webassembly-pdf-tools).
 
 ## Why the honest answer is sometimes "not much smaller"
 

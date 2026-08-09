@@ -9,7 +9,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
     <p>
       The short version: <strong>your files never leave your device.</strong> Every tool on
       localdobe — merge, split, compress, edit, watermark, protect, unlock, and signature
-      validation — runs entirely in your browser using WebAssembly and JavaScript. When you
+      validation — runs entirely in your browser. When you
       drop a PDF into a tool, it's read into memory on your machine, processed there, and
       handed back to you as a download. At no point does your file — or any data derived
       from its contents — travel over the network to us or anyone else.
@@ -33,7 +33,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
 
     <h2>2. Hosting and server logs (Cloudflare)</h2>
     <p>
-      The static site — HTML, CSS, JavaScript, fonts, and the WebAssembly modules the tools
+      The static site — HTML, CSS, JavaScript, fonts, and the files the tools
       use — is served by <a href="https://www.cloudflare.com/">Cloudflare</a>. Like any
       content delivery network, Cloudflare's edge may process and briefly log standard HTTP
       request metadata: the URL requested, your IP address, user-agent string, referrer,

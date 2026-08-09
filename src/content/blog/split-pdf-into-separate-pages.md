@@ -32,7 +32,7 @@ This mirrors the range syntax you'd expect from a print dialog, which makes it e
 
 ## What happens to your pages when you split locally
 
-The split tool reads your PDF's byte structure directly in your browser using pdf.js, the same rendering engine Firefox uses to display PDFs natively, combined with logic that copies the specific page objects you selected into a new, independent PDF file. Nothing about this process requires a server: your browser already has to parse the whole document just to show you the thumbnails to click on, so extracting a subset of pages is a local operation on data your machine already holds in memory.
+The split tool reads your PDF's structure directly in your browser using the same rendering technology Firefox uses to display PDFs natively, combined with logic that copies the specific pages you selected into a new, independent PDF file. Nothing about this process requires a server: your browser already has to parse the whole document just to show you the thumbnails to click on, so extracting a subset of pages is a local operation on data your machine already holds in memory.
 
 That matters more than it might seem. When you upload a 40-page document to split out one page, most online tools receive — and briefly store — the entire file, including the 39 pages you had no intention of sharing. If that document is a signed lease, a medical intake form, or a set of tax records, the other 39 pages are exposed for no reason connected to what you actually needed to do. Splitting locally means only the page you selected ever exists outside your device, because nothing left your device in the first place.
 

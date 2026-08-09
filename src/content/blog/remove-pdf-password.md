@@ -17,7 +17,7 @@ On the [unlock PDF tool](/unlock-pdf):
 2. Enter the file's current password.
 3. Click **Unlock PDF** and download the unprotected file.
 
-The decryption runs inside a WebAssembly engine in your browser — the file and the password you enter both stay on your device throughout, with no upload involved.
+The decryption runs entirely inside your browser — the file and the password you enter both stay on your device throughout, with no upload involved.
 
 ## This is not a password cracker
 
@@ -35,7 +35,7 @@ It's also worth keeping the original, still-protected file around somewhere if t
 
 ## Why this runs locally instead of on a server
 
-Unlocking a PDF necessarily involves handling both the encrypted document and its password together — which makes it one of the worst possible operations to hand to an unfamiliar server. Sending both pieces to a third party to have them decrypt the file means that server briefly holds everything needed to access the document's contents, precisely the information a password is meant to gate. Running the decryption locally, using a real WebAssembly-based PDF engine in your browser, means neither the file nor the password ever needs to leave your device to get the job done — the same guarantee that applies when you add a password in the first place, covered in our companion post on [how to password-protect a PDF](/blog/password-protect-pdf).
+Unlocking a PDF necessarily involves handling both the encrypted document and its password together — which makes it one of the worst possible operations to hand to an unfamiliar server. Sending both pieces to a third party to have them decrypt the file means that server briefly holds everything needed to access the document's contents, precisely the information a password is meant to gate. Running the decryption locally, using a real PDF engine that runs in your browser, means neither the file nor the password ever needs to leave your device to get the job done — the same guarantee that applies when you add a password in the first place, covered in our companion post on [how to password-protect a PDF](/blog/password-protect-pdf).
 
 ## The short version
 

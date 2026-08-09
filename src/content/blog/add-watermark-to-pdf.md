@@ -27,7 +27,7 @@ On the [watermark PDF tool](/watermark-pdf):
 3. Adjust opacity, rotation, and position, and toggle "Stamp (draw on top of content)" if you need it to stay visible over existing page content.
 4. Click the action button and download the result.
 
-Everything runs locally in a WebAssembly engine inside your browser — the PDF you're marking never gets uploaded anywhere to have text or an image drawn onto it.
+Everything runs locally, entirely inside your browser — the PDF you're marking never gets uploaded anywhere to have text or an image drawn onto it.
 
 ## Removing a watermark: what's genuinely possible
 
@@ -43,4 +43,4 @@ For more on why that upsell pattern shows up across free PDF editors generally, 
 
 ## Why local processing matters here specifically
 
-Watermarking and stamping often apply to documents that are already sensitive by nature — contracts mid-review, confidential drafts, approved-but-not-yet-public reports. Uploading a document to mark it as "CONFIDENTIAL" only to have that upload itself be the least confidential part of the process is a genuine irony worth avoiding. Running the whole operation locally means the file never has to leave your device to get marked, checked, or have a watermark stripped back out — the same WebAssembly-based engine handles both directions without a network request in either one.
+Watermarking and stamping often apply to documents that are already sensitive by nature — contracts mid-review, confidential drafts, approved-but-not-yet-public reports. Uploading a document to mark it as "CONFIDENTIAL" only to have that upload itself be the least confidential part of the process is a genuine irony worth avoiding. Running the whole operation locally means the file never has to leave your device to get marked, checked, or have a watermark stripped back out — the same in-browser engine handles both directions without a network request in either one.

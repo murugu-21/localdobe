@@ -29,7 +29,7 @@ The practical consequence is an honest one: how much a given file shrinks depend
 
 ## Why this runs on a real compression engine, not a JavaScript approximation
 
-The engine behind this tool is pdfcpu, a mature PDF processing library written in Go, compiled to WebAssembly so it can run inside a Web Worker in your browser. That's the same category of engine that powers pdfcpu's command-line tool — it's not a lightweight JavaScript reimplementation cutting corners. WebAssembly is what makes it possible to run genuinely capable, compiled software at near-native speed inside a browser tab, which is a relatively recent capability. If you're curious how that works under the hood, see our post on [how WebAssembly turns your browser into a PDF powerhouse](/blog/webassembly-pdf-tools).
+The engine behind this tool is a mature, open-source PDF processing library that runs directly inside your browser tab. It's the same category of professional-grade PDF software used by developers everywhere — not a lightweight reimplementation cutting corners. Modern browsers can run genuinely capable software like this at near-native speed, which is a relatively recent capability. If you're curious how that works under the hood, see our post on [how WebAssembly turns your browser into a PDF powerhouse](/blog/webassembly-pdf-tools).
 
 Running that engine locally instead of on a server means the document you're trying to shrink — often precisely because it's sensitive enough to be worth emailing carefully — never has to leave your device to get processed. There's no upload queue, no server-side temp file, and nothing to clean up afterward on someone else's infrastructure.
 

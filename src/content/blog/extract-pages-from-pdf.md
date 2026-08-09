@@ -44,7 +44,7 @@ This is deliberately similar to the page-range syntax you'd type into a print di
 
 ## Why extraction shouldn't require an upload
 
-The reason this can run entirely in your browser is that extracting pages doesn't require understanding or modifying the actual content of those pages — it's a structural operation on the PDF's object tree, copying the pages you selected into a new file while leaving everything else behind. Your browser already has to parse that structure just to render the thumbnails you're clicking on, using pdf.js (the same PDF rendering engine built into Firefox). Extraction reuses that same parsed structure to build the output file, all in memory, without a network round-trip.
+The reason this can run entirely in your browser is that extracting pages doesn't require understanding or modifying the actual content of those pages — it's a structural operation on the PDF's object tree, copying the pages you selected into a new file while leaving everything else behind. Your browser already has to parse that structure just to render the thumbnails you're clicking on, using the same PDF rendering technology built into Firefox. Extraction reuses that same parsed structure to build the output file, all in memory, without a network round-trip.
 
 That's a meaningful difference from uploading the source document to extract a page from it. If the document is a signed lease or a medical form, uploading the whole thing to get one page out means a third-party server briefly held everything you were trying to avoid sharing — the exact opposite of the selective sharing extraction is usually meant to achieve. Processing locally means the only pages that ever exist outside your device are the ones you actually selected.
 
