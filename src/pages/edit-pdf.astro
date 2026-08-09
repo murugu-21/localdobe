@@ -6,7 +6,7 @@ import EditTool from '../components/tools/edit/EditTool';
 import { webAppJsonLd, faqJsonLd } from '../lib/seo';
 
 const faq = [
-  { q: 'Can I really edit existing text?', a: 'Yes. Click any text, retype it, and export. Under the hood the original text is covered and redrawn with a metric-compatible font, so small edits look seamless.' },
+  { q: 'Can I really edit existing text?', a: 'Yes. Click any text, retype it, and export. Under the hood the original text is genuinely removed from the PDF and your replacement is drawn with a metric-compatible font, so small edits look seamless — and the old text can\'t be recovered by copy-pasting or text extraction.' },
   { q: 'Will the font match exactly?', a: 'Usually very closely. We use Liberation fonts, which share exact widths with Arial, Times New Roman, and Courier — the fonts behind most documents. Decorative fonts are approximated.' },
   { q: 'Is my document uploaded?', a: 'No. Rendering, editing, and export all run in your browser.' },
   { q: 'Does it add a watermark?', a: 'Never. Your exported PDF contains only your document and your edits.' },
@@ -26,8 +26,9 @@ const description = 'Edit text in a PDF free — no upload, no watermark, no Acr
       <li>Click <strong>Export PDF</strong> and download the result.</li>
     </ol>
     <h2>How in-browser PDF editing works</h2>
-    <p>PDFs don't store paragraphs the way a word processor does — they store individual, precisely positioned runs of glyphs. There's no reflowable "text box" to type into. So when you edit a line here, localdobe draws a solid rectangle over the original glyphs and redraws your new text on top, in a font chosen to match the original as closely as possible (Liberation Sans, Serif, or Mono, all metric-compatible with the most common document fonts).</p>
-    <p>This approach shines for the edits people actually need most: fixing a typo, updating a date or a name, filling in a blank on a form, or swapping one line of text for another. It's less suited to rewriting whole paragraphs — surrounding text won't reflow around your edit, and if the original had a patterned or image background instead of a solid color, the cover rectangle may not blend in perfectly. For that kind of heavy restructuring, you'd want the original source file and a word processor.</p>
+    <p>PDFs don't store paragraphs the way a word processor does — they store individual, precisely positioned runs of glyphs. There's no reflowable "text box" to type into. So when you edit a line here, localdobe deletes the original glyph objects from the page entirely and draws your new text in their place, in a font chosen to match the original as closely as possible (Liberation Sans, Serif, or Mono, all metric-compatible with the most common document fonts). Because the old text is actually removed rather than painted over, it won't show up if someone selects, copies, or extracts text from the exported PDF.</p>
+    <p>In a small number of cases — scanned pages, flattened text, or unusual PDF structure — the original text can't be safely identified and removed on its own, so localdobe falls back to covering it with a solid rectangle instead, the way earlier versions of this tool always worked. When that happens on export, you'll see a note telling you how many edits used the fallback.</p>
+    <p>This approach shines for the edits people actually need most: fixing a typo, updating a date or a name, filling in a blank on a form, or swapping one line of text for another. It's less suited to rewriting whole paragraphs — surrounding text won't reflow around your edit. For that kind of heavy restructuring, you'd want the original source file and a word processor.</p>
     <p>Want the details? Read <a href="/blog/edit-pdf-without-acrobat">how to edit a PDF without Acrobat</a> and <a href="/blog/free-pdf-editors-watermarks">why so many "free" PDF editors add their own watermark</a>.</p>
     <Faq items={faq} />
   </ToolPageShell>

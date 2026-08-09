@@ -7,6 +7,21 @@ async function downloadBytes(download: Download): Promise<Buffer> {
   return readFile(path!);
 }
 
+/** Extracts each page's text via pdf.js — independent of pdf-lib, and (unlike a visual
+ *  cover box) unable to see anything but what's actually still in the content stream. */
+async function extractPageTexts(bytes: Uint8Array): Promise<string[]> {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
+  const out: string[] = [];
+  for (let i = 1; i <= doc.numPages; i++) {
+    const content = await (await doc.getPage(i)).getTextContent();
+    out.push(content.items.map((it: any) => ('str' in it ? it.str : '')).join(''));
+  }
+  // @ts-ignore pdfjs v6 removed PDFDocumentProxy#destroy(); destroy via the loading task.
+  if (typeof doc.loadingTask?.destroy === 'function') await doc.loadingTask.destroy();
+  return out;
+}
+
 async function runAndDownload(page: Page): Promise<Download> {
   const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('download-result').click();
@@ -59,6 +74,12 @@ test('edit: replace text, rotate page, and export', async ({ page }) => {
   expect(doc.getPageCount()).toBe(1);
   expect(doc.getPage(0).getRotation().angle).toBe(90);
   expect(bytes.length).toBeGreaterThan((await stat('e2e/.fixtures/edit.pdf')).size); // embedded font present
+
+  // True removal, not cover-and-redraw: the original fixture text ("Hello World from
+  // localdobe") must be genuinely gone from the content stream, not just painted over.
+  const [text] = await extractPageTexts(new Uint8Array(bytes));
+  expect(text).toContain('Edited by e2e');
+  expect(text).not.toContain('Hello World from localdobe');
 });
 
 test('watermark: add text watermark produces valid pdf with same page count', async ({ page }) => {

@@ -16,14 +16,54 @@ export interface ExportChanges {
   resize: ResizeSpec | null;
 }
 
+/** Original-glyph footprint for a text edit — the region PDFium is asked to clear. */
+function removalRect(e: TextEdit) {
+  return {
+    x: e.x - COVER_PAD,
+    y: e.y - e.fontSize * 0.25 - COVER_PAD,
+    width: e.width + COVER_PAD * 2,
+    height: e.fontSize * 1.25 + COVER_PAD * 2,
+  };
+}
+
+export interface ExportResult {
+  bytes: Uint8Array;
+  /** Number of edits where the original text couldn't be cleanly removed via PDFium and
+   *  fell back to the old cover-and-redraw rectangle. */
+  fallbackCount: number;
+}
+
 export async function exportEditedPdf(
   src: Uint8Array,
   changes: ExportChanges,
   fetchFont: (cls: FontClass) => Promise<Uint8Array>,
-): Promise<Uint8Array> {
+): Promise<ExportResult> {
   const { rgb, degrees } = await import('pdf-lib');
   const fontkitModule = await import('@pdf-lib/fontkit');
-  const doc = await loadPdf(src);
+
+  // 0. True-removal pass: try to delete the original glyph objects for each edit via
+  //    PDFium before pdf-lib ever touches the bytes. The removal rect deliberately uses
+  //    the ORIGINAL glyph width (not widened for a longer replacement) — widening it here
+  //    risks the >=50%-coverage match eating into a neighboring word on the same line.
+  //    Widening for the replacement text still happens below, but only for the fallback
+  //    cover rectangle, which is a purely visual concern.
+  let workingBytes = src;
+  let removed: boolean[] = changes.edits.map(() => false);
+  if (changes.edits.length > 0) {
+    try {
+      const { removeTextInRects } = await import('./removeText');
+      const targets = changes.edits.map((e) => ({ page: e.page, ...removalRect(e) }));
+      const result = await removeTextInRects(src, targets);
+      workingBytes = result.bytes;
+      removed = result.removed;
+    } catch {
+      // pdfium failed to load/parse this document (e.g. wasm fetch failure, an encrypted
+      // or malformed PDF) — fall back to cover-and-redraw for every edit, unchanged from
+      // before this feature existed.
+    }
+  }
+
+  const doc = await loadPdf(workingBytes);
   // @pdf-lib/fontkit's default export shape doesn't line up 1:1 with pdf-lib's
   // `Fontkit` interface type declarations across versions; the runtime shape is correct.
   doc.registerFontkit(fontkitModule.default as unknown as Parameters<typeof doc.registerFontkit>[0]);
@@ -40,17 +80,20 @@ export async function exportEditedPdf(
 
   // 1. Text edits and new boxes — content-space coordinates, so they must be drawn
   //    before rotation/resize transforms.
-  for (const e of changes.edits) {
+  for (const [i, e] of changes.edits.entries()) {
     const page = doc.getPage(e.page);
     const f = await font(e.fontClass);
-    // Cover the original glyphs: from below the baseline (descender) to above the ascender.
-    page.drawRectangle({
-      x: e.x - COVER_PAD,
-      y: e.y - e.fontSize * 0.25 - COVER_PAD,
-      width: Math.max(e.width, f.widthOfTextAtSize(e.text, e.fontSize)) + COVER_PAD * 2,
-      height: e.fontSize * 1.25 + COVER_PAD * 2,
-      color: rgb(e.cover.r, e.cover.g, e.cover.b),
-    });
+    if (!removed[i]) {
+      // Original text wasn't cleanly removed — cover it like before, widened to fit
+      // a longer replacement.
+      page.drawRectangle({
+        x: e.x - COVER_PAD,
+        y: e.y - e.fontSize * 0.25 - COVER_PAD,
+        width: Math.max(e.width, f.widthOfTextAtSize(e.text, e.fontSize)) + COVER_PAD * 2,
+        height: e.fontSize * 1.25 + COVER_PAD * 2,
+        color: rgb(e.cover.r, e.cover.g, e.cover.b),
+      });
+    }
     if (e.text.trim() !== '') {
       page.drawText(e.text, { x: e.x, y: e.y, size: e.fontSize, font: f, color: rgb(0, 0, 0) });
     }
@@ -92,5 +135,6 @@ export async function exportEditedPdf(
     }
   }
 
-  return doc.save();
+  const fallbackCount = removed.filter((r) => !r).length;
+  return { bytes: await doc.save(), fallbackCount };
 }

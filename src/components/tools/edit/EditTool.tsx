@@ -24,6 +24,7 @@ export default function EditTool() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Uint8Array | null>(null);
+  const [fallbackCount, setFallbackCount] = useState(0);
   const session = useRef(new EditSession());
   const docRef = useRef<PDFDocumentProxy | null>(null);
 
@@ -59,6 +60,7 @@ export default function EditTool() {
       setAddTextMode(false);
       setResizeValue('none');
       setResult(null);
+      setFallbackCount(0);
     } catch {
       setError('Could not open this PDF. It may be corrupt or password-protected (see /unlock-pdf).');
     }
@@ -79,6 +81,7 @@ export default function EditTool() {
     setExporting(false);
     setError(null);
     setResult(null);
+    setFallbackCount(0);
   }
 
   function onResizeChange(value: string) {
@@ -92,12 +95,14 @@ export default function EditTool() {
     setExporting(true); setError(null);
     try {
       const { exportEditedPdf } = await import('../../../lib/pdf/edit/export');
-      setResult(await exportEditedPdf(srcBytes, {
+      const { bytes, fallbackCount: n } = await exportEditedPdf(srcBytes, {
         edits: session.current.edits,
         boxes: session.current.boxes,
         rotations: session.current.rotations,
         resize: session.current.resize,
-      }, fetchFont));
+      }, fetchFont);
+      setResult(bytes);
+      setFallbackCount(n);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed — your edits are still here, try again.');
     } finally {
@@ -115,7 +120,17 @@ export default function EditTool() {
             onClear={clear} />
           {exporting && <div className="mb-4"><ProgressBar value={null} /></div>}
           {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
-          {result && <div className="mb-6"><DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." /></div>}
+          {result && (
+            <div className="mb-6">
+              <DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." />
+              {fallbackCount > 0 && (
+                <p className="mt-2 text-center text-xs text-muted">
+                  {fallbackCount} edit{fallbackCount === 1 ? '' : 's'} used background-cover fallback
+                  (original text couldn't be cleanly removed).
+                </p>
+              )}
+            </div>
+          )}
           <div className="overflow-x-auto rounded-xl bg-surface p-4">
             {Array.from({ length: doc.numPages }, (_, i) => (
               <PageEditor key={i} doc={doc} pageIndex={i} session={session.current}
@@ -123,9 +138,10 @@ export default function EditTool() {
             ))}
           </div>
           <p className="mt-4 text-xs text-muted">
-            How editing works: your change covers the original text and redraws it with a matched font
-            (Liberation fonts are metric-compatible with Arial, Times, and Courier). Surrounding text does not
-            reflow, and covers assume a solid background.
+            How editing works: the original text is genuinely removed from the PDF, and your replacement is drawn
+            in a matched font (Liberation fonts are metric-compatible with Arial, Times, and Courier). Surrounding
+            text does not reflow. In the rare case the original can't be cleanly removed (scanned pages, unusual
+            PDF structure), we fall back to covering it with a solid rectangle instead — and flag that after export.
           </p>
         </>
       )}
