@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -22,7 +21,10 @@ export default function WatermarkTool() {
   const [file, setFile] = useState<{ name: string; bytes: Uint8Array } | null>(null);
   const [action, setAction] = useState<Action>('text');
   const [text, setText] = useState('CONFIDENTIAL');
-  const [onTop, setOnTop] = useState(false); // false = watermark (behind), true = stamp (on top)
+  // Default to stamp (on top): most real-world PDFs (scans, generated docs) paint
+  // an opaque background over the whole page, making behind-content watermarks
+  // invisible. Users opt into classic behind-content placement explicitly.
+  const [onTop, setOnTop] = useState(true); // false = watermark (behind), true = stamp (on top)
   const [opacity, setOpacity] = useState(0.4);
   const [rotation, setRotation] = useState(45);
   const [fontSize, setFontSize] = useState(48);
@@ -168,13 +170,26 @@ export default function WatermarkTool() {
                     onValueChange={([v]) => { setRotation(v); resetIfDone(); }}
                   />
                 </div>
-                <Label className="flex items-center gap-2 text-sm font-normal">
-                  <Checkbox
-                    checked={onTop}
-                    onCheckedChange={(checked) => { setOnTop(checked === true); resetIfDone(); }}
-                  />
-                  Stamp (draw on top of content)
-                </Label>
+              </div>
+              <div className="space-y-2">
+                <Label>Placement</Label>
+                <RadioGroup
+                  value={onTop ? 'stamp' : 'watermark'}
+                  onValueChange={(v) => { setOnTop(v === 'stamp'); resetIfDone(); }}
+                  className="flex flex-col gap-2"
+                >
+                  <Label className="flex items-start gap-2 text-sm font-normal">
+                    <RadioGroupItem value="stamp" className="mt-0.5" />
+                    <span>On top of content (stamp) — always visible</span>
+                  </Label>
+                  <Label className="flex items-start gap-2 text-sm font-normal">
+                    <RadioGroupItem value="watermark" className="mt-0.5" />
+                    <span>
+                      Behind content (classic watermark) — invisible on PDFs with opaque
+                      backgrounds, such as scans and many generated documents
+                    </span>
+                  </Label>
+                </RadioGroup>
               </div>
             </div>
           )}
