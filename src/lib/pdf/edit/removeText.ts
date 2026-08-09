@@ -25,10 +25,12 @@ export interface RemoveTextOptions {
 interface Rect { left: number; bottom: number; right: number; top: number }
 
 /** A glyph must have at least this fraction of its own bounding-box area inside the
- *  target rect to count as "covered". On its own this is NOT enough to keep a same-line
- *  neighbor safe: a narrow glyph (i, l, 1, |) has so little bounding-box area that even a
- *  small rect overrun past the edited item's true edge can exceed this fraction of the
- *  neighbor's own tiny bbox. See CENTER check below, which is what actually prevents that. */
+ *  target rect to count as "covered". At 0.5 with the tight REMOVAL_EPS query rect this
+ *  is what keeps same-line neighbors safe (the old 1pt COVER_PAD overrun was enough to
+ *  cross this fraction of a narrow glyph's tiny bbox — i, l, 1, |). The CENTER check
+ *  below is mathematically redundant at threshold 0.5 (≥50% coverage of a box implies
+ *  containing its midpoint) and exists as defense-in-depth should the threshold ever
+ *  drop below 0.5. */
 const COVERAGE_THRESHOLD = 0.5;
 
 /**
