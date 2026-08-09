@@ -30,7 +30,7 @@ Practically, this means you might see a signature reported as "integrity intact,
 On the [validate PDF signature tool](/validate-pdf-signature):
 
 1. Drop your signed PDF into the upload box, or click it to browse your device.
-2. The tool reports whether the signed content's integrity is intact, along with available signer evidence embedded in the signature.
+2. The tool reports a clear verdict — valid, not valid, or found-but-not-fully-verifiable — along with who signed it, which authority issued their certificate, when it was signed, the certificate's validity window, and whether the document changed since signing.
 3. If needed, use the remove-signature option to strip the signature object — this doesn't alter the page content, it simply removes the signature, leaving a document that's no longer signed.
 
 ## Why local checking matters for signed documents specifically

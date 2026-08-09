@@ -25,6 +25,8 @@ On the [watermark PDF tool](/watermark-pdf):
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Choose **Add text** or **Add image**, and enter or upload what you want stamped onto the pages.
 3. Adjust opacity, rotation, and size — low opacity for a subtle watermark, high opacity for a bold stamp.
+
+One limitation worth knowing: text watermarks use a built-in font that covers letters, numbers, and Western European accents. For other scripts (Chinese, Arabic, Hindi and so on) or symbols like emoji, the tool will tell you rather than produce a blank watermark — add your text as an image instead, which works for any script.
 4. Click the action button and download the result.
 
 Everything runs locally, entirely inside your browser — the PDF you're marking never gets uploaded anywhere to have text or an image drawn onto it.
