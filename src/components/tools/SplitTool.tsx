@@ -54,6 +54,16 @@ export default function SplitTool() {
     }
   }
 
+  function clear() {
+    setLoaded(null);
+    setSelected(new Set());
+    setRangeText('');
+    setMode('extract');
+    setPhase('idle');
+    setError(null);
+    setResult(null);
+  }
+
   function toggle(i: number) {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -107,6 +117,12 @@ export default function SplitTool() {
       {phase === 'working' && !loaded && <ProgressBar value={null} />}
       {loaded && (
         <>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{loaded.name}.pdf</p>
+            <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+              Start over
+            </Button>
+          </div>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
             {loaded.thumbs.map((src, i) => (
               <button

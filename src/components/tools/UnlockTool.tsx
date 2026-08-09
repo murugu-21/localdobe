@@ -24,6 +24,14 @@ export default function UnlockTool() {
     setPhase('idle'); setResult(null); setError(null);
   }
 
+  function clear() {
+    setFile(null);
+    setPassword('');
+    setPhase('idle');
+    setError(null);
+    setResult(null);
+  }
+
   async function run() {
     if (!file) return;
     setPhase('working'); setError(null);
@@ -44,7 +52,12 @@ export default function UnlockTool() {
       {!file && <FileDropzone label="Choose a password-protected PDF" onFiles={onFile} />}
       {file && (
         <>
-          <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+            <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+              Start over
+            </Button>
+          </div>
           <div className="space-y-1">
             <Label htmlFor="unlock-password">Password</Label>
             <Input

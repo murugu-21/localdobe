@@ -25,6 +25,15 @@ export default function ProtectTool() {
     setPhase('idle'); setResult(null); setError(null);
   }
 
+  function clear() {
+    setFile(null);
+    setPassword('');
+    setConfirm('');
+    setPhase('idle');
+    setError(null);
+    setResult(null);
+  }
+
   async function run() {
     if (!file) return;
     if (password.length < 4) { setError('Password must be at least 4 characters.'); setPhase('error'); return; }
@@ -45,7 +54,12 @@ export default function ProtectTool() {
       {!file && <FileDropzone label="Choose a PDF to protect" onFiles={onFile} />}
       {file && (
         <>
-          <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+            <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+              Start over
+            </Button>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
               <Label htmlFor="protect-password">Password</Label>

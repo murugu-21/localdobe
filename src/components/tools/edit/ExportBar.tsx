@@ -20,9 +20,10 @@ interface Props {
   onToggleAddText: () => void;
   onResizeChange: (value: string) => void;
   onExport: () => void;
+  onClear: () => void;
 }
 
-export function ExportBar({ dirty, exporting, addTextMode, resizeValue, onToggleAddText, onResizeChange, onExport }: Props) {
+export function ExportBar({ dirty, exporting, addTextMode, resizeValue, onToggleAddText, onResizeChange, onExport, onClear }: Props) {
   return (
     <div className="sticky top-0 z-10 mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur">
       <Button
@@ -47,6 +48,9 @@ export function ExportBar({ dirty, exporting, addTextMode, resizeValue, onToggle
         </Select>
       </label>
       <p className="flex-1 text-xs text-muted">Click any text to edit it in place. Rotate pages with the ⟲ ⟳ buttons on each page.</p>
+      <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={onClear} disabled={exporting}>
+        Start over
+      </Button>
       <Button type="button" data-testid="run-tool" onClick={onExport} disabled={!dirty || exporting} size="lg">
         {exporting ? 'Exporting…' : 'Export PDF'}
       </Button>

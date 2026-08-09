@@ -28,6 +28,15 @@ export default function CompressTool() {
     setPhase('idle'); setOut(null); setError(null); setStatus('');
   }
 
+  function clear() {
+    setFile(null);
+    setPreset('medium');
+    setPhase('idle');
+    setStatus('');
+    setError(null);
+    setOut(null);
+  }
+
   async function run() {
     if (!file) return;
     setPhase('working'); setError(null);
@@ -49,7 +58,12 @@ export default function CompressTool() {
       {!file && <FileDropzone label="Choose a PDF to compress" onFiles={onFile} />}
       {file && (
         <>
-          <p className="text-sm text-muted-foreground">{file.name}.pdf — {formatBytes(file.bytes.length)}</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{file.name}.pdf — {formatBytes(file.bytes.length)}</p>
+            <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+              Start over
+            </Button>
+          </div>
           <div className="grid grid-cols-3 gap-3">
             {PRESETS.map((p) => (
               <button

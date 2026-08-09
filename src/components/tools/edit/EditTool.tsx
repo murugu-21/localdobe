@@ -64,6 +64,23 @@ export default function EditTool() {
     }
   }
 
+  function clear() {
+    if (docRef.current) {
+      const previous = docRef.current;
+      void import('../../../lib/pdf/render').then(({ closePdf }) => closePdf(previous)).catch(() => {});
+    }
+    setDoc(null);
+    setSrcBytes(null);
+    setName('document');
+    session.current = new EditSession();
+    setDirty(false);
+    setAddTextMode(false);
+    setResizeValue('none');
+    setExporting(false);
+    setError(null);
+    setResult(null);
+  }
+
   function onResizeChange(value: string) {
     setResizeValue(value);
     session.current.resize = RESIZE_OPTIONS.find((o) => o.value === value)?.spec ?? null;
@@ -94,7 +111,8 @@ export default function EditTool() {
       {doc && (
         <>
           <ExportBar dirty={dirty} exporting={exporting} addTextMode={addTextMode} resizeValue={resizeValue}
-            onToggleAddText={() => setAddTextMode((m) => !m)} onResizeChange={onResizeChange} onExport={exportPdf} />
+            onToggleAddText={() => setAddTextMode((m) => !m)} onResizeChange={onResizeChange} onExport={exportPdf}
+            onClear={clear} />
           {exporting && <div className="mb-4"><ProgressBar value={null} /></div>}
           {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
           {result && <div className="mb-6"><DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." /></div>}

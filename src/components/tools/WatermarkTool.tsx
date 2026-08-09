@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,10 +30,12 @@ export default function WatermarkTool() {
   const [fontSize, setFontSize] = useState(48);
   const [colorHex, setColorHex] = useState('#808080');
   const [image, setImage] = useState<Uint8Array | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
   const [imageScale, setImageScale] = useState(0.5);
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Uint8Array | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   function resetIfDone() {
     if (phase === 'done') { setPhase('idle'); setResult(null); }
@@ -42,6 +44,23 @@ export default function WatermarkTool() {
   async function onFile([f]: File[]) {
     setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes: new Uint8Array(await f.arrayBuffer()) });
     setPhase('idle'); setResult(null); setError(null);
+  }
+
+  function clear() {
+    setFile(null);
+    setAction('text');
+    setText('CONFIDENTIAL');
+    setOnTop(true);
+    setOpacity(0.4);
+    setRotation(45);
+    setFontSize(48);
+    setColorHex('#808080');
+    setImage(null);
+    setImageName(null);
+    setImageScale(0.5);
+    setPhase('idle');
+    setError(null);
+    setResult(null);
   }
 
   async function run() {
@@ -73,7 +92,12 @@ export default function WatermarkTool() {
       {!file && <FileDropzone label="Choose a PDF" onFiles={onFile} />}
       {file && (
         <>
-          <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+            <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+              Start over
+            </Button>
+          </div>
           <RadioGroup
             value={action}
             onValueChange={(v) => { setAction(v as Action); resetIfDone(); }}
@@ -125,14 +149,27 @@ export default function WatermarkTool() {
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <Label htmlFor="wm-image">Image (PNG or JPG)</Label>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => imageInputRef.current?.click()}
+                      >
+                        Choose image…
+                      </Button>
+                      {imageName && <span className="truncate text-sm text-muted-foreground">{imageName}</span>}
+                    </div>
                     <input
                       id="wm-image"
+                      ref={imageInputRef}
+                      data-testid="wm-image-input"
                       type="file"
                       accept="image/png,image/jpeg"
-                      className="mt-1 block text-sm"
+                      className="hidden"
                       onChange={async (e) => {
                         const f = e.target.files?.[0];
                         setImage(f ? new Uint8Array(await f.arrayBuffer()) : null);
+                        setImageName(f ? f.name : null);
                         resetIfDone();
                       }}
                     />

@@ -38,6 +38,15 @@ export default function SignatureTool() {
     }
   }
 
+  function clear() {
+    setFile(null);
+    setPhase('idle');
+    setReport(null);
+    setRemoving(false);
+    setRemoved(null);
+    setError(null);
+  }
+
   async function remove() {
     if (!file) return;
     setRemoving(true); setError(null);
@@ -54,6 +63,14 @@ export default function SignatureTool() {
   return (
     <div className="space-y-6">
       {!file && <FileDropzone label="Choose a PDF to inspect" onFiles={onFile} />}
+      {file && (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+          <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
+            Start over
+          </Button>
+        </div>
+      )}
       {phase === 'working' && <ProgressBar value={null} />}
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       {phase === 'done' && report && (

@@ -38,6 +38,13 @@ export default function MergeTool() {
     setResult(null);
   }
 
+  function clearAll() {
+    setEntries([]);
+    setPhase('idle');
+    setResult(null);
+    setError(null);
+  }
+
   async function merge() {
     setPhase('working');
     setError(null);
@@ -57,6 +64,19 @@ export default function MergeTool() {
   return (
     <div className="space-y-6">
       <FileDropzone multiple label="Choose PDFs to merge" onFiles={addFiles} />
+      {entries.length > 0 && (
+        <div className="flex items-center justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            data-testid="clear-file"
+            onClick={clearAll}
+          >
+            Clear all
+          </Button>
+        </div>
+      )}
       {entries.length > 0 && (
         <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
           {entries.map((e, i) => (
