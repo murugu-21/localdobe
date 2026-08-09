@@ -39,6 +39,66 @@ async function extractText(bytes: Uint8Array): Promise<string> {
   return (await extractPageTexts(bytes)).join(' ');
 }
 
+/**
+ * Draws `word` as one PDFium TEXT object PER CHARACTER, at advancing x positions — the
+ * dominant real-world text representation per the feasibility spike (print-to-PDF output
+ * stores one text object per glyph, not per word/line). Returns the x just past the word,
+ * so a caller can chain a second per-glyph word onto the same line.
+ */
+function drawPerGlyphWord(
+  page: import('pdf-lib').PDFPage,
+  font: import('pdf-lib').PDFFont,
+  word: string,
+  x: number,
+  y: number,
+  size: number,
+): number {
+  let cx = x;
+  for (const ch of word) {
+    page.drawText(ch, { x: cx, y, size, font });
+    cx += font.widthOfTextAtSize(ch, size);
+  }
+  return cx;
+}
+
+/**
+ * "Hello" then "iiii" on the same line, each character its own drawText call/PDFium TEXT
+ * object — the layout that reproduces the reported neighbor-eating bug. Empirically
+ * verified (see task report) that a *single*-object "iiii" run is never adversarial enough
+ * at realistic mismatch sizes to cross the 50%-coverage threshold (its own bounding box is
+ * simply too wide relative to a few points of overrun) — the failure mode is specific to
+ * *narrow, per-glyph* objects, exactly as the review's "i, l, 1, |" callout says. With this
+ * exact geometry (2pt inter-word gap, 3pt width mismatch): the pre-fix predicate
+ * (COVER_PAD=1 reused for the removal rect, no center check) incorrectly matches the first
+ * "i" glyph; the fixed predicate (REMOVAL_EPS=0.5) does not.
+ */
+async function makeTwoRunSameLineFixture(): Promise<{ src: Uint8Array; x: number; y: number; size: number; helloWidth: number }> {
+  const { PDFDocument, StandardFonts } = await import('pdf-lib');
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const page = doc.addPage([400, 150]);
+  const x = 72, y = 100, size = 14;
+  const helloEndX = drawPerGlyphWord(page, font, 'Hello', x, y, size);
+  const gap = 2; // a tight, but realistic, inter-word gap
+  drawPerGlyphWord(page, font, 'iiii', helloEndX + gap, y, size);
+  return { src: await doc.save(), x, y, size, helloWidth: helloEndX - x };
+}
+
+/** Two per-glyph words ("Hello" then "World", space-separated) on one line — edit the
+ *  first word's whole span and confirm every one of its glyph objects is removed while
+ *  every one of the neighboring word's glyph objects survives untouched. */
+async function makePerGlyphTwoWordFixture(): Promise<{ src: Uint8Array; x: number; y: number; size: number; helloWidth: number }> {
+  const { PDFDocument, StandardFonts } = await import('pdf-lib');
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  const page = doc.addPage([400, 150]);
+  const x = 72, y = 100, size = 14;
+  const helloEndX = drawPerGlyphWord(page, font, 'Hello', x, y, size);
+  const spaceWidth = font.widthOfTextAtSize(' ', size);
+  drawPerGlyphWord(page, font, 'World', helloEndX + spaceWidth, y, size);
+  return { src: await doc.save(), x, y, size, helloWidth: helloEndX - x };
+}
+
 describe('EditSession', () => {
   test('reverting an edit back to original removes it', () => {
     const s = new EditSession();
@@ -114,6 +174,10 @@ describe('exportEditedPdf', () => {
       const text = await extractText(bytes);
       expect(text).toContain('Goodbye');
       expect(text).not.toContain('Hello World');
+      // Guard against partial removal slipping through a full-string check: neither half
+      // of the original should survive on its own either.
+      expect(text).not.toContain('Hello');
+      expect(text).not.toContain('World');
       expect(fallbackCount).toBe(0);
     });
 
@@ -122,6 +186,8 @@ describe('exportEditedPdf', () => {
       const { bytes, fallbackCount } = await exportEditedPdf(src, { ...noChanges, edits: [edit('')] }, fetchFont);
       const text = await extractText(bytes);
       expect(text).not.toContain('Hello World');
+      expect(text).not.toContain('Hello');
+      expect(text).not.toContain('World');
       expect(text.trim()).toBe('');
       expect(fallbackCount).toBe(0);
     });
@@ -134,6 +200,40 @@ describe('exportEditedPdf', () => {
       expect(text).toContain('Hello World'); // never removed — nothing there to match the far-away rect
       expect(text).toContain('Replaced');
       expect(fallbackCount).toBe(1);
+    });
+
+    test('neighbor safety: a metric-width mismatch does not eat the adjacent run on the same line', async () => {
+      const { src, x, y, size, helloWidth } = await makeTwoRunSameLineFixture();
+      // Simulates pdf.js's metric-derived item width disagreeing with PDFium's own
+      // (tighter) ink bounds by a few points — exactly the discrepancy that, before the
+      // REMOVAL_EPS + center-check fix, let the removal rect's overrun cross the
+      // coverage threshold against the narrow neighboring "iiii" run.
+      const mismatchedEdit: TextEdit = {
+        page: 0, itemKey: '0:0', original: 'Hello', text: 'Goodbye',
+        x, y, width: helloWidth + 3, height: size, fontSize: size,
+        fontClass: 'sans', cover: { r: 1, g: 1, b: 1 },
+      };
+      const { bytes, fallbackCount } = await exportEditedPdf(src, { ...noChanges, edits: [mismatchedEdit] }, fetchFont);
+      const text = await extractText(bytes);
+      expect(text).toContain('Goodbye');
+      expect(text).toContain('iiii'); // the neighboring run must survive untouched
+      expect(text).not.toContain('Hello');
+      expect(fallbackCount).toBe(0);
+    });
+
+    test('per-glyph text (dominant real-world case): editing a whole word removes every glyph object, neighbor word survives', async () => {
+      const { src, x, y, size, helloWidth } = await makePerGlyphTwoWordFixture();
+      const e: TextEdit = {
+        page: 0, itemKey: '0:0', original: 'Hello', text: 'Goodbye',
+        x, y, width: helloWidth, height: size, fontSize: size,
+        fontClass: 'sans', cover: { r: 1, g: 1, b: 1 },
+      };
+      const { bytes, fallbackCount } = await exportEditedPdf(src, { ...noChanges, edits: [e] }, fetchFont);
+      const text = await extractText(bytes);
+      expect(text).toContain('Goodbye');
+      expect(text).toContain('World'); // every one of the neighbor's glyph objects survives
+      expect(text).not.toContain('Hello'); // every one of "Hello"'s glyph objects was removed
+      expect(fallbackCount).toBe(0);
     });
   });
 });

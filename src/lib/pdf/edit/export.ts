@@ -16,13 +16,16 @@ export interface ExportChanges {
   resize: ResizeSpec | null;
 }
 
-/** Original-glyph footprint for a text edit — the region PDFium is asked to clear. */
-function removalRect(e: TextEdit) {
+/** Original-glyph footprint for a text edit — the region PDFium is asked to clear. `eps` is
+ *  `removeText.ts`'s REMOVAL_EPS (a few tenths of a point), deliberately NOT the much wider
+ *  COVER_PAD used for the visual fallback cover box below — a wide removal-query rect was
+ *  empirically shown to eat an entire neighboring word on the same line (see removeText.ts). */
+function removalRect(e: TextEdit, eps: number) {
   return {
-    x: e.x - COVER_PAD,
-    y: e.y - e.fontSize * 0.25 - COVER_PAD,
-    width: e.width + COVER_PAD * 2,
-    height: e.fontSize * 1.25 + COVER_PAD * 2,
+    x: e.x - eps,
+    y: e.y - e.fontSize * 0.25 - eps,
+    width: e.width + eps * 2,
+    height: e.fontSize * 1.25 + eps * 2,
   };
 }
 
@@ -51,8 +54,8 @@ export async function exportEditedPdf(
   let removed: boolean[] = changes.edits.map(() => false);
   if (changes.edits.length > 0) {
     try {
-      const { removeTextInRects } = await import('./removeText');
-      const targets = changes.edits.map((e) => ({ page: e.page, ...removalRect(e) }));
+      const { removeTextInRects, REMOVAL_EPS } = await import('./removeText');
+      const targets = changes.edits.map((e) => ({ page: e.page, ...removalRect(e, REMOVAL_EPS) }));
       const result = await removeTextInRects(src, targets);
       workingBytes = result.bytes;
       removed = result.removed;
