@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import './go/wasm_exec.js';
+import { expiryReplayTimes, mergeExpiryReplay } from '../lib/pdf/signingTimeAssessment';
 
 type ByteResult = { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 type ReportResult = { ok: true; report: string } | { ok: false; error: string };
@@ -122,6 +123,49 @@ function installTrustFile(): Promise<void> {
   return trustReady;
 }
 
+// Runs fn with the wall clock frozen at atMs. Go's js/wasm runtime.walltime reads
+// `new Date()` live on every time.Now(), so a synchronous wasm call inside fn sees
+// the frozen clock — and nothing else can, since the worker is single-threaded and
+// the clock is restored before this returns.
+function withFrozenClock<T>(atMs: number, fn: () => T): T {
+  const RealDate = Date;
+  const FakeDate = function (this: unknown, ...args: unknown[]) {
+    if (args.length > 0) return new (RealDate as any)(...args);
+    return new RealDate(atMs);
+  } as unknown as DateConstructor;
+  FakeDate.now = () => atMs;
+  FakeDate.parse = RealDate.parse;
+  FakeDate.UTC = RealDate.UTC;
+  FakeDate.prototype = RealDate.prototype;
+  (globalThis as { Date: DateConstructor }).Date = FakeDate;
+  try {
+    return fn();
+  } finally {
+    (globalThis as { Date: DateConstructor }).Date = RealDate;
+  }
+}
+
+// pdfcpu assesses certificate chains at the current time; Acrobat's default
+// assesses at the signing time, so a certificate that lapsed AFTER signing shows
+// valid there but "expired" here. For entries that failed only on expiry, replay
+// the validation with the clock frozen at their signing time and merge the
+// replay in when it clears the expiry (see signingTimeAssessment.ts).
+function withSigningTimeExpiryReplay(input: Uint8Array, reportJson: string): string {
+  try {
+    const report = JSON.parse(reportJson) as Parameters<typeof expiryReplayTimes>[0];
+    const times = expiryReplayTimes(report);
+    let merged = 0;
+    for (const atMs of times) {
+      const replay = withFrozenClock(atMs, () => globalThis.__pdfcpuValidateSignatures(input));
+      if (!replay.ok) continue;
+      merged += mergeExpiryReplay(report, JSON.parse(replay.report), atMs);
+    }
+    return merged > 0 ? JSON.stringify(report) : reportJson;
+  } catch {
+    return reportJson; // replay is best-effort — never break the primary report
+  }
+}
+
 let wasmReady: Promise<void> | null = null;
 
 function init(): Promise<void> {
@@ -155,7 +199,7 @@ self.onmessage = async (e: MessageEvent<Request>) => {
       await installTrustFile();
       const res = globalThis.__pdfcpuValidateSignatures(input);
       if (!res.ok) throw new Error(res.error);
-      post({ id, ok: true, report: res.report });
+      post({ id, ok: true, report: withSigningTimeExpiryReplay(input, res.report) });
       return;
     }
     const res =

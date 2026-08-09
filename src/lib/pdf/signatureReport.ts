@@ -89,7 +89,14 @@ export function parseSignatureReport(json: string): SignatureReport[] {
     // situation as a valid signature with a revocation caveat. We do the same —
     // the caveat stays visible in the notes below.
     if (status === 'unknown' && reason === 4096) status = 'valid';
+
+    // Set by the worker when the chain only verified with the clock at the signing
+    // time (certificate lapsed after signing) — Acrobat's default semantics.
+    const assessedAtSigningTime = raw.__assessedAtSigningTime === true;
     const notes = REASON_NOTES.filter(([bit]) => reason & bit).map(([, note]) => note);
+    if (assessedAtSigningTime) {
+      notes.unshift('The signer’s certificate has expired since this document was signed. It was valid at the time of signing, so the signature is assessed at that moment — the same way Adobe Acrobat does.');
+    }
     for (const p of Array.isArray(raw.Problems) ? raw.Problems : []) {
       if (typeof p !== 'string' || p.trim() === '') continue;
       if (DROP_PROBLEMS.some((re) => re.test(p))) continue;
@@ -103,7 +110,10 @@ export function parseSignatureReport(json: string): SignatureReport[] {
       signedAt: fmtDate(str(details.SigningTime)),
       certValidFrom: fmtDate(str(leaf?.ValidFrom as string)),
       certValidUntil: fmtDate(str(leaf?.ValidThru as string)),
-      certExpired: leaf?.Expired === true,
+      // Computed against the real current date, not the engine's flag — replayed
+      // entries were assessed with the clock at signing time, where Expired=false.
+      certExpired: leaf?.Expired === true ||
+        (typeof leaf?.ValidThru === 'string' && new Date(leaf.ValidThru).valueOf() < Date.now()),
       docChanges: tristate(raw.DocModified),
       fieldName: str(details.FieldName) ?? '',
       pageNr: typeof raw.PageNr === 'number' && raw.PageNr > 0 ? raw.PageNr : null,

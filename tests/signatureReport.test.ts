@@ -105,3 +105,20 @@ test('revocation bit combined with a real problem stays unknown', () => {
   const [r] = parseSignatureReport(JSON.stringify([entry({ Status: 1, Reason: 4096 | 128 })]));
   expect(r.status).toBe('unknown');
 });
+
+test('signing-time-assessed entries get the Acrobat-parity note and stay honest about expiry', () => {
+  const [r] = parseSignatureReport(JSON.stringify([{
+    ...entry({ Status: 1, Reason: 4096 }),
+    __assessedAtSigningTime: true,
+  }]));
+  expect(r.status).toBe('valid'); // revocation-only after replay
+  expect(r.notes[0]).toMatch(/valid at the time of signing/i);
+});
+
+test('certExpired is computed from ValidThru against the real clock', () => {
+  const e = entry({ Status: 1, Reason: 4096 });
+  (e.Details.Signers[0].Certificate as Record<string, unknown>).ValidThru = '2020-01-01T00:00:00Z';
+  (e.Details.Signers[0].Certificate as Record<string, unknown>).Expired = false;
+  const [r] = parseSignatureReport(JSON.stringify([e]));
+  expect(r.certExpired).toBe(true);
+});
