@@ -46,7 +46,7 @@ export function FileDropzone({ multiple = false, label, onFiles }: Props) {
         onDrop={onDrop}
         className={cn(
           'block w-full cursor-pointer rounded-2xl border-2 border-dashed px-6 py-14 text-center transition',
-          dragOver ? 'border-primary bg-primary/5' : 'border-border bg-muted/40 hover:border-primary',
+          dragOver ? 'border-primary bg-primary/5' : 'border-border bg-panel/40 hover:border-primary',
         )}
       >
         <span className="block text-lg font-semibold">{label}</span>

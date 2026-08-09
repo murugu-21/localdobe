@@ -7,6 +7,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  /* Brand accent (used across the site for text-accent/border-accent/etc). Named
+     `menu-accent` below (not `accent`) so shadcn's own accent semantic token
+     (light hover-highlight used by select.tsx) can't shadow this value. */
   --color-accent: #2563eb;
   --color-accent-dark: #1d4ed8;
   --color-ink: #0f172a;
@@ -34,10 +37,14 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
+  --color-menu-accent-foreground: var(--accent-foreground);
+  --color-menu-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
+  /* NOT --color-muted: it would shadow the brand `--color-muted` (#64748b,
+     used site-wide for muted TEXT) with this near-white value, which is meant
+     as a subtle BACKGROUND fill. Exposed as `panel` instead — see bg-panel
+     usages in components/ui (button/progress/slider/card). */
+  --color-panel: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);

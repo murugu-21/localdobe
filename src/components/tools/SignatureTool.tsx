@@ -59,7 +59,7 @@ export default function SignatureTool() {
       {phase === 'done' && report && (
         <>
           {report.length === 0 && (
-            <p data-testid="sig-report" className="rounded-xl border border-border bg-muted/40 p-5 text-sm">
+            <p data-testid="sig-report" className="rounded-xl border border-border bg-panel/40 p-5 text-sm">
               No digital signatures found in this PDF.
             </p>
           )}

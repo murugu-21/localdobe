@@ -53,10 +53,11 @@ export async function extractPageTexts(bytes: Uint8Array): Promise<string[]> {
     const content = await (await doc.getPage(i)).getTextContent();
     out.push(content.items.map((it: any) => ('str' in it ? it.str : '')).join(''));
   }
-  // @ts-ignore destroy may not be typed but is available at runtime
-  if (typeof doc.destroy === 'function') {
+  // pdfjs v6 removed PDFDocumentProxy#destroy(); destroy via the loading task instead.
+  // @ts-ignore loadingTask may not be typed but is available at runtime
+  if (typeof doc.loadingTask?.destroy === 'function') {
     // @ts-ignore
-    await doc.destroy();
+    await doc.loadingTask.destroy();
   }
   return out;
 }
