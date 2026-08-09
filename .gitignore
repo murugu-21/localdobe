@@ -26,3 +26,11 @@ pnpm-debug.log*
 # claude / superpowers
 .claude/
 .superpowers/
+
+# playwright e2e
+e2e/.fixtures/
+playwright-report/
+test-results/
+
+# wrangler
+.wrangler/
