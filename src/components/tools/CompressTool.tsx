@@ -103,7 +103,7 @@ export default function CompressTool() {
           )}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && out && file && (smaller ? (
         <DownloadResult
           filename={`${file.name}-compressed.pdf`}

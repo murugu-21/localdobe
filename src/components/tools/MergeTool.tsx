@@ -78,14 +78,14 @@ export default function MergeTool() {
         </div>
       )}
       {entries.length > 0 && (
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+        <ul className="divide-y divide-border rounded-xl border border-border">
           {entries.map((e, i) => (
             <li key={e.id} className="flex items-center gap-3 px-4 py-3">
               <span className="w-6 text-sm text-muted">{i + 1}.</span>
               <span className="flex-1 truncate text-sm font-medium">{e.file.name}</span>
               <Button type="button" variant="ghost" size="sm" aria-label="Move up" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
               <Button type="button" variant="ghost" size="sm" aria-label="Move down" onClick={() => move(i, 1)} disabled={i === entries.length - 1}>↓</Button>
-              <Button type="button" variant="ghost" size="sm" aria-label="Remove" className="text-red-500 hover:text-red-600" onClick={() => remove(e.id)}>✕</Button>
+              <Button type="button" variant="ghost" size="sm" aria-label="Remove" className="text-destructive hover:text-destructive/80" onClick={() => remove(e.id)}>✕</Button>
             </li>
           ))}
         </ul>
@@ -103,7 +103,7 @@ export default function MergeTool() {
         </Button>
       )}
       {phase === 'working' && <ProgressBar value={null} />}
-      {phase === 'error' && error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {phase === 'error' && error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && result && <DownloadResult filename="merged.pdf" bytes={result} note="Merged entirely on your device." />}
     </div>
   );

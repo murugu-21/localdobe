@@ -85,7 +85,7 @@ export default function UnlockTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && result && file && (
         <DownloadResult filename={`${file.name}-unlocked.pdf`} bytes={result} note="Password removed, entirely on your device." />
       )}

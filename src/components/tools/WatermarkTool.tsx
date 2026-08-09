@@ -248,7 +248,7 @@ export default function WatermarkTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && result && file && (
         <DownloadResult filename={`${file.name}-${suffix}.pdf`} bytes={result} note="Processed entirely on your device." />
       )}

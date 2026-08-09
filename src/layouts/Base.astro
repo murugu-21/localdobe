@@ -15,12 +15,24 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      // Blocking (no-FOUC) theme init: an explicit user choice in localStorage wins;
+      // otherwise follow the OS/browser prefers-color-scheme. Runs before first paint —
+      // must stay `is:inline` so Astro doesn't defer/bundle it as a module.
+      (function () {
+        var stored = localStorage.getItem('theme');
+        var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+        var meta = document.getElementById('theme-color-meta');
+        if (meta) meta.setAttribute('content', dark ? '#0a0a0a' : '#2563eb');
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />
-    <meta name="theme-color" content="#2563eb" />
+    <meta id="theme-color-meta" name="theme-color" content="#2563eb" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -34,11 +46,11 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
       registerSW({ immediate: true });
     </script>
   </head>
-  <body class="bg-white text-ink antialiased">
-    <header class="border-b border-slate-100">
+  <body class="bg-background text-ink antialiased">
+    <header class="border-b border-border">
       <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <a href="/" class="text-lg font-bold tracking-tight">local<span class="text-accent">dobe</span></a>
-        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-muted">
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-muted">
           <a href="/merge-pdf" class="hover:text-ink">Merge</a>
           <a href="/split-pdf" class="hover:text-ink">Split</a>
           <a href="/compress-pdf" class="hover:text-ink">Compress</a>
@@ -48,15 +60,46 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
           <a href="/protect-pdf" class="hover:text-ink">Protect</a>
           <a href="/unlock-pdf" class="hover:text-ink">Unlock</a>
           <a href="/blog" class="hover:text-ink">Blog</a>
+          <button
+            type="button"
+            id="theme-toggle"
+            data-testid="theme-toggle"
+            aria-label="Toggle dark mode"
+            class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
+          >
+            <svg class="block dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+            </svg>
+            <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+          </button>
         </div>
       </nav>
     </header>
     <main><slot /></main>
-    <footer class="mt-24 border-t border-slate-100 py-10 text-center text-sm text-muted">
+    <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
       <p class="font-medium">No watermarks. No uploads. No signup.</p>
       <p class="mt-2">
         © 2026 localdobe · <a href="/privacy" class="underline">Privacy</a> · <a href="/about" class="underline">About</a> · <a href="/blog" class="underline">Blog</a>
       </p>
     </footer>
+    <script is:inline>
+      // Toggle click handler: placed after the button so it exists in the DOM already
+      // (no DOMContentLoaded needed) — flips the class, persists the explicit choice,
+      // and keeps the theme-color meta tag in sync.
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+          var next = !document.documentElement.classList.contains('dark');
+          document.documentElement.classList.toggle('dark', next);
+          localStorage.setItem('theme', next ? 'dark' : 'light');
+          var meta = document.getElementById('theme-color-meta');
+          if (meta) meta.setAttribute('content', next ? '#0a0a0a' : '#2563eb');
+        });
+      })();
+    </script>
   </body>
 </html>

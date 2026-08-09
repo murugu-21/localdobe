@@ -100,7 +100,7 @@ export default function ProtectTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && result && file && (
         <DownloadResult filename={`${file.name}-protected.pdf`} bytes={result} note="Encrypted with AES-256, entirely on your device." />
       )}

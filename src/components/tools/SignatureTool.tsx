@@ -72,7 +72,7 @@ export default function SignatureTool() {
         </div>
       )}
       {phase === 'working' && <ProgressBar value={null} />}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && report && (
         <>
           {report.length === 0 && (
@@ -86,7 +86,9 @@ export default function SignatureTool() {
               data-testid="sig-report"
               className={cn(
                 'rounded-xl border p-5 text-sm',
-                sig.ok ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50',
+                sig.ok
+                  ? 'border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'
+                  : 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950',
               )}
             >
               <p className="font-semibold">{sig.ok ? '✓ Signature intact' : '⚠ Signature could not be fully verified'}</p>
@@ -96,7 +98,7 @@ export default function SignatureTool() {
                 <div><dt className="inline font-medium">Coverage:</dt> <dd className="inline">{sig.coversDoc ? 'entire document' : 'a revision of the document'}</dd></div>
               </dl>
               {sig.problems.length > 0 && (
-                <ul className="mt-2 list-inside list-disc text-amber-900">
+                <ul className="mt-2 list-inside list-disc text-amber-900 dark:text-amber-200">
                   {sig.problems.map((p, j) => <li key={j}>{p}</li>)}
                 </ul>
               )}
@@ -114,7 +116,7 @@ export default function SignatureTool() {
               disabled={removing}
               variant="outline"
               size="lg"
-              className="w-full border-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-600"
+              className="w-full border-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               {removing ? 'Removing…' : 'Remove all signatures'}
             </Button>

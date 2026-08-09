@@ -114,7 +114,7 @@ export default function EditTool() {
             onToggleAddText={() => setAddTextMode((m) => !m)} onResizeChange={onResizeChange} onExport={exportPdf}
             onClear={clear} />
           {exporting && <div className="mb-4"><ProgressBar value={null} /></div>}
-          {error && <p role="alert" className="mb-4 text-sm text-red-600">{error}</p>}
+          {error && <p role="alert" className="mb-4 text-sm text-destructive">{error}</p>}
           {result && <div className="mb-6"><DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." /></div>}
           <div className="overflow-x-auto rounded-xl bg-surface p-4">
             {Array.from({ length: doc.numPages }, (_, i) => (

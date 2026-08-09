@@ -25,7 +25,7 @@ interface Props {
 
 export function ExportBar({ dirty, exporting, addTextMode, resizeValue, onToggleAddText, onResizeChange, onExport, onClear }: Props) {
   return (
-    <div className="sticky top-0 z-10 mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur">
+    <div className="sticky top-0 z-10 mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/95 p-3 shadow-sm backdrop-blur">
       <Button
         type="button"
         data-testid="toggle-add-text"

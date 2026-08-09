@@ -6,18 +6,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  /* Brand accent (used across the site for text-accent/border-accent/etc). Named
-     `menu-accent` below (not `accent`) so shadcn's own accent semantic token
-     (light hover-highlight used by select.tsx) can't shadow this value. */
-  --color-accent: #2563eb;
-  --color-accent-dark: #1d4ed8;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-  --color-surface: #f8fafc;
-}
-
 @theme inline {
+  /* Brand tokens (text-accent/text-ink/text-muted/bg-surface/etc, used across
+     Astro components and older React components). Named `menu-accent` below
+     (not `accent`) so shadcn's own accent semantic token (light hover-highlight
+     used by select.tsx) can't shadow this value. Referenced via var() (and kept
+     in this `inline` block, same as the shadcn semantic tokens below) so their
+     raw values — defined in :root/.dark as --brand-* — flip live under
+     class-based dark mode instead of being baked in at build time. */
+  --color-accent: var(--brand-accent);
+  --color-accent-dark: var(--brand-accent-dark);
+  --color-ink: var(--brand-ink);
+  --color-muted: var(--brand-muted);
+  --color-surface: var(--brand-surface);
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -97,6 +98,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Brand raw values (light) — see @theme inline above for how these become
+     --color-accent/--color-ink/--color-muted/--color-surface. */
+  --brand-ink: #0f172a;
+  --brand-muted: #64748b;
+  --brand-surface: #f8fafc;
+  --brand-accent: #2563eb;
+  --brand-accent-dark: #1d4ed8;
 }
 
 .dark {
@@ -131,6 +140,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Brand raw values (dark) — near-black background is oklch(0.145 0 0) (~#0a0a0a). */
+  --brand-ink: #f1f5f9; /* slate-100: near-white, ~5.4:1 contrast on the dark bg */
+  --brand-muted: #94a3b8; /* slate-400: lighter than light-mode slate-500 for AA contrast, ~7.7:1 */
+  --brand-surface: #1e293b; /* slate-800: dark panel fill, subtly lighter than bg like shadcn's own --card/--muted */
+  --brand-accent: #3b82f6; /* blue-500: brightened one step from the light #2563eb, ~5.4:1 contrast on the dark bg */
+  --brand-accent-dark: #60a5fa; /* blue-400: lighter (not darker) hover/emphasis shade — darkening further would lose contrast on the dark bg */
 }
 
 @layer base {

@@ -131,7 +131,7 @@ export default function SplitTool() {
                 onClick={() => toggle(i)}
                 className={cn(
                   'overflow-hidden rounded-lg border-2',
-                  selected.has(i) ? 'border-accent ring-2 ring-accent/30' : 'border-slate-200',
+                  selected.has(i) ? 'border-accent ring-2 ring-accent/30' : 'border-border',
                 )}
               >
                 <img src={src} alt={`Page ${i + 1}`} className="w-full" />
@@ -185,7 +185,7 @@ export default function SplitTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {phase === 'done' && result && (
         <DownloadResult filename={result.filename} bytes={result.bytes} mime={result.mime} note="Split entirely on your device." />
       )}

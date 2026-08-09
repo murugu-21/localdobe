@@ -99,7 +99,7 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
   return (
     <div ref={containerRef} onClick={onPageClick}
       className={`relative mx-auto mb-8 w-fit shadow-md ${addTextMode ? 'cursor-crosshair' : ''}`}>
-      <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-lg bg-white/90 p-1 shadow">
+      <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-lg bg-background/90 p-1 shadow">
         <Button type="button" variant="ghost" size="icon-xs" aria-label={`Rotate page ${pageIndex + 1} left`} title="Rotate left"
           onClick={(e) => { e.stopPropagation(); rotate(-90); }}>⟲</Button>
         <Button type="button" variant="ghost" size="icon-xs" aria-label={`Rotate page ${pageIndex + 1} right`} title="Rotate right"
@@ -114,8 +114,11 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
           suppressContentEditableWarning
           spellCheck={false}
           onInput={(e) => onSpanInput(s, e.currentTarget)}
+          // Colors here are pinned to the always-white rendered PDF canvas beneath this span,
+          // not to the site theme — text-ink would go near-white in dark mode and vanish
+          // against this white/yellow highlight, so these stay hardcoded slate deliberately.
           className="absolute origin-top-left whitespace-pre text-transparent caret-black outline-none
-            hover:bg-yellow-100/60 hover:text-ink focus:bg-white focus:text-ink focus:ring-1 focus:ring-accent"
+            hover:bg-yellow-100/60 hover:text-slate-900 focus:bg-white focus:text-slate-900 focus:ring-1 focus:ring-accent"
           style={{ left: s.cssLeft, top: s.cssTop, fontSize: s.cssFontSize, fontFamily: cssFontStack(s.fontClass), lineHeight: 1 }}
         >{s.str}</span>
       ))}
@@ -129,7 +132,10 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty }: Pr
             contentEditable
             suppressContentEditableWarning
             onInput={(e) => { session.updateBox(i, { text: e.currentTarget.textContent ?? '' }); onDirty(); }}
-            className="absolute min-w-8 border border-dashed border-accent bg-white/80 px-0.5 outline-none"
+            // text-slate-900 is pinned (not text-ink) for the same reason as the span above:
+            // this box sits on the white canvas regardless of site theme, and would
+            // otherwise inherit body's theme-flipping text-ink and vanish in dark mode.
+            className="absolute min-w-8 border border-dashed border-accent bg-white/80 px-0.5 text-slate-900 outline-none"
             style={{
               left: b.x * SCALE,
               top: (pageHeightPt - b.y) * SCALE - b.fontSize * SCALE,

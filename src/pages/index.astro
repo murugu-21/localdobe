@@ -31,7 +31,7 @@ const jsonLd = [
     <h2 class="text-2xl font-bold">From the blog</h2>
     <div class="mt-6 grid gap-5 sm:grid-cols-3">
       {posts.map((p) => (
-        <a href={`/blog/${p.id}`} class="rounded-xl border border-slate-200 p-5 hover:border-accent">
+        <a href={`/blog/${p.id}`} class="rounded-xl border border-border p-5 hover:border-accent">
           <h3 class="font-semibold">{p.data.title}</h3>
           <p class="mt-2 text-sm text-muted">{p.data.description}</p>
         </a>
