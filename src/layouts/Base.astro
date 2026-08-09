@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { pwaInfo } from 'virtual:pwa-info';
 interface Props {
   title: string;
   description: string;
@@ -17,13 +18,20 @@ const canonical = new URL(canonicalPath, Astro.site).href;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" />
+    <meta name="theme-color" content="#2563eb" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
     <link rel="alternate" type="application/rss+xml" title="localdobe blog" href="/rss.xml" />
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
     {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+    <script>
+      import { registerSW } from 'virtual:pwa-register';
+      registerSW({ immediate: true });
+    </script>
   </head>
   <body class="bg-white text-ink antialiased">
     <header class="border-b border-slate-100">
