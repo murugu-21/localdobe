@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
-const description = 'localdobe processes every PDF locally in your browser — files never reach a server. This policy details exactly what data exists: hosting logs, cookieless analytics, and on-device storage.';
+const description = 'localdobe processes every PDF locally in your browser — files never reach a server. This policy details exactly what data exists: hosting logs, site analytics, and on-device storage.';
 ---
 <Base title="Privacy Policy — localdobe" {description} canonicalPath="/privacy">
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
     <h1>Privacy Policy</h1>
-    <p><em>Last updated: August 9, 2026</em></p>
+    <p><em>Last updated: August 10, 2026</em></p>
     <p>
       The short version: <strong>your files never leave your device.</strong> Every tool on
       localdobe — merge, split, compress, edit, watermark, protect, unlock, and signature
@@ -16,8 +16,8 @@ const description = 'localdobe processes every PDF locally in your browser — f
     </p>
     <p>
       The rest of this page describes, completely, the data that <em>does</em> exist when
-      you use this site: standard hosting logs, cookieless page-view analytics, and a few
-      preferences stored on your own device.
+      you use this site: standard hosting logs, site analytics, and a few preferences
+      stored on your own device.
     </p>
 
     <h2>1. Your files</h2>
@@ -65,7 +65,31 @@ const description = 'localdobe processes every PDF locally in your browser — f
       <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>.
     </p>
 
-    <h2>4. Data stored on your device</h2>
+    <h2>4. Usage analytics (Microsoft Clarity)</h2>
+    <p>
+      We also use <a href="https://clarity.microsoft.com/">Microsoft Clarity</a> to
+      understand how the site's interface is used — where visitors click, how far they
+      scroll, and where the UI confuses people — through aggregate heatmaps and anonymized
+      session replays. To make this work, Clarity sets first-party cookies
+      (<code>_clck</code>, <code>_clsk</code>) that recognize a returning browser, and
+      collects interaction data (clicks, scrolls, page URLs, browser and device type) that
+      Microsoft processes under the
+      <a href="https://privacy.microsoft.com/privacystatement">Microsoft Privacy Statement</a>.
+    </p>
+    <ul>
+      <li><strong>Your documents are excluded.</strong> Every tool's work area is marked
+        with Clarity's masking attribute, so replays show placeholder boxes — never file
+        names, document text, rendered pages, or anything you type into a tool (passwords
+        included).</li>
+      <li><strong>EU, UK, and Swiss visitors:</strong> we do not send Clarity a consent
+        signal, so for these regions Clarity runs in its restricted no-consent mode — it
+        sets <strong>no cookies</strong> and cannot recognize you across sessions.</li>
+      <li><strong>Blocking it changes nothing.</strong> As with all analytics here, if an
+        ad-blocker stops the Clarity script (<code>clarity.ms</code>), every tool keeps
+        working exactly the same.</li>
+    </ul>
+
+    <h2>5. Data stored on your device</h2>
     <p>
       localdobe stores a small amount of data <em>in your browser, on your device</em>, none
       of which is transmitted to anyone:
@@ -83,31 +107,32 @@ const description = 'localdobe processes every PDF locally in your browser — f
       the site.
     </p>
 
-    <h2>5. What we don't collect</h2>
+    <h2>6. What we don't collect</h2>
     <p>
-      We have no accounts, no sign-ups, and no way to associate site usage with an identity.
-      We set no cookies of our own. We run no advertising, no third-party trackers, and no
-      session-recording or heat-mapping tools. We never sell or share data — we hold none
-      to sell.
+      We have no accounts, no sign-ups, and no way to associate site usage with a real-world
+      identity. We run no advertising and never sell or share data. The only cookies on this
+      site are the Clarity analytics cookies described in section 4 — masked so they can
+      never touch your documents — and nothing else.
     </p>
 
-    <h2>6. Your rights</h2>
+    <h2>7. Your rights</h2>
     <p>
       Because localdobe itself stores no personal data about you, there is nothing for us to
-      access, correct, export, or delete on request — the data described in sections 2 and 3
-      is processed by Cloudflare, and requests concerning it can be directed to Cloudflare
-      under its privacy policy. Data stored on your device (section 4) is under your direct
-      control through your browser.
+      access, correct, export, or delete on request — the data described in sections 2–4 is
+      processed by Cloudflare and Microsoft, and requests concerning it can be directed to
+      them under their privacy policies. Data stored on your device (section 5) is under
+      your direct control through your browser, including the Clarity cookies, which you can
+      clear at any time.
     </p>
 
-    <h2>7. Children</h2>
+    <h2>8. Children</h2>
     <p>
       This site provides document utilities and does not target children. We do not
       knowingly collect personal information from anyone, children included — the site has
       no mechanism to do so.
     </p>
 
-    <h2>8. Changes to this policy</h2>
+    <h2>9. Changes to this policy</h2>
     <p>
       If how the site works ever changes in a way that affects this page — a new analytics
       tool, a new third party, anything that touches data — we will update this policy and

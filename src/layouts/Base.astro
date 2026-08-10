@@ -8,6 +8,9 @@ interface Props {
   jsonLd?: object[];
 }
 const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
+// Inlined at build time — set PUBLIC_CLARITY_PROJECT_ID as a Cloudflare build
+// variable (the site is static; runtime Worker vars never reach this code).
+const clarityId = import.meta.env.PUBLIC_CLARITY_PROJECT_ID;
 const canonicalHref = new URL(canonicalPath, Astro.site).href;
 const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref}/`;
 ---
@@ -42,6 +45,19 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
     <meta name="twitter:card" content="summary" />
     <link rel="alternate" type="application/rss+xml" title="localdobe blog" href="/rss.xml" />
     {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
+    {clarityId && (
+      <script
+        is:inline
+        set:html={`(function(w,d,id){
+  // Microsoft Clarity — tag is injected on idle so it stays out of the
+  // initial load waterfall. The queue stub buffers calls until then.
+  w.clarity=w.clarity||function(){(w.clarity.q=w.clarity.q||[]).push(arguments)};
+  function load(){var s=d.createElement("script");s.async=1;s.src="https://www.clarity.ms/tag/"+id;d.head.appendChild(s)}
+  if("requestIdleCallback" in w)w.requestIdleCallback(load,{timeout:4000});
+  else w.addEventListener("load",function(){setTimeout(load,1500)});
+})(window,document,${JSON.stringify(clarityId)});`}
+      />
+    )}
     {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
     <script>
       import { registerSW } from 'virtual:pwa-register';

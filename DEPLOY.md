@@ -31,6 +31,27 @@ file. Verify this after the first deploy (step 4 below).
    *pointer* instead of the object; prepend `git lfs pull && ` to the build
    command in the Cloudflare build settings and redeploy.
 
+## Analytics (Microsoft Clarity)
+
+The Clarity snippet in `src/layouts/Base.astro` is inlined **at build time** from
+`PUBLIC_CLARITY_PROJECT_ID`. Because the site is static, a runtime Worker variable
+does nothing — the variable must be present during `npm run build`:
+
+- Cloudflare dashboard → the Worker → **Settings → Build → Variables and secrets** →
+  add `PUBLIC_CLARITY_PROJECT_ID` = your Clarity project ID (from clarity.microsoft.com
+  → project → Settings → Overview), then redeploy.
+- When the variable is unset (e.g. local `npm run dev`/`npm run build`), no Clarity
+  script is emitted at all.
+- Tool work areas are wrapped in `data-clarity-mask="true"`
+  (`src/components/astro/ToolPageShell.astro`) so session replays never capture file
+  names, document text, or tool inputs. Keep that attribute if the shell is refactored,
+  and additionally set the project's masking mode to **Strict** in the Clarity dashboard
+  (Settings → Masking) as a second layer.
+- No consent banner is shipped: for EEA/UK/CH visitors Clarity receives no consent
+  signal and runs in cookieless no-consent mode (degraded sessions/funnels there, by
+  design). The privacy policy (`src/pages/privacy.astro` §4) documents all of this —
+  update it if any of the above changes.
+
 ## Tests
 
 Cloudflare's build runs `npm run build` only. Run `npm run check && npm test &&
