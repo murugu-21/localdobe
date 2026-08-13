@@ -68,6 +68,8 @@ test('merge: 2+1 pages -> 3-page pdf', async ({ page }) => {
 test('split: extract pages 1-2 of big.pdf', async ({ page }) => {
   await page.goto('/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  // "Select pages" is the default tab; typed ranges live behind "Type ranges".
+  await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('1-2');
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
@@ -151,6 +153,7 @@ test('edit: corrupt file shows a visible error', async ({ page }) => {
 test('split: multiple typed ranges default to one file per range (zip)', async ({ page }) => {
   await page.goto('/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('2-3, 5');
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
@@ -161,6 +164,7 @@ test('split: multiple typed ranges default to one file per range (zip)', async (
 test('split: merge toggle combines typed ranges into ONE pdf', async ({ page }) => {
   await page.goto('/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('2-3, 5');
   await page.getByTestId('merge-toggle').click();
   await page.getByTestId('run-tool').click();

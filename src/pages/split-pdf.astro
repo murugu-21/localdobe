@@ -6,7 +6,7 @@ import SplitTool from '../components/tools/SplitTool';
 import { webAppJsonLd, faqJsonLd } from '../lib/seo';
 
 const faq = [
-  { q: 'Can I extract just one page?', a: 'Yes — switch to “Select pages”, tap its thumbnail, and hit the button. Or type its number under “Type ranges”.' },
+  { q: 'Can I extract just one page?', a: 'Yes — tap its thumbnail (page selection opens by default) and hit the button. Or type its number under “Type ranges”.' },
   { q: 'How do I split every page into its own file?', a: 'Choose the “Split all” tab. You’ll get a zip with one PDF per page, created locally.' },
   { q: 'Do multiple ranges become one file or many?', a: 'Each range downloads as its own PDF by default. Flip on “Merge into a single PDF” to combine everything you picked into one document instead.' },
   { q: 'Does splitting reduce quality?', a: 'No. Pages are copied losslessly — fonts, images, and vectors are untouched.' },
@@ -21,7 +21,7 @@ const description = 'Split a PDF or extract specific pages free, with no waterma
     <h2>How to split a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>
-      <li>Type ranges like <code>1-3, 5, 7-</code>, tap page thumbnails under <strong>Select pages</strong>, or pick <strong>Split all</strong> for one file per page.</li>
+      <li>Tap the page thumbnails you want, type ranges like <code>1-3, 5, 7-</code> under <strong>Type ranges</strong>, or pick <strong>Split all</strong> for one file per page.</li>
       <li>Each range comes back as its own PDF — or flip on <strong>Merge into a single PDF</strong> to combine your picks into one document.</li>
       <li>Hit the button and download the result.</li>
     </ol>

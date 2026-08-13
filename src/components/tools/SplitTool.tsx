@@ -14,15 +14,17 @@ type Phase = 'idle' | 'working' | 'done' | 'error';
 
 interface Loaded { bytes: Uint8Array; name: string; size: number; pageCount: number; thumbs: string[] }
 
+// "Select pages" first and default: seeing your own thumbnails immediately is
+// the clearest signal the file loaded and the tool is ready.
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'ranges', label: 'Type ranges' },
   { id: 'pages', label: 'Select pages' },
+  { id: 'ranges', label: 'Type ranges' },
   { id: 'all', label: 'Split all' },
 ];
 
 export default function SplitTool() {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
-  const [tab, setTab] = useState<Tab>('ranges');
+  const [tab, setTab] = useState<Tab>('pages');
   const [mergeOne, setMergeOne] = useState(false);
   const [rangeText, setRangeText] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -64,7 +66,7 @@ export default function SplitTool() {
 
   function clear() {
     setLoaded(null);
-    setTab('ranges');
+    setTab('pages');
     setMergeOne(false);
     setSelected(new Set());
     setRangeText('');
