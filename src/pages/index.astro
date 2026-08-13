@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import Hero from '../components/astro/Hero.astro';
 import ToolCard from '../components/astro/ToolCard.astro';
 import FeatureGrid from '../components/astro/FeatureGrid.astro';
+import { toolGroups } from '../lib/tools';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('blog')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 3);
@@ -11,20 +12,20 @@ const jsonLd = [
   { '@context': 'https://schema.org', '@type': 'WebSite', name: 'localdobe', url: 'https://localdobe.com' },
 ];
 ---
-<Base title="localdobe — free PDF tools, nothing to install, nothing to upload"
+<Base title="localdobe — free PDF tools, no watermarks, no uploads"
   description="The free alternative to installing a heavyweight PDF suite or uploading your files to converter sites: merge, split, compress, edit, and protect PDFs entirely in your browser. No watermarks, no signup."
   canonicalPath="/" {jsonLd}>
   <Hero />
-  <section class="mx-auto mt-16 grid max-w-5xl gap-5 px-4 sm:grid-cols-2 lg:grid-cols-4">
+  <section class="mx-auto mt-12 max-w-5xl px-4">
     <h2 class="sr-only">PDF tools</h2>
-    <ToolCard href="/merge-pdf" title="Merge PDF" desc="Combine multiple PDFs into one, in the order you choose." icon="📎" />
-    <ToolCard href="/split-pdf" title="Split PDF" desc="Extract pages or break a PDF into separate files." icon="✂️" />
-    <ToolCard href="/compress-pdf" title="Compress PDF" desc="Shrink file size with a real compression engine that runs in your browser." icon="🗜️" />
-    <ToolCard href="/edit-pdf" title="Edit PDF" desc="Retype any text, add new text, rotate and resize pages." icon="✏️" />
-    <ToolCard href="/watermark-pdf" title="Watermark & Stamp" desc="Add text or image watermarks and stamps — or remove them." icon="🏷️" />
-    <ToolCard href="/validate-pdf-signature" title="Check Signatures" desc="Validate a PDF's digital signature and inspect the evidence." icon="🔏" />
-    <ToolCard href="/protect-pdf" title="Protect PDF" desc="Encrypt a PDF with AES-256 — the password never leaves your device." icon="🔒" />
-    <ToolCard href="/unlock-pdf" title="Unlock PDF" desc="Remove a password from a PDF you own, using the password you know." icon="🔓" />
+    {toolGroups.map((group) => (
+      <div class="mt-8 first:mt-0">
+        <h3 class="text-sm font-semibold tracking-widest text-muted uppercase">{group.label}</h3>
+        <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {group.tools.map((t) => <ToolCard href={t.href} title={t.name} desc={t.desc} icon={t.icon} />)}
+        </div>
+      </div>
+    ))}
   </section>
   <FeatureGrid />
   <section class="mx-auto mt-24 max-w-5xl px-4">

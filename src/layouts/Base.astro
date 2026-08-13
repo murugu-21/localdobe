@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { pwaInfo } from 'virtual:pwa-info';
+import { toolGroups } from '../lib/tools';
 interface Props {
   title: string;
   description: string;
@@ -13,6 +14,9 @@ const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
 const clarityId = import.meta.env.PUBLIC_CLARITY_PROJECT_ID;
 const canonicalHref = new URL(canonicalPath, Astro.site).href;
 const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref}/`;
+// Active nav state: match the page path with or without its trailing slash.
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => currentPath === href;
 ---
 <!doctype html>
 <html lang="en">
@@ -65,9 +69,11 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
     </script>
   </head>
   <body class="bg-background text-ink antialiased">
-    <header class="border-b border-border">
-      <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <a href="/" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+    <div class="flex min-h-screen">
+      {/* Desktop sidebar — every tool one click away from every page (ilovepdf/ihatepdf
+          dashboard pattern). Sticky + own scrollbar so long pages don't scroll it away. */}
+      <aside class="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-border lg:flex" aria-label="PDF tools">
+        <a href="/" class="flex items-center gap-2 px-5 pt-5 pb-4 text-lg font-bold tracking-tight">
           {/* Inline "ld" mark — same geometry as the PWA icon (scripts/generate-icons.mjs) */}
           <svg viewBox="0 0 512 512" class="h-6 w-6 shrink-0" aria-hidden="true">
             <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="#2563eb" />
@@ -79,99 +85,194 @@ const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref
           </svg>
           <span>local<span class="text-accent">dobe</span></span>
         </a>
-        <div class="flex items-center gap-2 md:gap-6">
-          <div class="hidden items-center gap-x-6 text-sm font-medium text-muted md:flex">
-            <a href="/merge-pdf" class="hover:text-ink">Merge</a>
-            <a href="/split-pdf" class="hover:text-ink">Split</a>
-            <a href="/compress-pdf" class="hover:text-ink">Compress</a>
-            <a href="/edit-pdf" class="hover:text-ink">Edit</a>
-            <a href="/watermark-pdf" class="hover:text-ink">Watermark</a>
-            <a href="/validate-pdf-signature" class="hover:text-ink">Signatures</a>
-            <a href="/protect-pdf" class="hover:text-ink">Protect</a>
-            <a href="/unlock-pdf" class="hover:text-ink">Unlock</a>
-            <a href="/blog" class="hover:text-ink">Blog</a>
+        <nav class="flex-1 px-3 pb-4">
+          <a
+            href="/"
+            class:list={[
+              'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+              isActive('/') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
+            ]}
+            aria-current={isActive('/') ? 'page' : undefined}
+          >
+            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+            All tools
+          </a>
+          {toolGroups.map((group) => (
+            <div class="mt-5">
+              <p class="px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase">{group.label}</p>
+              <div class="mt-1.5 grid gap-0.5">
+                {group.tools.map((t) => (
+                  <a
+                    href={t.href}
+                    class:list={[
+                      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+                      isActive(t.href) ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
+                    ]}
+                    aria-current={isActive(t.href) ? 'page' : undefined}
+                  >
+                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <Fragment set:html={t.icon} />
+                    </svg>
+                    {t.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div class="mt-5">
+            <p class="px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase">Resources</p>
+            <div class="mt-1.5 grid gap-0.5">
+              <a
+                href="/blog"
+                class:list={[
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+                  currentPath.startsWith('/blog') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
+                ]}
+              >
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+                </svg>
+                Blog
+              </a>
+              <a
+                href="/about"
+                class:list={[
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
+                  isActive('/about') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
+                ]}
+              >
+                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+                </svg>
+                About
+              </a>
+            </div>
           </div>
+        </nav>
+        <div class="border-t border-border p-3">
           <button
             type="button"
-            id="theme-toggle"
-            data-testid="theme-toggle"
             aria-label="Toggle dark mode"
-            class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
+            class="theme-toggle flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-panel hover:text-ink"
           >
-            <svg class="block dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="block h-4 w-4 shrink-0 dark:hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
             </svg>
-            <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="hidden h-4 w-4 shrink-0 dark:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="4" />
               <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
             </svg>
-          </button>
-          <button
-            type="button"
-            id="nav-toggle"
-            data-testid="nav-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-            aria-controls="mobile-nav"
-            class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink md:hidden"
-          >
-            <svg id="nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <svg id="nav-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
+            <span class="block dark:hidden">Dark mode</span>
+            <span class="hidden dark:block">Light mode</span>
           </button>
         </div>
-      </nav>
-      <div id="mobile-nav" class="hidden border-t border-border md:hidden">
-        <div class="mx-auto grid max-w-6xl gap-1 px-4 py-3 text-base font-medium text-muted">
-          <a href="/merge-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Merge</a>
-          <a href="/split-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Split</a>
-          <a href="/compress-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Compress</a>
-          <a href="/edit-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Edit</a>
-          <a href="/watermark-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Watermark</a>
-          <a href="/validate-pdf-signature" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Signatures</a>
-          <a href="/protect-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Protect</a>
-          <a href="/unlock-pdf" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Unlock</a>
-          <a href="/blog" class="rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
-        </div>
+      </aside>
+      <div class="flex min-w-0 flex-1 flex-col">
+        {/* Mobile header — the sidebar collapses into this hamburger drawer below lg. */}
+        <header class="border-b border-border lg:hidden">
+          <nav class="flex items-center justify-between px-4 py-3">
+            <a href="/" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+              <svg viewBox="0 0 512 512" class="h-6 w-6 shrink-0" aria-hidden="true">
+                <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="#2563eb" />
+                <g fill="#ffffff">
+                  <rect x="145" y="120" width="46" height="260" rx="23" />
+                  <rect x="345" y="120" width="46" height="260" rx="23" />
+                  <path fill-rule="evenodd" d="M 300 208 a 92 92 0 1 0 0.1 0 Z M 300 248 a 52 52 0 1 0 0.1 0 Z" />
+                </g>
+              </svg>
+              <span>local<span class="text-accent">dobe</span></span>
+            </a>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                data-testid="theme-toggle"
+                aria-label="Toggle dark mode"
+                class="theme-toggle inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
+              >
+                <svg class="block dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+                </svg>
+                <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                id="nav-toggle"
+                data-testid="nav-toggle"
+                aria-label="Open menu"
+                aria-expanded="false"
+                aria-controls="mobile-nav"
+                class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
+              >
+                <svg id="nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <svg id="nav-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+          </nav>
+          <div id="mobile-nav" class="hidden border-t border-border">
+            <div class="grid gap-1 px-4 py-3 text-base font-medium text-muted">
+              {toolGroups.map((group) => (
+                <>
+                  <p class="mt-2 px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase first:mt-0">{group.label}</p>
+                  {group.tools.map((t) => (
+                    <a href={t.href} class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">
+                      <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <Fragment set:html={t.icon} />
+                      </svg>
+                      {t.name}
+                    </a>
+                  ))}
+                </>
+              ))}
+              <a href="/blog" class="mt-2 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
+            </div>
+          </div>
+          <script>
+            const navToggle = document.getElementById('nav-toggle');
+            const mobileNav = document.getElementById('mobile-nav');
+            const iconOpen = document.getElementById('nav-icon-open');
+            const iconClose = document.getElementById('nav-icon-close');
+            navToggle?.addEventListener('click', () => {
+              const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+              navToggle.setAttribute('aria-expanded', String(!expanded));
+              navToggle.setAttribute('aria-label', expanded ? 'Open menu' : 'Close menu');
+              mobileNav?.classList.toggle('hidden', expanded);
+              iconOpen?.classList.toggle('hidden', !expanded);
+              iconClose?.classList.toggle('hidden', expanded);
+            });
+          </script>
+        </header>
+        <main class="flex-1"><slot /></main>
+        <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
+          <p class="font-medium">No watermarks. No uploads. No signup.</p>
+          <p class="mt-2">
+            © 2026 localdobe · <a href="/privacy" class="underline">Privacy</a> · <a href="/about" class="underline">About</a> · <a href="/blog" class="underline">Blog</a>
+          </p>
+        </footer>
       </div>
-      <script>
-        const navToggle = document.getElementById('nav-toggle');
-        const mobileNav = document.getElementById('mobile-nav');
-        const iconOpen = document.getElementById('nav-icon-open');
-        const iconClose = document.getElementById('nav-icon-close');
-        navToggle?.addEventListener('click', () => {
-          const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-          navToggle.setAttribute('aria-expanded', String(!expanded));
-          navToggle.setAttribute('aria-label', expanded ? 'Open menu' : 'Close menu');
-          mobileNav?.classList.toggle('hidden', expanded);
-          iconOpen?.classList.toggle('hidden', !expanded);
-          iconClose?.classList.toggle('hidden', expanded);
-        });
-      </script>
-    </header>
-    <main><slot /></main>
-    <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
-      <p class="font-medium">No watermarks. No uploads. No signup.</p>
-      <p class="mt-2">
-        © 2026 localdobe · <a href="/privacy" class="underline">Privacy</a> · <a href="/about" class="underline">About</a> · <a href="/blog" class="underline">Blog</a>
-      </p>
-    </footer>
+    </div>
     <script is:inline>
-      // Toggle click handler: placed after the button so it exists in the DOM already
-      // (no DOMContentLoaded needed) — flips the class, persists the explicit choice,
-      // and keeps the theme-color meta tag in sync.
+      // Toggle click handler: placed after the buttons so they exist in the DOM already
+      // (no DOMContentLoaded needed). Two toggles exist — sidebar (desktop) and header
+      // (mobile) — so bind by class; each flips the class, persists the explicit
+      // choice, and keeps the theme-color meta tag in sync.
       (function () {
-        var btn = document.getElementById('theme-toggle');
-        if (!btn) return;
-        btn.addEventListener('click', function () {
-          var next = !document.documentElement.classList.contains('dark');
-          document.documentElement.classList.toggle('dark', next);
-          localStorage.setItem('theme', next ? 'dark' : 'light');
-          var meta = document.getElementById('theme-color-meta');
-          if (meta) meta.setAttribute('content', next ? '#0a0a0a' : '#2563eb');
+        document.querySelectorAll('.theme-toggle').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var next = !document.documentElement.classList.contains('dark');
+            document.documentElement.classList.toggle('dark', next);
+            localStorage.setItem('theme', next ? 'dark' : 'light');
+            var meta = document.getElementById('theme-color-meta');
+            if (meta) meta.setAttribute('content', next ? '#0a0a0a' : '#2563eb');
+          });
         });
       })();
     </script>

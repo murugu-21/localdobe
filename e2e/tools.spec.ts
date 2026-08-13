@@ -148,10 +148,21 @@ test('edit: corrupt file shows a visible error', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText(/could not open/i, { timeout: 30_000 });
 });
 
-test('split: typed ranges extract into ONE pdf, same as thumbnails', async ({ page }) => {
+test('split: multiple typed ranges default to one file per range (zip)', async ({ page }) => {
   await page.goto('/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   await page.getByTestId('range-input').fill('2-3, 5');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
+  const download = await runAndDownload(page);
+  expect(download.suggestedFilename()).toMatch(/\.zip$/);
+});
+
+test('split: merge toggle combines typed ranges into ONE pdf', async ({ page }) => {
+  await page.goto('/split-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  await page.getByTestId('range-input').fill('2-3, 5');
+  await page.getByTestId('merge-toggle').click();
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
   const download = await runAndDownload(page);
