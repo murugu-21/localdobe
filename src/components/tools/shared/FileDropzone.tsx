@@ -45,12 +45,22 @@ export function FileDropzone({ multiple = false, label, onFiles }: Props) {
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         className={cn(
-          'block w-full cursor-pointer rounded-2xl border-2 border-dashed px-6 py-14 text-center transition',
-          dragOver ? 'border-primary bg-primary/5' : 'border-border bg-panel/40 hover:border-primary',
+          'group block w-full cursor-pointer rounded-2xl border-2 border-dashed px-6 py-12 text-center transition',
+          dragOver
+            ? 'border-primary bg-primary/5'
+            : 'border-border bg-panel/40 hover:border-primary hover:bg-panel/70',
         )}
       >
         <span className="block text-lg font-semibold">{label}</span>
         <span className="mt-1 block text-sm text-muted-foreground">Drag &amp; drop or click to browse</span>
+        <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition group-hover:bg-primary/90">
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" x2="12" y1="3" y2="15" />
+          </svg>
+          Choose file
+        </span>
       </button>
       <input
         ref={inputRef}

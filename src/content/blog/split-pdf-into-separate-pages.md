@@ -3,11 +3,22 @@ title: 'How to split a PDF into separate pages (offline & free)'
 description: 'Split a PDF into individual pages or extract a range — locally in your browser, with no upload and no watermark. Step-by-step guide.'
 pubDate: 2026-06-19
 tags: ['split', 'how-to', 'privacy']
+faq:
+  - q: 'How do I split a PDF into separate pages?'
+    a: 'Open the split PDF tool, drop your PDF into the box (or click to browse), then tap the page thumbnails you want or type a range like 1-3, 5, 7-. Hit Split PDF and the extracted pages download straight to your device — no upload required.'
+  - q: 'Can I split a PDF without uploading it?'
+    a: 'Yes. The split happens entirely in your browser using local rendering — your file never leaves your device, and nothing is transmitted, logged, or stored on a server.'
+  - q: 'Is splitting a PDF free and watermark-free?'
+    a: 'Yes — free with no watermark, no page limits, and no signup. Because your own device does the work, there is no per-page cost to pass on.'
+  - q: 'What page ranges can I extract?'
+    a: 'Any pages you want, using the same syntax as a print dialog: 1-3 for a range, 5, 9, 14 for separate pages, 7- for page 7 through the end, and combinations like 1-3, 5, 7-. You can also split every page into its own PDF.'
 ---
 
 A 40-page scanned contract lands in your inbox and you need page 12 to send to your accountant. Or a school sends home a single PDF packet and you need to print just the permission slip on page 7. Splitting a PDF — pulling out one page, a range of pages, or breaking the whole thing into individual files — is one of those tasks that feels like it should take five seconds, but most "free" splitter sites turn it into an upload, a wait, and often a paywall once you hit more than a couple of pages.
 
 There's no technical reason for any of that. A PDF's page structure is just data your browser can already read — that's how it renders the preview you're looking at. This post covers how to split a PDF into separate pages without uploading it anywhere, plus a few tips on page-range syntax that make the job faster.
+
+> **Try it:** [use the split PDF tool](/split-pdf) to split a PDF into separate pages — free, no upload, and no watermark.
 
 ## How to split a PDF
 

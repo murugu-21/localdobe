@@ -1,8 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import { aboutJsonLd } from '../lib/seo';
 const description = "localdobe is a set of free PDF tools that run entirely in your browser — no uploads, no watermarks, no signup. Here's why it exists and how it works.";
 ---
-<Base title="About — localdobe" {description} canonicalPath="/about">
+<Base title="About localdobe — free, private PDF tools" {description} canonicalPath="/about"
+  jsonLd={[aboutJsonLd(description)]}>
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
     <h1>About localdobe</h1>
     <p>

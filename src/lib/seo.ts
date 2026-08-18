@@ -23,13 +23,44 @@ export function webAppJsonLd(name: string, path: string, description: string): o
 export function articleJsonLd(title: string, description: string, slug: string, pubDate: Date): object {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    // BlogPosting is the more specific subtype of Article — declaring both lets
+    // Google treat the post as the richer, richer-markup BlogPosting.
+    '@type': ['Article', 'BlogPosting'],
     headline: title,
     description,
     datePublished: pubDate.toISOString(),
     url: withTrailingSlash(`${SITE}/blog/${slug}`),
     author: { '@type': 'Organization', name: 'localdobe' },
     publisher: { '@type': 'Organization', name: 'localdobe', url: SITE },
+  };
+}
+
+export function aboutJsonLd(description: string): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About localdobe',
+    url: withTrailingSlash(`${SITE}/about`),
+    description,
+    about: {
+      '@type': 'Organization',
+      name: 'localdobe',
+      description: 'Free, private, in-browser PDF tools',
+      url: SITE,
+    },
+  };
+}
+
+export function itemListJsonLd(items: { name: string; url: string }[]): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map(({ name, url }, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name,
+      url,
+    })),
   };
 }
 

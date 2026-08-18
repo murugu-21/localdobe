@@ -9,7 +9,7 @@ const features = [
 <section class="mx-auto mt-24 grid max-w-5xl gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4">
   {features.map((f) => (
     <div>
-      <span class="text-2xl" aria-hidden>{f.icon}</span>
+      <span class="pointer-events-none block select-none text-2xl" aria-hidden>{f.icon}</span>
       <h2 class="mt-2 text-lg font-bold">{f.title}</h2>
       <p class="mt-1 text-sm text-muted">{f.desc}</p>
     </div>

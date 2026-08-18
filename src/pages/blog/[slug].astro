@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Faq from '../../components/astro/Faq.astro';
 import { getCollection, render } from 'astro:content';
-import { articleJsonLd } from '../../lib/seo';
+import { articleJsonLd, faqJsonLd } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -9,15 +10,18 @@ export async function getStaticPaths() {
 }
 const { post } = Astro.props;
 const { Content } = await render(post);
+const faq = post.data.faq;
+const jsonLd = [articleJsonLd(post.data.title, post.data.description, post.id, post.data.pubDate)];
+if (faq) jsonLd.push(faqJsonLd(faq));
 ---
 <Base title={`${post.data.title} | localdobe`} description={post.data.description}
-  canonicalPath={`/blog/${post.id}`}
-  jsonLd={[articleJsonLd(post.data.title, post.data.description, post.id, post.data.pubDate)]}>
+  canonicalPath={`/blog/${post.id}`} {jsonLd}>
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
     <h1>{post.data.title}</h1>
     <time class="text-sm text-muted" datetime={post.data.pubDate.toISOString()}>
       {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
     </time>
     <Content />
+    {faq && <Faq items={faq} />}
   </article>
 </Base>
