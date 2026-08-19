@@ -40,6 +40,19 @@ One tool page captures its whole long-tail cluster via visible FAQ + `FAQPage` s
 
 Split + compress are the current traffic leaders and the highest-ROI clusters (see changelog).
 
+### Programmatic size pages (compress)
+
+`/compress-pdf/to-{100kb,200kb,500kb,1mb,2mb,5mb}/` are generated at build time by
+`getStaticPaths()` in `src/pages/compress-pdf/[size].astro` — a **finite** list of 6 real
+target sizes. Each is a distinct static HTML file (same static CF Pages deploy; no SSR, no
+adapter) that embeds the real `CompressTool`, has its own title/canonical/`FAQPage` schema,
+and is linked from the main `/compress-pdf/` page (and each size page cross-links the others).
+
+Rules that keep this legitimate (not a content farm):
+- Keep the list **small and finite** (6 sizes) — it clusters real search demand, it does not scale into spam.
+- Every page embeds the working tool; copy stays honest (never claims an exact byte count — results vary).
+- New links here must use trailing-slash canonical form.
+
 ## Intent traps — do NOT target
 
 - **"unlock pdf without password" / "pdf password remover without password"** — high volume but
@@ -69,7 +82,7 @@ Split + compress are the current traffic leaders and the highest-ROI clusters (s
 
 - All pages: unique `<title>`, meta description, one H1, canonical tag, OG tags, JSON-LD
   (`WebApplication` on tools, `Article`+`FAQPage` on blog).
-- Sitemap: `@astrojs/sitemap` emits `sitemap-index.xml` → `sitemap-0.xml` (27 URLs).
+- Sitemap: `@astrojs/sitemap` emits `sitemap-index.xml` → `sitemap-0.xml` (33 URLs: 27 original + 6 programmatic compress size pages).
   `robots.txt` points crawlers at `sitemap-index.xml`. **Do not submit `/sitemap.xml`** to
   Search Console — that path serves the SPA shell; the real sitemap is `sitemap-index.xml`.
 - **All internal links use canonical trailing-slash URLs** (e.g. `/split-pdf/`), so no 308 hop
@@ -94,3 +107,6 @@ Split + compress are the current traffic leaders and the highest-ROI clusters (s
 - **2026-08-19** — Added winnable long-tail FAQ entries (+ `FAQPage` schema) to all 8 tool pages
   per the shortlist above; refined `/compress-pdf/` description to target "compress without
   losing quality".
+- **2026-08-19** — Added programmatic `/compress-pdf/to-{100kb,200kb,500kb,1mb,2mb,5mb}/` size
+  pages via `getStaticPaths()` (finite, static, embed the real tool). Cross-linked from
+  `/compress-pdf/` and between size pages.

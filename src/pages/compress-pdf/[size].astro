@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import ToolPageShell from '../../components/astro/ToolPageShell.astro';
+import Faq from '../../components/astro/Faq.astro';
+import CompressTool from '../../components/tools/CompressTool';
+import { webAppJsonLd, faqJsonLd } from '../../lib/seo';
+
+// Programmatic SEO: a small, finite set of size-target pages generated at build
+// time via getStaticPaths(). Each becomes a real static HTML file with its own
+// title, canonical, and FAQPage schema, and each embeds the actual CompressTool
+// so search intent ("do, not read") is served on-page. Keep this list small and
+// real — it is a legitimate tool-page cluster, not a content farm.
+export function getStaticPaths() {
+  const sizes = [
+    { key: 'to-100kb', label: '100 KB' },
+    { key: 'to-200kb', label: '200 KB' },
+    { key: 'to-500kb', label: '500 KB' },
+    { key: 'to-1mb', label: '1 MB' },
+    { key: 'to-2mb', label: '2 MB' },
+    { key: 'to-5mb', label: '5 MB' },
+  ];
+  return sizes.map((s) => ({ params: { size: s.key }, props: s }));
+}
+
+const { label } = Astro.props;
+const path = `/compress-pdf/${Astro.params.size}`;
+const title = `Compress PDF to ${label} — free, no upload | localdobe`;
+const description = `Compress a PDF to around ${label} for free — no upload, no watermark, no signup. A real compression engine runs entirely in your browser on your own device.`;
+const faq = [
+  {
+    q: `Can I compress a PDF to exactly ${label}?`,
+    a: `Not to an exact byte count — how much a file shrinks depends on what's inside it. But Maximum compression gets most bloated PDFs down to roughly ${label}; if it comes out a little over, split the PDF or remove heavy pages first and try again.`,
+  },
+  { q: 'Will the quality be reduced?', a: 'No. localdobe removes redundancy (duplicate fonts, unused objects, repeated streams) rather than recompressing your images, so pages look identical — you get a smaller file with no visible quality hit.' },
+  { q: 'Are my files uploaded?', a: 'No. Compression runs entirely inside a Web Worker in your browser — your PDF never leaves your device. Disconnect from the internet after the page loads and it still works.' },
+];
+---
+<Base {title} {description} canonicalPath={path}
+  jsonLd={[webAppJsonLd('Compress PDF', path, description), faqJsonLd(faq)]}>
+  <ToolPageShell h1={`Compress PDF to ${label}`} sub={`Reduce a PDF to roughly ${label} — in your browser, no upload, no watermark.`}>
+    <CompressTool client:load slot="tool" />
+    <h2>How to compress a PDF to {label}</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Pick <strong>Maximum</strong> for the smallest possible file.</li>
+      <li>Click <strong>Compress PDF</strong> and download your smaller file.</li>
+    </ol>
+    <p>
+      Aiming for {label}? To be honest: you can't force a PDF down to an exact byte count, because
+      how much it shrinks depends on what's inside it. A PDF built from scans at print resolution,
+      duplicated fonts, or leftover objects often drops by 20–70% — usually enough to land near {label}.
+      If the result is still too big, <a href="/split-pdf/">split the PDF</a> and compress just the pages
+      you actually need to send.
+    </p>
+    <p>
+      Prefer a different target size? Try{" "}
+      <a href="/compress-pdf/to-100kb/">100 KB</a>,{" "}
+      <a href="/compress-pdf/to-200kb/">200 KB</a>,{" "}
+      <a href="/compress-pdf/to-500kb/">500 KB</a>,{" "}
+      <a href="/compress-pdf/to-1mb/">1 MB</a>,{" "}
+      <a href="/compress-pdf/to-2mb/">2 MB</a>, or{" "}
+      <a href="/compress-pdf/to-5mb/">5 MB</a>, or start from the{" "}
+      <a href="/compress-pdf/">main compress PDF tool</a>.
+    </p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
