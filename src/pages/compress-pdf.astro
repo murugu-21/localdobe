@@ -6,12 +6,13 @@ import CompressTool from '../components/tools/CompressTool';
 import { webAppJsonLd, faqJsonLd } from '../lib/seo';
 
 const faq = [
-  { q: 'How much smaller will my PDF get?', a: 'It depends on the file. PDFs with duplicated fonts, images, or content streams shrink the most — often 20–70%. Already-optimized PDFs may not shrink at all, and we’ll tell you honestly when that happens.' },
-  { q: 'Is quality reduced?', a: 'No. localdobe removes redundancy (duplicate fonts, unused objects, repeated streams) rather than recompressing your images, so pages look identical.' },
+  { q: 'Can I compress a PDF without losing quality?', a: 'Yes. localdobe removes redundancy (duplicate fonts, unused objects, repeated streams) rather than recompressing your images, so pages look identical — your file gets smaller with no visible quality hit.' },
+  { q: 'Can I compress a PDF to a specific size?', a: 'Not to an exact byte count — results depend on the file’s contents. But Maximum gives you the smallest file, and PDFs with duplicated fonts, unused objects, or repeated content streams often drop by 20–70%, which is usually enough to get under an email or upload limit.' },
+  { q: 'Can I compress a PDF for email?', a: 'Yes. Run compression to shed the biggest overhead first — for most email providers that accept up to 20–25 MB, that’s enough. If the file is still too big, splitting it and sending the relevant pages can help.' },
   { q: 'Why is the first compression slow?', a: 'Your browser downloads the compression engine once (a few MB compressed), then caches it. After that it starts instantly — even offline.' },
   { q: 'Is my PDF uploaded?', a: 'No. The engine runs inside a Web Worker in your browser. Your file never touches a server.' },
 ];
-const description = 'Compress PDF files free with no upload and no watermark. A real compression engine that runs entirely on your device.';
+const description = 'Reduce a PDF file size without losing quality — free, no upload, no watermark. A real compression engine that runs entirely on your device.';
 ---
 <Base title="Compress PDF — free, offline, no watermark | localdobe" {description} canonicalPath="/compress-pdf"
   jsonLd={[webAppJsonLd('Compress PDF', '/compress-pdf', description), faqJsonLd(faq)]}>

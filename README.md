@@ -5,6 +5,11 @@ check-or-remove signatures, and password-protect/unlock PDFs — no file is ever
 server. localdobe.com is a static site; every tool executes client-side and works offline once
 you've visited it.
 
+## Documentation
+
+- [`SEO-STRATEGY.md`](SEO-STRATEGY.md) — keyword/GEO strategy, page→keyword mapping, intent traps, and the technical SEO foundation (trailing-slash canonicals, sitemap, schema).
+- [`DEPLOY.md`](DEPLOY.md) — deployment via Cloudflare Workers Builds (push to `main`).
+
 ## Tools
 
 | Tool | Page | What it does |

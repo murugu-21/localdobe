@@ -10,6 +10,7 @@ const faq = [
   { q: 'How can it verify who signed, without the internet?', a: 'The tool bundles the same publicly published trust list Adobe Acrobat uses (the AATL) and verifies the signer’s certificate chain against it on your device. Only revocation checks — whether a certificate was cancelled after issue — need the internet, and those are skipped and noted.' },
   { q: 'Does removing a signature change the document?', a: 'No. It strips the signature object; page content is untouched. The output is simply no longer signed.' },
   { q: 'Is my contract uploaded anywhere?', a: 'No — validation runs entirely in your browser. Ideal for documents too sensitive for online tools.' },
+  { q: 'Can I validate a PDF signature online?', a: 'Yes — and unlike most “online” validators, it happens in your browser. Integrity is checked cryptographically on your device, and the signer’s certificate is verified against Adobe’s AATL trust list locally. Nothing is uploaded.' },
 ];
 const description = 'Check whether a PDF\'s digital signature is intact, see signer evidence, and remove signatures — free and offline. Your document never leaves your browser.';
 ---
