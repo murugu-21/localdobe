@@ -125,7 +125,7 @@ const isActive = (href: string) => currentPath === href;
             <p class="px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase">Resources</p>
             <div class="mt-1.5 grid gap-0.5">
               <a
-                href="/blog"
+                href="/blog/"
                 class:list={[
                   'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
                   currentPath.startsWith('/blog') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
@@ -137,7 +137,7 @@ const isActive = (href: string) => currentPath === href;
                 Blog
               </a>
               <a
-                href="/about"
+                href="/about/"
                 class:list={[
                   'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
                   isActive('/about') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
@@ -232,7 +232,7 @@ const isActive = (href: string) => currentPath === href;
                   ))}
                 </>
               ))}
-              <a href="/blog" class="mt-2 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
+              <a href="/blog/" class="mt-2 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
             </div>
           </div>
           <script>
@@ -254,7 +254,7 @@ const isActive = (href: string) => currentPath === href;
         <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
           <p class="font-medium">No watermarks. No uploads. No signup.</p>
           <p class="mt-2">
-            © 2026 localdobe · <a href="/privacy" class="underline">Privacy</a> · <a href="/about" class="underline">About</a> · <a href="/blog" class="underline">Blog</a>
+            © 2026 localdobe · <a href="/privacy/" class="underline">Privacy</a> · <a href="/about/" class="underline">About</a> · <a href="/blog/" class="underline">Blog</a>
           </p>
         </footer>
       </div>
