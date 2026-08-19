@@ -21,13 +21,13 @@ There's a third nuance worth knowing, because it explains a result that otherwis
 
 ## Why in-browser trust-chain checking has a real limit
 
-This is worth being direct about: web browsers don't expose their OS-level certificate trust store to web pages, for sound security reasons — a web page having arbitrary access to your system's trust decisions would be a significant attack surface. [localdobe's signature validator](/validate-pdf-signature) solves this by bundling its own trust anchors: the same publicly published trust list Adobe Acrobat uses (the Adobe Approved Trust List), shipped with the tool and checked entirely on your device. Document integrity (the cryptographic hash check) and identity trust (the certificate chain check) both run locally.
+This is worth being direct about: web browsers don't expose their OS-level certificate trust store to web pages, for sound security reasons — a web page having arbitrary access to your system's trust decisions would be a significant attack surface. [localdobe's signature validator](/validate-pdf-signature/) solves this by bundling its own trust anchors: the same publicly published trust list Adobe Acrobat uses (the Adobe Approved Trust List), shipped with the tool and checked entirely on your device. Document integrity (the cryptographic hash check) and identity trust (the certificate chain check) both run locally.
 
 One check is genuinely impossible without a network call: revocation — whether a certificate was cancelled by its authority *after* being issued. Because everything here runs offline, that check is skipped and clearly noted in the report rather than silently assumed to have passed. A signer whose authority isn't on Adobe's list (a company-internal certificate, for instance) is reported as "couldn't be fully verified" — an honest description, not a defect in the signature. If a signature's validity needs to hold up for a legal purpose (challenging it in court, for instance), have it examined with tooling and processes built for that; for the everyday questions — has this document been altered, who signed it, and is their authority recognized — localdobe answers on your device.
 
 ## How to check a PDF's signature
 
-On the [validate PDF signature tool](/validate-pdf-signature):
+On the [validate PDF signature tool](/validate-pdf-signature/):
 
 1. Drop your signed PDF into the upload box, or click it to browse your device.
 2. The tool reports a clear verdict — valid, not valid, or found-but-not-fully-verifiable — along with who signed it, which authority issued their certificate, when it was signed, the certificate's validity window, and whether the document changed since signing.
@@ -39,4 +39,4 @@ Documents worth signing are, almost by definition, documents worth protecting: c
 
 ## The short version
 
-A signature icon means something specific and checkable: whether signed content has been altered since signing. It doesn't automatically mean the signer's identity has been fully verified against a trust chain — that's a separate, harder question that browser sandboxing limits by design. For the integrity question, which covers most everyday needs, you can get a definitive answer without uploading the document anywhere. For more on how "is this online tool safe with my file" applies to signed documents specifically, see our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe).
+A signature icon means something specific and checkable: whether signed content has been altered since signing. It doesn't automatically mean the signer's identity has been fully verified against a trust chain — that's a separate, harder question that browser sandboxing limits by design. For the integrity question, which covers most everyday needs, you can get a definitive answer without uploading the document anywhere. For more on how "is this online tool safe with my file" applies to signed documents specifically, see our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe/).

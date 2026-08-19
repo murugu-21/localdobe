@@ -1,6 +1,6 @@
 ---
-title: 'How to split a PDF into separate pages (offline & free)'
-description: 'Split a PDF into individual pages or extract a range — locally in your browser, with no upload and no watermark. Step-by-step guide.'
+title: 'Split PDF into separate pages — free, no upload, no watermark'
+description: 'Split a PDF into separate pages or extract a range of pages for free — no upload, no watermark, no signup. Everything runs locally in your browser.'
 pubDate: 2026-06-19
 tags: ['split', 'how-to', 'privacy']
 faq:
@@ -18,11 +18,11 @@ A 40-page scanned contract lands in your inbox and you need page 12 to send to y
 
 There's no technical reason for any of that. A PDF's page structure is just data your browser can already read — that's how it renders the preview you're looking at. This post covers how to split a PDF into separate pages without uploading it anywhere, plus a few tips on page-range syntax that make the job faster.
 
-> **Try it:** [use the split PDF tool](/split-pdf) to split a PDF into separate pages — free, no upload, and no watermark.
+> **Try it:** [use the split PDF tool](/split-pdf/) to split a PDF into separate pages — free, no upload, and no watermark.
 
 ## How to split a PDF
 
-Head to the [split PDF tool](/split-pdf) and:
+Head to the [split PDF tool](/split-pdf/) and:
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Click the thumbnails of the pages you want, or type a range directly — something like `1-3, 5, 7-` selects pages 1 through 3, page 5, and page 7 through the end.
@@ -51,7 +51,7 @@ The output is also lossless. Splitting doesn't re-render or recompress anything 
 
 ## When you actually want extraction, not splitting
 
-"Split" and "extract" get used interchangeably, but there's a useful distinction: splitting usually means breaking a whole document apart (often into one file per page), while extraction means pulling out a specific subset and leaving the rest behind. Both use the exact same range syntax and the exact same tool here — the difference is just which output option you pick. If you're mainly interested in the extraction side, with more examples of range syntax for tricky cases like extracting every other page or the last three pages of a long report, see our companion post on [how to extract specific pages from a PDF](/blog/extract-pages-from-pdf).
+"Split" and "extract" get used interchangeably, but there's a useful distinction: splitting usually means breaking a whole document apart (often into one file per page), while extraction means pulling out a specific subset and leaving the rest behind. Both use the exact same range syntax and the exact same tool here — the difference is just which output option you pick. If you're mainly interested in the extraction side, with more examples of range syntax for tricky cases like extracting every other page or the last three pages of a long report, see our companion post on [how to extract specific pages from a PDF](/blog/extract-pages-from-pdf/).
 
 ## Why "free" splitters often aren't as free as they look
 

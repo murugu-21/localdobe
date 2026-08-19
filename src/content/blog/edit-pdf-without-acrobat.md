@@ -9,7 +9,7 @@ Adobe Acrobat is capable software, but it's overkill for the edit most people ac
 
 ## How to edit a PDF
 
-On the [edit PDF tool](/edit-pdf):
+On the [edit PDF tool](/edit-pdf/):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Click any existing text to edit it in place, or click **+ Add text** and then click the page to place a new text box.
@@ -34,8 +34,8 @@ To be fair to Acrobat: it has capabilities a lightweight browser-based editor do
 
 The other advantage of a browser-based editor, beyond skipping Acrobat's cost, is skipping the upload step that many free web-based editors still require. Editing happens entirely in your own browser tab: the file is read into memory locally, the remove-and-replace operation happens there, and the exported PDF is written back out to your device — no network transfer of the file's contents at any point. That matters more for documents you'd rather not hand to an unfamiliar server: signed agreements, filled-in medical or financial forms, anything with a name and a signature on it.
 
-It's also, not incidentally, why this can be watermark-free: uploading and processing files on someone else's server costs real money per user, which is what usually funds the watermark-removal upsell on other free editors. Running the edit on your own device removes that cost, and the watermark along with it — more on that trade-off in our post on [why free PDF editors add watermarks](/blog/free-pdf-editors-watermarks).
+It's also, not incidentally, why this can be watermark-free: uploading and processing files on someone else's server costs real money per user, which is what usually funds the watermark-removal upsell on other free editors. Running the edit on your own device removes that cost, and the watermark along with it — more on that trade-off in our post on [why free PDF editors add watermarks](/blog/free-pdf-editors-watermarks/).
 
 ## The short version
 
-For the edits that come up constantly — a typo, a date, a name, a missing line — you don't need Acrobat, an account, or an upload. Open the [edit PDF tool](/edit-pdf), click the text, retype it, export. The whole thing takes less time than most sites would spend asking you to sign up.
+For the edits that come up constantly — a typo, a date, a name, a missing line — you don't need Acrobat, an account, or an upload. Open the [edit PDF tool](/edit-pdf/), click the text, retype it, export. The whole thing takes less time than most sites would spend asking you to sign up.

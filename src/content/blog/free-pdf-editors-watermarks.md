@@ -17,7 +17,7 @@ This is a completely legitimate business strategy for a company running expensiv
 
 ## Why a browser-based editor doesn't need the same trade-off
 
-The economics change when editing happens on your own device instead of a server. localdobe's [edit PDF tool](/edit-pdf) runs entirely in your browser: when you click on existing text and retype it, or add a new text box, the original text is genuinely removed from the page and your replacement is written in its place, using a font chosen to match the width and spacing of the original (Liberation Sans, Serif, or Mono, matched to Arial, Times New Roman, and Courier — the fonts behind most everyday documents), all without a server involved. Rotating and resizing pages works the same way — locally, immediately, with no round trip.
+The economics change when editing happens on your own device instead of a server. localdobe's [edit PDF tool](/edit-pdf/) runs entirely in your browser: when you click on existing text and retype it, or add a new text box, the original text is genuinely removed from the page and your replacement is written in its place, using a font chosen to match the width and spacing of the original (Liberation Sans, Serif, or Mono, matched to Arial, Times New Roman, and Courier — the fonts behind most everyday documents), all without a server involved. Rotating and resizing pages works the same way — locally, immediately, with no round trip.
 
 Because there's no per-edit server cost to recoup, there's no financial pressure to gate the clean output behind a paywall. The marginal cost of one more person editing one more PDF in their own browser is close to zero, which is exactly why this can stay watermark-free without needing a subscription tier to subsidize it.
 
@@ -29,12 +29,12 @@ This is excellent for the edits people actually need most often: fixing a typo, 
 
 ## How to actually edit a PDF without a watermark
 
-1. Go to the [edit PDF tool](/edit-pdf) and drop your file in.
+1. Go to the [edit PDF tool](/edit-pdf/) and drop your file in.
 2. Click any existing text to edit it in place, or click **+ Add text** and then click the page to place a new text box.
 3. Use the rotate buttons in a page's corner for 90° rotations, or the page-size menu to scale the whole document.
 4. Click **Export PDF** and download — no watermark, no export limit, no account.
 
-For more detail on doing this without Acrobat specifically, see our companion post on [how to edit a PDF without Adobe Acrobat](/blog/edit-pdf-without-acrobat).
+For more detail on doing this without Acrobat specifically, see our companion post on [how to edit a PDF without Adobe Acrobat](/blog/edit-pdf-without-acrobat/).
 
 ## Spotting the pattern elsewhere
 

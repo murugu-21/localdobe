@@ -5,7 +5,7 @@ pubDate: 2026-07-14
 tags: ['compress', 'webassembly']
 ---
 
-A three-page PDF that's somehow 40 MB isn't unusual, and it's a fair question to ask why. The content — a few paragraphs of text and maybe a couple of images — clearly doesn't need that much space. The answer almost always comes down to how the PDF was produced, not what it visually contains. Understanding where that bloat comes from also explains what a compression tool can and can't actually fix — and matters in practice the moment an oversized attachment bounces back from an email provider's size limit, which our post on [compressing a PDF for email](/blog/compress-pdf-for-email) covers from the practical side.
+A three-page PDF that's somehow 40 MB isn't unusual, and it's a fair question to ask why. The content — a few paragraphs of text and maybe a couple of images — clearly doesn't need that much space. The answer almost always comes down to how the PDF was produced, not what it visually contains. Understanding where that bloat comes from also explains what a compression tool can and can't actually fix — and matters in practice the moment an oversized attachment bounces back from an email provider's size limit, which our post on [compressing a PDF for email](/blog/compress-pdf-for-email/) covers from the practical side.
 
 ## PDFs are a container format, and containers accumulate junk
 
@@ -28,17 +28,17 @@ None of this is visible when you open the PDF and look at it. It's structural we
 There are two fundamentally different strategies a "PDF compressor" can use, and they have very different consequences:
 
 1. **Recompress images.** Lower the resolution or apply more aggressive lossy compression to embedded photos. This can produce large size reductions, but it's a real quality trade-off — text stays sharp, but photos and scanned pages come out visibly softer or blockier than the original.
-2. **Remove redundancy.** Deduplicate repeated font embeds, strip unused objects, and eliminate repeated content streams, without touching the actual image or text data. This is what localdobe's [compress PDF tool](/compress-pdf) does, using trusted, open-source PDF software that runs entirely inside your browser.
+2. **Remove redundancy.** Deduplicate repeated font embeds, strip unused objects, and eliminate repeated content streams, without touching the actual image or text data. This is what localdobe's [compress PDF tool](/compress-pdf/) does, using trusted, open-source PDF software that runs entirely inside your browser.
 
 The redundancy-removal approach is more honest about its limits: it can only shrink a file by however much genuine redundancy that file actually contains. A cleanly generated PDF with no duplicate fonts and no orphaned objects might not shrink at all, and a good compressor should say so rather than pretending to have done something. A PDF that's been through several rounds of editing and merging, on the other hand, can often shrink by 20–70%, because that's roughly how much of its size turns out to be accumulated overhead rather than content.
 
 ## How to compress your own PDF
 
-1. Go to the [compress PDF tool](/compress-pdf) and drop your file in.
+1. Go to the [compress PDF tool](/compress-pdf/) and drop your file in.
 2. Choose a compression level — Light, Balanced, or Maximum.
 3. Click **Compress PDF** and download the result.
 
-Because this runs on a real compression engine inside your browser rather than on a server, there's no upload involved and no queue to wait in — the first run downloads the engine once, and every run after that is instant. Curious how professional-grade PDF software ends up running inside a browser tab at all? See our post on [WebAssembly and how it powers local PDF tools](/blog/webassembly-pdf-tools).
+Because this runs on a real compression engine inside your browser rather than on a server, there's no upload involved and no queue to wait in — the first run downloads the engine once, and every run after that is instant. Curious how professional-grade PDF software ends up running inside a browser tab at all? See our post on [WebAssembly and how it powers local PDF tools](/blog/webassembly-pdf-tools/).
 
 ## Why the honest answer is sometimes "not much smaller"
 

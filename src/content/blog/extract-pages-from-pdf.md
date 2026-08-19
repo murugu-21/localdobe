@@ -11,7 +11,7 @@ It's functionally the same operation as splitting, just with a narrower goal, an
 
 ## How to extract pages from a PDF
 
-Using the [split PDF tool](/split-pdf):
+Using the [split PDF tool](/split-pdf/):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Click the thumbnails of the specific pages you want, or type the range directly into the input — for example, `4-9` for a contiguous block, or `1, 3, 5` for scattered individual pages.
@@ -50,6 +50,6 @@ That's a meaningful difference from uploading the source document to extract a p
 
 ## Extraction vs. splitting the whole document
 
-If your goal is closer to "break this whole document into pieces" rather than "pull out this one section," the same tool handles that too — choosing "Every page as its own PDF" produces a zip file with one PDF per page instead of a single extracted range. Our companion post on [how to split a PDF into separate pages](/blog/split-pdf-into-separate-pages) covers that full-document version of the same operation in more detail, including when it's the better fit than targeted extraction.
+If your goal is closer to "break this whole document into pieces" rather than "pull out this one section," the same tool handles that too — choosing "Every page as its own PDF" produces a zip file with one PDF per page instead of a single extracted range. Our companion post on [how to split a PDF into separate pages](/blog/split-pdf-into-separate-pages/) covers that full-document version of the same operation in more detail, including when it's the better fit than targeted extraction.
 
 Either way, the underlying mechanics are identical: your browser reads the file, copies the pages you asked for, and hands you the result — no upload, no watermark, no waiting on a server that never needed to be involved.

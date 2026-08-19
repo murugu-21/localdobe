@@ -11,7 +11,7 @@ Before going further, one thing worth being direct about: this isn't a tool for 
 
 ## How to remove a password from a PDF
 
-On the [unlock PDF tool](/unlock-pdf):
+On the [unlock PDF tool](/unlock-pdf/):
 
 1. Drop your password-protected PDF into the upload box, or click it to browse your device.
 2. Enter the file's current password.
@@ -35,8 +35,8 @@ It's also worth keeping the original, still-protected file around somewhere if t
 
 ## Why this runs locally instead of on a server
 
-Unlocking a PDF necessarily involves handling both the encrypted document and its password together — which makes it one of the worst possible operations to hand to an unfamiliar server. Sending both pieces to a third party to have them decrypt the file means that server briefly holds everything needed to access the document's contents, precisely the information a password is meant to gate. Running the decryption locally, using a real PDF engine that runs in your browser, means neither the file nor the password ever needs to leave your device to get the job done — the same guarantee that applies when you add a password in the first place, covered in our companion post on [how to password-protect a PDF](/blog/password-protect-pdf).
+Unlocking a PDF necessarily involves handling both the encrypted document and its password together — which makes it one of the worst possible operations to hand to an unfamiliar server. Sending both pieces to a third party to have them decrypt the file means that server briefly holds everything needed to access the document's contents, precisely the information a password is meant to gate. Running the decryption locally, using a real PDF engine that runs in your browser, means neither the file nor the password ever needs to leave your device to get the job done — the same guarantee that applies when you add a password in the first place, covered in our companion post on [how to password-protect a PDF](/blog/password-protect-pdf/).
 
 ## The short version
 
-If you know the password and just want the prompt gone: drop the file into the [unlock PDF tool](/unlock-pdf), type the password you already know, download the result. No upload, no account, no waiting — and no pretending this can get you into a file you don't already have legitimate access to.
+If you know the password and just want the prompt gone: drop the file into the [unlock PDF tool](/unlock-pdf/), type the password you already know, download the result. No upload, no account, no waiting — and no pretending this can get you into a file you don't already have legitimate access to.

@@ -11,13 +11,13 @@ Here's how to compress a PDF for email without that trade-off, and what's actual
 
 ## How to compress a PDF
 
-On the [compress PDF tool](/compress-pdf):
+On the [compress PDF tool](/compress-pdf/):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Pick a compression level — Light, Balanced, or Maximum.
 3. Click **Compress PDF** and download the smaller file.
 
-The first time you use the tool in a session, your browser downloads a small compression engine (a few megabytes) and caches it — after that, compression starts instantly, even if you go offline. For the full mechanics of why some PDFs shrink dramatically and others barely move, see our companion post on [PDF compression explained](/blog/pdf-compression-explained).
+The first time you use the tool in a session, your browser downloads a small compression engine (a few megabytes) and caches it — after that, compression starts instantly, even if you go offline. For the full mechanics of why some PDFs shrink dramatically and others barely move, see our companion post on [PDF compression explained](/blog/pdf-compression-explained/).
 
 ## What "no quality loss" actually means here
 
@@ -29,7 +29,7 @@ The practical consequence is an honest one: how much a given file shrinks depend
 
 ## Why this runs on a real compression engine, not a JavaScript approximation
 
-The engine behind this tool is a mature, open-source PDF processing library that runs directly inside your browser tab. It's the same category of professional-grade PDF software used by developers everywhere — not a lightweight reimplementation cutting corners. Modern browsers can run genuinely capable software like this at near-native speed, which is a relatively recent capability. If you're curious how that works under the hood, see our post on [how WebAssembly turns your browser into a PDF powerhouse](/blog/webassembly-pdf-tools).
+The engine behind this tool is a mature, open-source PDF processing library that runs directly inside your browser tab. It's the same category of professional-grade PDF software used by developers everywhere — not a lightweight reimplementation cutting corners. Modern browsers can run genuinely capable software like this at near-native speed, which is a relatively recent capability. If you're curious how that works under the hood, see our post on [how WebAssembly turns your browser into a PDF powerhouse](/blog/webassembly-pdf-tools/).
 
 Running that engine locally instead of on a server means the document you're trying to shrink — often precisely because it's sensitive enough to be worth emailing carefully — never has to leave your device to get processed. There's no upload queue, no server-side temp file, and nothing to clean up afterward on someone else's infrastructure.
 
@@ -38,7 +38,7 @@ Running that engine locally instead of on a server means the document you're try
 If Balanced compression doesn't get you under your email provider's cap, a few things to try before giving up and using a file-sharing link instead:
 
 - **Try Maximum compression.** It works harder to deduplicate objects and strip unused data, at the cost of slightly longer processing time.
-- **Check for embedded scanned images.** If your PDF is mostly scanned pages saved as high-resolution images, no redundancy-based compressor will shrink it dramatically — the size is coming from genuine image data, not bloat. In that case, splitting the document and sending the relevant pages (see our guide on [extracting specific pages from a PDF](/blog/extract-pages-from-pdf)) may be more effective than compressing the whole thing.
+- **Check for embedded scanned images.** If your PDF is mostly scanned pages saved as high-resolution images, no redundancy-based compressor will shrink it dramatically — the size is coming from genuine image data, not bloat. In that case, splitting the document and sending the relevant pages (see our guide on [extracting specific pages from a PDF](/blog/extract-pages-from-pdf/)) may be more effective than compressing the whole thing.
 - **Merge fewer, cleaner files.** If you're attaching several documents merged into one PDF, merging them with a clean tool before compressing avoids inheriting bloat from whatever produced each original.
 
 ## The honest version of "free compression"

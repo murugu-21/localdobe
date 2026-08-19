@@ -11,7 +11,7 @@ None of that is actually necessary. Modern web browsers are capable of reading, 
 
 ## How to merge PDF files
 
-You can do this right now on the [merge PDF page](/merge-pdf):
+You can do this right now on the [merge PDF page](/merge-pdf/):
 
 1. Drop two or more PDF files into the upload box, or click it to browse your device.
 2. Reorder the files using the arrows until they're in the sequence you want the merged document to follow.
@@ -37,6 +37,6 @@ The other common trade-off with "free" merge tools is the fine print: a watermar
 
 ## Beyond merging
 
-Merging is one of the simplest PDF operations, but the same local-processing approach applies to splitting, compressing, watermarking, password protection, and more — anything that can be done with well-understood PDF libraries running in-browser rather than on a remote server. If you're curious about the broader question of what actually happens to your files on typical "free" online PDF tools, and how to tell a genuinely private tool from one that only claims to be, see our companion post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe).
+Merging is one of the simplest PDF operations, but the same local-processing approach applies to splitting, compressing, watermarking, password protection, and more — anything that can be done with well-understood PDF libraries running in-browser rather than on a remote server. If you're curious about the broader question of what actually happens to your files on typical "free" online PDF tools, and how to tell a genuinely private tool from one that only claims to be, see our companion post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe/).
 
 For now: the next time you need to merge a couple of PDFs, you shouldn't need to upload anything to do it. Drop your files in, reorder them, download the result, and get back to whatever you were doing before a bank statement stood in your way.

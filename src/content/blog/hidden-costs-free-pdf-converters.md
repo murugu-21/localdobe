@@ -21,7 +21,7 @@ Less visible is what happens after you've used the tool once. Many free converte
 
 This is the one that matters most for anything sensitive. When you upload a document to convert, merge, or compress it, a full copy sits on that site's server for at least as long as processing takes — and often longer, depending on their retention policy. Some sites delete files promptly. Some retain them for a stated window. Some don't specify a policy at all, which functionally means you should assume retention until you find evidence otherwise. Either way, that's a copy of your document existing somewhere you don't control, for a duration you often can't verify.
 
-For a routine flyer, this cost is close to zero. For a signed contract, a tax form, or a medical record, it's a real one — and it's a cost you're paying regardless of whether the site ever does anything wrong with the file, simply because the exposure exists at all. Our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe) goes deeper into retention policies and how to spot the difference between a site that's thought about this and one that hasn't.
+For a routine flyer, this cost is close to zero. For a signed contract, a tax form, or a medical record, it's a real one — and it's a cost you're paying regardless of whether the site ever does anything wrong with the file, simply because the exposure exists at all. Our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe/) goes deeper into retention policies and how to spot the difference between a site that's thought about this and one that hasn't.
 
 ## Cost four: your data as the product
 
@@ -31,7 +31,7 @@ Some free tools' terms of service include broad language about rights to process
 
 localdobe's tools take a different approach: operations like merging, compressing, splitting, and watermarking run entirely inside your browser, with no upload step at all. That's not a policy promise about how your data will be handled after upload — it removes the upload, and everything downstream of it, entirely. There's no server retaining your file, no terms-of-service clause to parse about data usage rights over content that was never transmitted, and no funnel to monetize your attention because there's no account or email capture required to use the tool.
 
-It's also, not coincidentally, why the output has no watermark and no page limit: none of those restrictions exist to recoup a server cost that was never incurred in the first place. You can try this directly on the [merge PDF](/merge-pdf) or [compress PDF](/compress-pdf) tools, or browse [localdobe's full set of local PDF tools](/) — all of them process your files on your own device, watermark-free, with nothing to sign up for.
+It's also, not coincidentally, why the output has no watermark and no page limit: none of those restrictions exist to recoup a server cost that was never incurred in the first place. You can try this directly on the [merge PDF](/merge-pdf/) or [compress PDF](/compress-pdf/) tools, or browse [localdobe's full set of local PDF tools](/) — all of them process your files on your own device, watermark-free, with nothing to sign up for.
 
 ## How to avoid all four costs at once
 

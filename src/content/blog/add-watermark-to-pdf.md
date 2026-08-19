@@ -20,7 +20,7 @@ Here's a concrete case where the intensity matters: an invoice with a dense tabl
 
 ## How to add a watermark or stamp
 
-On the [watermark PDF tool](/watermark-pdf):
+On the [watermark PDF tool](/watermark-pdf/):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Choose **Add text** or **Add image**, and enter or upload what you want stamped onto the pages.
@@ -41,7 +41,7 @@ What removal can't do is strip a watermark that's been flattened into the page c
 
 It's worth naming the obvious tension directly: a lot of "free" watermark tools add their own branding to your file as a condition of using them for free — which is a strange thing for a watermarking tool to do to your document without asking. Because this tool runs on your own device rather than a server, there's no processing cost per use to recoup, and so no reason to add anything to your file beyond what you explicitly asked for. The output contains your watermark or stamp — the one you configured — and nothing else.
 
-For more on why that upsell pattern shows up across free PDF editors generally, not just watermark tools specifically, see our post on [why free PDF editors add watermarks](/blog/free-pdf-editors-watermarks).
+For more on why that upsell pattern shows up across free PDF editors generally, not just watermark tools specifically, see our post on [why free PDF editors add watermarks](/blog/free-pdf-editors-watermarks/).
 
 ## Why local processing matters here specifically
 

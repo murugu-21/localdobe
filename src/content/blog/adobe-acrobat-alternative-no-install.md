@@ -17,19 +17,19 @@ None of that is a scandal — it's just a lot of machinery to accept when the ta
 
 The other path is the one search engines love to serve: free online converter sites. No install, works anywhere — but the mechanism is that **your file is uploaded to someone else's server**. For a meme, who cares. For the documents people actually process — contracts, bank statements, tax forms, medical paperwork, signed agreements — you've just transmitted a sensitive document to an unfamiliar company in exchange for a page count.
 
-What happens to it afterwards depends on a retention policy you'll probably never read, on that company's security practices, and on the laws of whatever jurisdiction their servers sit in. Add the business-model frictions — watermarks on output, page caps, forced signups at the exact moment your file is already on their server — and the "free" starts to look expensive. We've written more about [what actually happens to uploaded files](/blog/are-online-pdf-tools-safe) and [the hidden costs of free converters](/blog/hidden-costs-free-pdf-converters).
+What happens to it afterwards depends on a retention policy you'll probably never read, on that company's security practices, and on the laws of whatever jurisdiction their servers sit in. Add the business-model frictions — watermarks on output, page caps, forced signups at the exact moment your file is already on their server — and the "free" starts to look expensive. We've written more about [what actually happens to uploaded files](/blog/are-online-pdf-tools-safe/) and [the hidden costs of free converters](/blog/hidden-costs-free-pdf-converters/).
 
 ## Why the trade-off existed at all
 
 The fork existed for an honest technical reason: PDF processing used to require real software — compiled libraries, meaningful compute — and that software had to run *somewhere*. Either on your machine (install the suite) or on a server (upload the file). A browser tab couldn't do the work.
 
-That stopped being true. Modern browsers run compiled, professional-grade software at near-native speed, which means the same class of PDF engine that used to need an installer or a server farm now runs inside the page you're looking at. (Curious how? See [how your browser became a PDF powerhouse](/blog/webassembly-pdf-tools).) The work happens on your machine — like the desktop suite — with nothing to install — like the web sites — and your file never leaves your device.
+That stopped being true. Modern browsers run compiled, professional-grade software at near-native speed, which means the same class of PDF engine that used to need an installer or a server farm now runs inside the page you're looking at. (Curious how? See [how your browser became a PDF powerhouse](/blog/webassembly-pdf-tools/).) The work happens on your machine — like the desktop suite — with nothing to install — like the web sites — and your file never leaves your device.
 
 ## What "no compromise" looks like in practice
 
 That's exactly how [localdobe's tools](/) are built, and the difference is checkable rather than promised:
 
-- **Nothing to install.** [Merge](/merge-pdf), [split](/split-pdf), [compress](/compress-pdf), [edit](/edit-pdf), [watermark](/watermark-pdf), [password-protect](/protect-pdf), [unlock](/unlock-pdf), and [check signatures](/validate-pdf-signature) — all in the browser you already have, on any operating system, with no admin rights and no updater.
+- **Nothing to install.** [Merge](/merge-pdf/), [split](/split-pdf/), [compress](/compress-pdf/), [edit](/edit-pdf/), [watermark](/watermark-pdf/), [password-protect](/protect-pdf/), [unlock](/unlock-pdf/), and [check signatures](/validate-pdf-signature/) — all in the browser you already have, on any operating system, with no admin rights and no updater.
 - **Nothing to upload.** Disconnect from the internet after the page loads and every tool keeps working — the honest test no upload-based site can pass. The tools even work as an offline app.
 - **No monetization of your document.** Free, no watermarks, no page caps, no account. Your hardware does the work, so nobody has to pay for servers by taxing your output.
 - **The capable parts, too.** This isn't just the easy operations: editing genuinely removes the original text rather than papering over it, signature checking verifies certificate chains against the same publicly published trust list Adobe Acrobat uses (bundled locally), and encryption is real AES-256 whose password never leaves your machine.

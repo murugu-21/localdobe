@@ -27,7 +27,7 @@ const description = 'Add a text or image watermark or stamp to a PDF — or remo
     <p>The only real difference is how bold the mark looks. This tool always draws your text or image <strong>over</strong> the page content, because most PDFs — scans, Word exports, anything printed from a browser — paint a solid background across the whole page, and a mark placed underneath that background would never show up. Translucency is what gives a watermark its classic faded look: keep the opacity low for background branding like "DRAFT" across a report, or push it up for something that must be impossible to miss, like "APPROVED" over a signed contract.</p>
     <h2>Removing watermarks: what's actually possible</h2>
     <p>Removal only works on watermarks and stamps that exist as separate PDF objects — the kind added by tools like this one, and most watermarking software that follows the PDF spec properly. If a watermark was flattened into the page content or baked directly into a scanned image, there's no clean way to strip it back out without also destroying the underlying content. We'd rather tell you that up front than pretend our remove button is magic.</p>
-    <p>Want the details? Read <a href="/blog/add-watermark-to-pdf">how to add a watermark to a PDF</a> and <a href="/blog/free-pdf-editors-watermarks">why so many "free" PDF editors add their own watermark</a>.</p>
+    <p>Want the details? Read <a href="/blog/add-watermark-to-pdf/">how to add a watermark to a PDF</a> and <a href="/blog/free-pdf-editors-watermarks/">why so many "free" PDF editors add their own watermark</a>.</p>
     <Faq items={faq} />
   </ToolPageShell>
 </Base>

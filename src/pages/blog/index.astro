@@ -14,7 +14,7 @@ const items = posts.map((p) => ({ name: p.data.title, url: `https://localdobe.co
     <p class="mt-2 text-muted">PDF how-tos and why your documents deserve to stay on your device.</p>
     <div class="mt-10 space-y-8">
       {posts.map((p) => (
-        <a href={`/blog/${p.id}`} class="block rounded-xl border border-border p-6 hover:border-accent">
+        <a href={`/blog/${p.id}/`} class="block rounded-xl border border-border p-6 hover:border-accent">
           <h2 class="text-xl font-bold">{p.data.title}</h2>
           <p class="mt-2 text-muted">{p.data.description}</p>
           <time class="mt-2 block text-xs text-muted" datetime={p.data.pubDate.toISOString()}>

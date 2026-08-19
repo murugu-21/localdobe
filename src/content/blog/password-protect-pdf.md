@@ -9,7 +9,7 @@ Adding a password to a PDF is one of the more common reasons someone needs a PDF
 
 ## How to password-protect a PDF
 
-On the [protect PDF tool](/protect-pdf):
+On the [protect PDF tool](/protect-pdf/):
 
 1. Drop your PDF into the upload box, or click it to browse your device.
 2. Enter and confirm a password.
@@ -27,13 +27,13 @@ Doing this in your browser instead removes that step entirely. The file is read 
 
 AES-256 refers to the Advanced Encryption Standard using a 256-bit key — a widely studied, widely trusted algorithm that scrambles a document's contents such that recovering the original requires the correct key (derived from your password). It's not a proprietary or unusual scheme; it's the same standard used broadly across security-sensitive software, chosen specifically because it's been extensively analyzed and hasn't been broken through cryptanalysis, only through weak passwords or key management.
 
-That last point matters practically: AES-256 encryption is only as strong as the password protecting it. A short, guessable password undermines a strong algorithm just as thoroughly as a weak algorithm would. If you're protecting something genuinely sensitive, a longer, unique password is worth the minor inconvenience of writing it down somewhere safe — and worth pairing with a tool that never sees either the file or the password, a distinction covered in more depth in our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe).
+That last point matters practically: AES-256 encryption is only as strong as the password protecting it. A short, guessable password undermines a strong algorithm just as thoroughly as a weak algorithm would. If you're protecting something genuinely sensitive, a longer, unique password is worth the minor inconvenience of writing it down somewhere safe — and worth pairing with a tool that never sees either the file or the password, a distinction covered in more depth in our post on [whether online PDF tools are safe](/blog/are-online-pdf-tools-safe/).
 
 ## There's no password recovery, by design
 
 Because the password never leaves your device and isn't stored anywhere — not by localdobe, not by anyone — there's no "forgot password" flow available if you lose it. That's not a missing feature; it's the direct consequence of the encryption actually working the way it's supposed to. A service that could recover your password for you would necessarily have to know or store it somewhere, which would undermine the whole premise. Write your password down somewhere durable before you close the tab.
 
-If you already know the password on a protected PDF and just need to remove it — because you're tired of retyping it, for instance — that's a different operation from protecting a new file, covered in our companion post on [how to remove a password from a PDF you own](/blog/remove-pdf-password).
+If you already know the password on a protected PDF and just need to remove it — because you're tired of retyping it, for instance — that's a different operation from protecting a new file, covered in our companion post on [how to remove a password from a PDF you own](/blog/remove-pdf-password/).
 
 ## When password protection is (and isn't) enough
 
