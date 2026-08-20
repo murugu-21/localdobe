@@ -1,58 +1,60 @@
 ---
-title: 'localdobe: open source PDF tools that never upload your files'
-description: 'Most free PDF tools upload your files to a server, making that company the custodian of your data. localdobe is open source and runs entirely in your browser.'
+title: 'Open source PDF tool: Apache 2.0 vs AGPL, and why it matters'
+description: 'Free PDF tools run on engines with very different licenses. localdobe uses Apache-2.0 pdfcpu; AGPL engines like Ghostscript carry source-disclosure duties.'
 pubDate: 2026-08-19
-tags: ['privacy', 'open-source', 'trust', 'security']
+tags: ['open-source', 'licensing', 'privacy', 'security']
 faq:
-  - q: 'Is it safe to use free online PDF tools?'
-    a: 'It depends on where your file goes. If the tool uploads your document to a server you don’t control, you’re trusting that company — and its security, retention, and business practices — with your data. Tools that process locally, like localdobe, never have your file in the first place.'
   - q: 'Is localdobe open source?'
-    a: 'Yes. The entire source code is published under the MIT License on GitHub and is public for anyone to read, audit, and verify. The in-browser PDF engine, pdfcpu, is itself open source under the Apache 2.0 License.'
+    a: 'Yes. The entire localdobe codebase is published under the MIT License on GitHub and is public for anyone to read, audit, and verify. Its PDF engine, pdfcpu, is itself open source under the permissive Apache 2.0 License.'
   - q: 'Does localdobe upload my PDF anywhere?'
     a: 'No. Every operation runs inside your browser on your own device. Your file is never transmitted to, logged on, or stored by a server — disconnect from the internet after the page loads and the tools still work.'
-  - q: 'Can I compress a PDF without uploading it?'
-    a: 'Yes — compress a PDF without uploading it at all. localdobe compresses (and splits, merges, and edits) your file entirely in your browser, so no server ever sees your document.'
-  - q: 'What does "processed on a server" mean for my documents?'
-    a: 'It means the operator’s servers receive, hold, and process a full copy of your file. That company becomes the party in possession of — and responsible for — your data. With local processing, no server ever sees your file, so that exposure is gone.'
+  - q: 'What is the difference between Apache 2.0 and AGPL?'
+    a: 'Apache 2.0 is a permissive license: you can embed, modify, and redistribute the software, and combine it with almost anything. AGPL is a strong copyleft: if users interact with your modified version over a network, you must make the complete corresponding source available to them and release your changes under AGPL.'
+  - q: 'Why does the PDF engine’s license matter?'
+    a: 'Because a “free” tool is only free to you if the software underneath it is lawfully distributed. A tool built on a permissive engine (like localdobe’s Apache-2.0 pdfcpu) is straightforward to ship and to verify. A tool that ships a copyleft engine like AGPL Ghostscript carries source-disclosure obligations that a closed, private distribution rarely satisfies.'
+  - q: 'What engine do other free PDF tools use?'
+    a: 'It varies. The notable one is ihatepdf.cv, which distributes Ghostscript compiled to WebAssembly. Ghostscript is licensed under AGPL (or a paid commercial license) — a very different legal position from the permissive engine localdobe runs.'
 ---
 
-A free PDF tool should be the easiest technical decision you make all day. In practice it's often the opposite — because most "free" online PDF tools hide the one detail that actually matters: **where your file goes.**
+What is the one factor that quietly decides the whole legal and commercial position of a "free" PDF tool?
 
-## The two models of "free" PDF tools
+It's not the marketing. It's **the license of the PDF engine underneath it.**
 
-Almost every free PDF tool you've ever used follows one of two designs.
+Every PDF tool — "free" or paid — is built on someone's PDF-processing software. That software comes with a license, and that license determines what the tool's maker is legally allowed to do with it, and what they are required to disclose to you. Most people never look at it. It happens to be the most important thing about the product.
 
-**The server model.** You upload your PDF, it travels over the internet to the company's servers, they process it there, and they send the result back. This is what tools like ihatepdf.cv do — and it's the most common model, because it needs nothing from your device beyond a browser.
+## localdobe's engine: permissive, Apache 2.0
 
-That model has a consequence most people don't stop to think about: **the company running the site becomes the party that holds your document.** Every file you run through it — contracts, bank statements, medical records, signed agreements — is copied onto infrastructure you don't control. Whatever their privacy policy says, the responsibility for what happens to those files no longer sits with you. It sits with them.
+localdobe runs on [pdfcpu](https://github.com/pdfcpu/pdfcpu), a PDF engine written in Go and compiled to WebAssembly. It's licensed under **Apache 2.0** — a *permissive* open-source license.
 
-If they're careless, or breached, or acquired, or just quietly change their retention terms, it's their infrastructure that has your documents — and they're the ones answerable for it. Choosing to upload a document to a server tool is, in effect, choosing to make a third party the custodian of your file.
+Permissive is the easy case. Apache 2.0 lets you embed, modify, and redistribute the software, and combine it with nearly anything — including with our own MIT-licensed code. There are no copyleft strings attached, and there's no requirement to hand your source code to your users. That's why we could ship localdobe as a genuinely free tool, open-source our own code under MIT, and make the entire repository public for anyone to audit. Nothing about our stack depends on a license restriction being ignored.
 
-**The local model.** localdobe runs the opposite way. Your PDF is processed *inside your browser, on your device*. No file is ever uploaded. Nothing is transmitted, logged, or stored on a server. Disconnect from the internet after the page loads and the tools keep working — because the work never involved the network in the first place.
+## The other side: an AGPL engine, distributed as WebAssembly
 
-That means you can [compress a PDF without uploading it](/compress-pdf/), [split a PDF without uploading it](/split-pdf/), or [merge PDFs without uploading them](/merge-pdf/) — and nothing about the operation ever leaves your device. There's no server holding your file, no server to breach, and no third party responsible for it.
+A growing number of free PDF tools take a different route.
 
-## Open source is the trust layer
+ihatepdf.cv, for example, distributes **Ghostscript** compiled to WebAssembly and runs it in your browser. Ghostscript is a powerful, decades-old PDF engine — but its open-source license is **AGPL** (the GNU Affero GPL), not a permissive one. (Artifex also sells commercial licenses, but the free flavor is AGPL.)
 
-The server model asks you to trust a company you've never met. The local model mostly removes that need — but how do you verify the claim?
+AGPL is a *strong copyleft* license, and that distinction matters enormously here. Under AGPL:
 
-That's the second thing we believe deserves to be upfront: **you shouldn't have to take our word for it.**
+- If users **interact with your modified version over a network**, you must make the **complete corresponding source code** available to them. That clause — section 13, written specifically for web services — applies when you serve software to a network user, and shipping a WASM engine that users' browsers download and execute is exactly the kind of network interaction AGPL was designed to cover.
+- Any changes or derivative works must also be released under AGPL.
 
-So localdobe is now fully open source. The entire codebase is published on GitHub under the **MIT License** — anyone can read it, audit it, fork it, and check exactly what it does. And the PDF engine inside it, [pdfcpu](https://github.com/pdfcpu/pdfcpu), is itself open source under the **Apache 2.0 License**, the same class of permissive license used by some of the most widely deployed software in the world.
+So distributing an AGPL engine in a closed, proprietary, single-purpose tool puts the distributor **in a legal position that a permissive stack never faces**: either comply with the source-disclosure obligations, or don't distribute it lawfully at all. A private, closed distribution with no source offer is, at best, sitting in an unsupported legal gray area — and the burden sits entirely with the distributor.
 
-That's the difference between "trust us" and "check for yourself."
+That's the real difference between ihatepdf.cv and localdobe: **not** "which has shinier buttons," but *our engine is permissively licensed and fully open, and theirs is a copyleft engine that is legally harder to distribute than it looks.*
 
-Tools that process your files on their servers, and keep their own code closed behind a private repository, ask you to accept their word for what happens to your documents. When our code is public for anyone to inspect, that trust is verifiable — not just asserted. Open code can be audited. Closed code can only be trusted.
+## Open source is the trust layer, and it has to be real
 
-## What we're asking you to do next time
+We open-sourced localdobe for a reason: **you shouldn't have to take our word for anything.**
 
-Before you run a PDF through any free online tool, ask two questions:
+Open source is only meaningful if it's *real* — a published repository under a license that actually grants you rights. Our code is public under the MIT License, and anyone can read, audit, and fork it. The engine under the hood, pdfcpu, is Apache 2.0, so the whole stack — tool *and* engine — is permissive and auditable.
 
-1. **Where does my file actually go?** If it uploads to their servers, a third party now holds a copy of your document — and the responsibility for it.
-2. **Can I verify what the tool does?** If the source is private, your only option is to trust the company's word. If it's open source, you can check — or have someone you trust check for you.
+A tool that ships a copyleft engine in a closed repository asks you to trust a bundle of things you can't verify: that the engine is lawfully distributed, that the copyleft obligations were met, and that the code does what it claims. "Trust us" is a weaker guarantee than "check for yourself" — and the license under the hood is exactly what a check reveals.
 
-localdobe's answers are simple: **nowhere, and yes.**
+## Three questions for any free PDF tool
 
-Not sure an online PDF tool is safe? We've written about [what actually happens to your files on online PDF tools](/blog/are-online-pdf-tools-safe/) and [how to merge PDFs without uploading them anywhere](/blog/merge-pdfs-without-uploading/).
+1. **What engine is under the hood, and under what license?** Permissive (Apache, MIT, BSD) means it can be freely embedded and shared. Copyleft (GPL, AGPL) means whoever ships it carries source-disclosure obligations you can't see from the outside.
+2. **Is the source actually public?** If the repo is private or invisible, your only options are trust and more trust. If it's open, you or anyone you trust can verify it.
+3. **Where does your file go?** We run everything locally, so your PDF never leaves your device — that's independent of the license question, but it's why the whole point of a *free* tool doesn't have to come with hidden costs.
 
-Try it — [compress a PDF](/compress-pdf/), [split a PDF](/split-pdf/), or [merge PDFs](/merge-pdf/) entirely in your browser. Or skip us entirely and audit the code first at [github.com/murugu-21/localdobe](https://github.com/murugu-21/localdobe). We'd rather you verify us than trust us blindly.
+localdobe's answers: **pdfcpu, Apache 2.0. Public, MIT. Nowhere.** You can [compress a PDF](/compress-pdf/), [split a PDF](/split-pdf/), or [merge PDFs](/merge-pdf/) entirely in your browser, and audit the code at [github.com/murugu-21/localdobe](https://github.com/murugu-21/localdobe). We'd rather you verify us than trust us blindly.
