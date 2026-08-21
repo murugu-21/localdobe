@@ -64,7 +64,7 @@ export default function RotateTool() {
       setLoaded(next);
       setDeltas(new Array(doc.numPages).fill(0));
       setPhase('idle');
-      void detect(next); // Task 6 wires this in; a stub for now.
+      void detect(next); // Un-awaited: classification runs in the background while the UI stays interactive.
     } catch {
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
@@ -73,8 +73,44 @@ export default function RotateTool() {
     }
   }
 
-  // Auto-detection lands in the next task; keep the hook so the flow above is final.
-  async function detect(_l: Loaded) {}
+  /** Classify pages sequentially; pre-apply confident fixes. All failures are
+   *  non-blocking — the tool degrades to manual-only with a notice. */
+  async function detect(l: Loaded) {
+    setDetectNote(`Checking page orientation… 0/${l.pageCount}`);
+    let fixed = 0;
+    let failures = 0;
+    try {
+      const [{ detectOrientation }, { CONFIDENCE_THRESHOLD, suggestedCorrection }] = await Promise.all([
+        import('../../lib/pdf/orientationClient'),
+        import('../../lib/pdf/orientation'),
+      ]);
+      for (let i = 0; i < l.detectInputs.length; i++) {
+        if (abort.current) return;
+        try {
+          const { angle, confidence } = await detectOrientation(
+            l.detectInputs[i].data, l.detectInputs[i].width, l.detectInputs[i].height,
+          );
+          const correction = suggestedCorrection(angle);
+          if (confidence >= CONFIDENCE_THRESHOLD && correction !== 0) {
+            fixed++;
+            setDeltas((prev) => prev.map((d, j) => (j === i ? correction : d)));
+            setAutoFixed((prev) => new Set(prev).add(i));
+          }
+        } catch {
+          failures++;
+          if (failures >= 3) throw new Error('detector unavailable');
+        }
+        setDetectNote(`Checking page orientation… ${i + 1}/${l.pageCount}`);
+      }
+      setDetectNote(
+        fixed === 0
+          ? 'All pages look upright — tap any page to rotate it anyway.'
+          : `${fixed} page${fixed === 1 ? '' : 's'} looked rotated and ${fixed === 1 ? 'was' : 'were'} auto-straightened — tap any page to adjust.`,
+      );
+    } catch {
+      setDetectNote('Automatic detection is unavailable on this device — tap pages to rotate them manually.');
+    }
+  }
 
   function clear() {
     setLoaded(null); setDeltas([]); setAutoFixed(new Set()); setDetectNote(null);

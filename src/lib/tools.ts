@@ -35,7 +35,7 @@ export const toolGroups: ToolGroup[] = [
         icon: '<circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>',
       },
       {
-        href: '/rotate-pdf',
+        href: '/rotate-pdf/',
         name: 'Rotate PDF',
         desc: 'Fix sideways or upside-down pages — rotation is detected automatically.',
         icon: '<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>',

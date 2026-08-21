@@ -57,5 +57,16 @@ export default defineConfig({
       },
     }),
   ],
-  vite: { plugins: [tailwindcss()] },
+  vite: {
+    plugins: [tailwindcss()],
+    // onnxruntime-web's default export bundles its wasm binaries as `_astro/`
+    // assets via `new URL(..., import.meta.url)` (the largest, the JSEP
+    // variant, is 26.8MB — well past the PWA precache limit below, and Vite
+    // treats that as a fatal build error). We already self-host the real
+    // wasm under public/wasm/ort/ and point onnxruntime-web there at runtime
+    // via `ort.env.wasm.wasmPaths` (see src/workers/orientation.worker.ts), so
+    // the bundled copy is dead weight. This condition selects onnxruntime-web's
+    // non-bundled build, which has no static wasm reference for Vite to pick up.
+    resolve: { conditions: ['onnxruntime-web-use-extern-wasm'] },
+  },
 });
