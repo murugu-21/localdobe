@@ -9,6 +9,27 @@ export function dpiToScale(dpi: number): number {
   return dpi / 72;
 }
 
+/**
+ * Caps a render `scale` so the resulting canvas never exceeds `maxPixels`. Safari
+ * silently produces a blank canvas above ~16.7M pixels, and Chrome will happily
+ * allocate hundreds of MB for an uncapped scale on large-format pages (e.g. a
+ * 36x48in poster at 300 DPI) — so every page is capped to the same budget
+ * regardless of browser. `widthPt`/`heightPt` are the page's scale-1 viewport
+ * dimensions (points).
+ */
+export function capScaleToPixelBudget(
+  scale: number,
+  widthPt: number,
+  heightPt: number,
+  maxPixels = 16_000_000,
+): number {
+  const pixels = widthPt * scale * (heightPt * scale);
+  if (pixels > maxPixels) {
+    return scale * Math.sqrt(maxPixels / pixels);
+  }
+  return scale;
+}
+
 export function pageImageName(baseName: string, pageIndex: number, format: ImageFormat): string {
   const ext = format === 'jpeg' ? 'jpg' : 'png';
   return `${baseName}-page-${pageIndex + 1}.${ext}`;
@@ -33,7 +54,9 @@ export async function pdfToImages(
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const canvas = document.createElement('canvas');
-      await renderPageToCanvas(page, canvas, scale);
+      const base = page.getViewport({ scale: 1 });
+      const pageScale = capScaleToPixelBudget(scale, base.width, base.height);
+      await renderPageToCanvas(page, canvas, pageScale);
       const blob = await new Promise<Blob | null>((resolve) => {
         canvas.toBlob(resolve, mime, format === 'jpeg' ? 0.9 : undefined);
       });

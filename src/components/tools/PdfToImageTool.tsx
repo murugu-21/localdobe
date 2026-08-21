@@ -77,8 +77,9 @@ export default function PdfToImageTool({ format }: Props) {
   async function run() {
     if (!loaded) return;
     setPhase('working'); setError(null); setProgress({ done: 0, total: loaded.pageCount });
+    const { pdfToImages, DPI_PRESETS, pageImageName } = await import('../../lib/pdf/pdfToImages');
+    const { PdfToolError } = await import('../../lib/pdf/errors');
     try {
-      const { pdfToImages, DPI_PRESETS, pageImageName } = await import('../../lib/pdf/pdfToImages');
       const images = await pdfToImages(loaded.bytes, format, DPI_PRESETS[preset], (done, total) => {
         setProgress({ done, total });
       });
@@ -95,7 +96,7 @@ export default function PdfToImageTool({ format }: Props) {
       }
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      setError(err instanceof PdfToolError ? err.message : 'Something went wrong converting this PDF.');
       setPhase('error');
     }
   }
