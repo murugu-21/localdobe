@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "refresh-aatl": "node scripts/refresh-aatl.mjs"
+    "refresh-aatl": "node scripts/refresh-aatl.mjs",
+    "refresh-doc-ori": "node scripts/refresh-doc-ori.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
@@ -32,6 +33,7 @@
     "clsx": "^2.1.1",
     "fflate": "^0.8.3",
     "lucide-react": "^1.30.0",
+    "onnxruntime-web": "^1.27.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.2.108",
     "radix-ui": "^1.6.7",

@@ -38,13 +38,18 @@ export default defineConfig({
         // assets (e.g. the ~4.6MB pdfium.wasm bundled via `?url` import into _astro/) —
         // NOT the 20MB pdfcpu.wasm, which lives under /wasm/ and is excluded below.
         globPatterns: ['**/*.{html,js,mjs,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest,wasm}'],
-        globIgnores: ['wasm/**'],
-        // pdfcpu.wasm caches on first use so most visitors never download it.
+        globIgnores: ['wasm/**', 'models/**'],
+        // pdfcpu.wasm and ort wasm files cache on first use so most visitors never download them.
         runtimeCaching: [
           {
-            urlPattern: /\/wasm\/.*\.wasm$/,
+            urlPattern: /\/wasm\/.*\.(wasm|mjs)$/,
             handler: 'CacheFirst',
-            options: { cacheName: 'pdfcpu-wasm', expiration: { maxEntries: 4 } },
+            options: { cacheName: 'pdfcpu-wasm', expiration: { maxEntries: 8 } },
+          },
+          {
+            urlPattern: /\/models\/.*\.onnx$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'onnx-models', expiration: { maxEntries: 4 } },
           },
         ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
