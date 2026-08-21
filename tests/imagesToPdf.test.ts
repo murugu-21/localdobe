@@ -52,6 +52,22 @@ function injectExif(jpeg: Uint8Array, orientation: number, little = true): Uint8
   return out;
 }
 
+/**
+ * Renders the PDF's first page through pdfjs-dist (the legacy/node build) and reads
+ * back its /Rotate-adjusted viewport — i.e. what a viewer actually displays, as
+ * opposed to the raw (pre-rotation) MediaBox that `PDFDocument.getPage().getSize()`
+ * reports. `getViewport` needs no canvas/worker setup to compute dimensions.
+ */
+async function getDisplayedSize(bytes: Uint8Array): Promise<{ width: number; height: number }> {
+  const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const loadingTask = getDocument({ data: bytes });
+  const pdf = await loadingTask.promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 1 });
+  await loadingTask.destroy();
+  return { width: viewport.width, height: viewport.height };
+}
+
 describe('sniffImageType', () => {
   test('detects jpg from magic bytes', async () => {
     const jpg = await encode(4, 4, 'jpeg');
@@ -162,18 +178,43 @@ describe('imagesToPdf', () => {
     expect(page.getRotation().angle).toBe(90);
   });
 
-  test('a4: orientation-6 landscape-stored jpeg -> page picked from EFFECTIVE (portrait) dims', async () => {
+  test('a4: orientation-6 landscape-stored jpeg -> displays as portrait A4', async () => {
     // Raw 40x20 (landscape); rotated 90deg the effective/upright dims are 20x40
-    // (portrait), so the A4 page must be chosen portrait, not landscape.
+    // (portrait), so the page must DISPLAY as portrait A4. Because /Rotate 90 swaps
+    // displayed width/height, the raw (pre-rotation) MediaBox must be the SWAPPED,
+    // landscape frame (841.89x595.28) so that after rotation it displays portrait.
     const jpg = await encode(40, 20, 'jpeg');
     const withExif = injectExif(jpg, 6, true);
     const out = await imagesToPdf([withExif], 'a4');
     const doc = await PDFDocument.load(out);
     const page = doc.getPage(0);
     const { width, height } = page.getSize();
-    expect(width).toBeCloseTo(595.28, 2);
-    expect(height).toBeCloseTo(841.89, 2);
+    expect(width).toBeCloseTo(841.89, 2);
+    expect(height).toBeCloseTo(595.28, 2);
     expect(page.getRotation().angle).toBe(90);
+
+    // Confirm what a real viewer displays: portrait A4, not landscape.
+    const displayed = await getDisplayedSize(out);
+    expect(displayed.width).toBeCloseTo(595.28, 2);
+    expect(displayed.height).toBeCloseTo(841.89, 2);
+  });
+
+  test('letter: orientation-8 landscape-stored jpeg (270deg) -> displays as portrait letter', async () => {
+    // Same swap logic, exercised at a different angle (270) and page size (letter)
+    // so the fix isn't single-pointed to orientation 6 / a4.
+    const jpg = await encode(40, 20, 'jpeg');
+    const withExif = injectExif(jpg, 8, true);
+    const out = await imagesToPdf([withExif], 'letter');
+    const doc = await PDFDocument.load(out);
+    const page = doc.getPage(0);
+    const { width, height } = page.getSize();
+    expect(width).toBeCloseTo(792, 2);
+    expect(height).toBeCloseTo(612, 2);
+    expect(page.getRotation().angle).toBe(270);
+
+    const displayed = await getDisplayedSize(out);
+    expect(displayed.width).toBeCloseTo(612, 2);
+    expect(displayed.height).toBeCloseTo(792, 2);
   });
 
   test('fit: plain jpeg (no Exif) -> no rotation applied', async () => {

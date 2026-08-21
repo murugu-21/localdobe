@@ -156,9 +156,15 @@ export async function imagesToPdf(images: Uint8Array[], pageSize: PageSize): Pro
     }
 
     const [baseWidth, baseHeight] = PAGE_DIMS[pageSize];
-    const landscape = effWidth > effHeight;
-    const pageWidth = landscape ? baseHeight : baseWidth;
-    const pageHeight = landscape ? baseWidth : baseHeight;
+    // Pick the DISPLAYED page orientation from the effective (upright) dims, then —
+    // since /Rotate 90|270 swaps displayed width/height — build the MediaBox as the
+    // swapped, pre-rotation raw frame so the display comes out as decided here.
+    // (fit mode above never swaps because its "page" IS the raw frame already.)
+    const displayLandscape = effWidth > effHeight;
+    const displayWidth = displayLandscape ? baseHeight : baseWidth;
+    const displayHeight = displayLandscape ? baseWidth : baseHeight;
+    const pageWidth = rotated ? displayHeight : displayWidth;
+    const pageHeight = rotated ? displayWidth : displayHeight;
     const page = doc.addPage([pageWidth, pageHeight]);
 
     const boxWidth = pageWidth - MARGIN * 2;
