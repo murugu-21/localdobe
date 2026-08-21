@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import RotateTool from '../components/tools/RotateTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'How does the automatic detection work?', a: 'A small vision model (7 MB) runs inside your browser and classifies each page as upright, sideways, or upside-down. Pages that look rotated are pre-straightened for you — nothing is uploaded.' },
+  { q: 'Can I rotate just one page?', a: 'Yes — tap any page thumbnail to turn it 90°. Tap again for 180° and 270°. Only the pages you change are modified.' },
+  { q: 'Does rotating reduce quality?', a: 'No. Rotation is stored as page metadata — the text, images, and vectors in your PDF are untouched, so the result is pixel-identical.' },
+  { q: 'What if the auto-detection gets a page wrong?', a: 'Suggestions are only pre-applied when the model is confident, and every page stays tappable — one tap overrides any suggestion.' },
+  { q: 'Are my files uploaded?', a: 'Never. Both the detection model and the rotation run locally in your browser; your PDF stays on your device.' },
+];
+const description = 'Rotate PDF pages free, with automatic upside-down and sideways page detection. No watermark, no upload — everything runs locally in your browser.';
+---
+<Base title="Rotate PDF — auto-detect sideways pages, no upload | localdobe" {description} canonicalPath="/rotate-pdf"
+  jsonLd={[webAppJsonLd('Rotate PDF', '/rotate-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Rotate a PDF" sub="Sideways pages are detected and straightened automatically — locally, in your browser.">
+    <RotateTool client:load slot="tool" />
+    <h2>How to rotate a PDF</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Pages that look sideways or upside-down are straightened automatically and marked <strong>Auto-straightened</strong>.</li>
+      <li>Tap any page to rotate it a further 90° — or use <strong>Rotate all 90°</strong>.</li>
+      <li>Hit the button and download the corrected PDF.</li>
+    </ol>
+    <h2>Rotation that fixes itself</h2>
+    <p>Scanned documents come out sideways all the time — a duplex scanner flips every other page, or a landscape sheet sneaks into a portrait batch. Instead of making you squint at thumbnails, localdobe runs a small on-device vision model over every page and pre-straightens the ones that need it. The model never phones home: it is downloaded once, cached, and runs entirely inside your browser tab.</p>
+    <p>Rotation itself is lossless — it updates each page's rotation metadata rather than re-rendering anything, so fonts, images, and vector graphics are byte-for-byte untouched.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
