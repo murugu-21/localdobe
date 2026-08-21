@@ -28,10 +28,14 @@ export default function RotateTool() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ filename: string; bytes: Uint8Array } | null>(null);
   const abort = useRef(false);
+  // Bumped on every new load (onFile) and on clear() — lets an in-flight detect() from a
+  // stale file recognize it's no longer current and stop writing into the new file's state.
+  const generation = useRef(0);
 
   useEffect(() => () => { abort.current = true; }, []);
 
   async function onFile([file]: File[]) {
+    const gen = ++generation.current;
     setPhase('working'); setError(null); setResult(null); setAutoFixed(new Set()); setDetectNote(null);
     let doc: PDFDocumentProxy | null = null;
     let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
@@ -64,7 +68,7 @@ export default function RotateTool() {
       setLoaded(next);
       setDeltas(new Array(doc.numPages).fill(0));
       setPhase('idle');
-      void detect(next); // Un-awaited: classification runs in the background while the UI stays interactive.
+      void detect(next, gen); // Un-awaited: classification runs in the background while the UI stays interactive.
     } catch {
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
@@ -74,8 +78,15 @@ export default function RotateTool() {
   }
 
   /** Classify pages sequentially; pre-apply confident fixes. All failures are
-   *  non-blocking — the tool degrades to manual-only with a notice. */
-  async function detect(l: Loaded) {
+   *  non-blocking — the tool degrades to manual-only with a notice.
+   *
+   *  `gen` pins this call to the load (onFile/clear) generation that started it. If the
+   *  user starts over (or loads another file) mid-detection, `generation.current` moves
+   *  on and every state write below is skipped — otherwise a stale run would keep
+   *  applying file A's corrections onto file B's state after a "Start over". */
+  async function detect(l: Loaded, gen: number) {
+    const stale = () => abort.current || gen !== generation.current;
+    if (stale()) return;
     setDetectNote(`Checking page orientation… 0/${l.pageCount}`);
     let fixed = 0;
     let failures = 0;
@@ -85,7 +96,7 @@ export default function RotateTool() {
         import('../../lib/pdf/orientation'),
       ]);
       for (let i = 0; i < l.detectInputs.length; i++) {
-        if (abort.current) return;
+        if (stale()) return;
         try {
           const { angle, confidence } = await detectOrientation(
             l.detectInputs[i].data, l.detectInputs[i].width, l.detectInputs[i].height,
@@ -93,14 +104,26 @@ export default function RotateTool() {
           const correction = suggestedCorrection(angle);
           if (confidence >= CONFIDENCE_THRESHOLD && correction !== 0) {
             fixed++;
+            if (stale()) return;
             setDeltas((prev) => prev.map((d, j) => (j === i ? correction : d)));
+            if (stale()) return;
             setAutoFixed((prev) => new Set(prev).add(i));
           }
         } catch {
           failures++;
           if (failures >= 3) throw new Error('detector unavailable');
         }
+        if (stale()) return;
         setDetectNote(`Checking page orientation… ${i + 1}/${l.pageCount}`);
+      }
+      if (stale()) return;
+      // Three-strikes-and-abort (above) only fires past 3 pages; on a 1- or 2-page
+      // document every page can fail without ever reaching that threshold. Catch the
+      // total-failure case here too so a fully degraded detector never reports the
+      // (affirmatively false) "look upright" success text.
+      if (failures > 0 && failures === l.detectInputs.length && fixed === 0) {
+        setDetectNote('Automatic detection is unavailable on this device — tap pages to rotate them manually.');
+        return;
       }
       setDetectNote(
         fixed === 0
@@ -108,11 +131,13 @@ export default function RotateTool() {
           : `${fixed} page${fixed === 1 ? '' : 's'} looked rotated and ${fixed === 1 ? 'was' : 'were'} auto-straightened — tap any page to adjust.`,
       );
     } catch {
+      if (stale()) return;
       setDetectNote('Automatic detection is unavailable on this device — tap pages to rotate them manually.');
     }
   }
 
   function clear() {
+    generation.current++;
     setLoaded(null); setDeltas([]); setAutoFixed(new Set()); setDetectNote(null);
     setPhase('idle'); setError(null); setResult(null);
   }

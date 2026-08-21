@@ -253,3 +253,35 @@ test('rotate: detection finishing with no rotated pages reports upright', async 
   // Whichever way detection resolves, the CTA must stay disabled with no deltas.
   await expect(page.getByTestId('run-tool')).toBeDisabled();
 });
+
+test('rotate: starting over mid-detection does not leak stale auto-fixes into the new file', async ({ page }) => {
+  await page.goto('/rotate-pdf');
+  // big.pdf (40 pages) keeps detection running long enough to click "Start over" mid-flight.
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  // Thumbnail + detect-input rendering for all 40 pages happens before detect() starts,
+  // so give that its own generous budget before the progress note is expected to appear.
+  await expect(page.getByTestId('detect-status')).toContainText(/Checking page orientation/, { timeout: 60_000 });
+  await page.getByTestId('clear-file').click();
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/rotated.pdf');
+  // First run downloads the 7MB model into the worker — give it time.
+  await expect(page.getByTestId('auto-badge-1')).toBeVisible({ timeout: 120_000 });
+  // Regression: a still-running detect() for the discarded 40-page file used to keep
+  // writing into this file's state — asserting exactly one badge (rotated.pdf's own
+  // page 2) rules out any leftover auto-fixes from the aborted 40-page run.
+  await expect(page.getByTestId(/auto-badge-/)).toHaveCount(1);
+  await expect(page.getByTestId('auto-badge-0')).not.toBeVisible();
+  await expect(page.getByTestId('detect-status')).toContainText(/1 page/);
+});
+
+test('rotate: fully unavailable detector on a small doc shows the degraded notice, not false success', async ({ page }) => {
+  // Force every detection call to fail by blocking the orientation model fetch —
+  // simulates total model failure on a 2-page document (a.pdf), which can never
+  // reach the 3-strikes early-bail threshold.
+  await page.route('**/models/doc-ori.onnx', (route) => route.abort());
+  await page.goto('/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  // Regression: without the fix this settles on "All pages look upright" instead.
+  await expect(page.getByTestId('detect-status')).toContainText(/unavailable/i, { timeout: 120_000 });
+  await expect(page.getByTestId('detect-status')).not.toContainText(/look upright/i);
+  await expect(page.getByTestId('run-tool')).toBeDisabled();
+});
