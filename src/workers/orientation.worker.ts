@@ -1,5 +1,13 @@
 /// <reference lib="webworker" />
-import * as ort from 'onnxruntime-web';
+// The wasm-only subpath, NOT the package root: the root entrypoint resolves
+// (under the `onnxruntime-web-use-extern-wasm` Vite condition) to the combined
+// wasm+webgpu bundle, which only ever fetches its JSEP-suffixed wasm binaries
+// (`ort-wasm-simd-threaded.jsep.{mjs,wasm}`) — files we don't self-host. The
+// wasm-only bundle fetches the plain `ort-wasm-simd-threaded.{mjs,wasm}` that
+// actually live under public/wasm/ort/, so this is the only import that works
+// with executionProviders: ['wasm'] here (discovered by running this in a real
+// browser for the first time: the mismatch made every detection call reject).
+import * as ort from 'onnxruntime-web/wasm';
 import { centerCropRgba, interpretScores, rgbaToTensorData, MODEL_INPUT_SIZE } from '../lib/pdf/orientation';
 
 export interface DetectRequest { id: number; rgba: ArrayBuffer; width: number; height: number }

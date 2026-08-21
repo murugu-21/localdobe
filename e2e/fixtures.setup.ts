@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, degrees, rgb } from 'pdf-lib';
 
 export default async function globalSetup() {
   await mkdir('e2e/.fixtures', { recursive: true });
@@ -54,6 +54,30 @@ export default async function globalSetup() {
   await writeFile('e2e/.fixtures/big.pdf', await make(Array.from({ length: 40 }, (_, i) => `Page ${i + 1}`), 80));
   await writeFile('e2e/.fixtures/edit.pdf', await make(['Hello World from localdobe']));
   await writeFile('e2e/.fixtures/signed.pdf', await makeSigned());
+
+  // Two dense-prose pages; page 2 carries /Rotate 90 so it RENDERS sideways —
+  // the orientation model sees what a viewer sees. Continuous body text at
+  // realistic line spacing is what the classifier was trained on: `make()`'s
+  // sparse single-heading-plus-filler-lines layout scored well under the 0.8
+  // confidence threshold in practice (~0.45), so this fixture draws full-page
+  // prose instead of relying on `make()`'s padding.
+  async function makeDenseProse(headings: string[]): Promise<Uint8Array> {
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    for (const heading of headings) {
+      const page = doc.addPage([612, 792]);
+      page.drawText(heading, { x: 72, y: 750, size: 18, font });
+      for (let y = 700; y > 40; y -= 20) {
+        page.drawText('The quick brown fox jumps over the lazy dog 0123456789.', { x: 40, y, size: 13, font });
+      }
+    }
+    return doc.save({ useObjectStreams: false });
+  }
+  const rotated = await PDFDocument.load(
+    await makeDenseProse(['Rotated fixture page one', 'Rotated fixture page two']),
+  );
+  rotated.getPage(1).setRotation(degrees(90));
+  await writeFile('e2e/.fixtures/rotated.pdf', await rotated.save({ useObjectStreams: false }));
 
   // A page that paints its own opaque background, like scans and Word/browser
   // exports do. Anything drawn beneath that background is invisible — the exact

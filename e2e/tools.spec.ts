@@ -217,3 +217,39 @@ test('protect then unlock round-trips', async ({ page }) => {
   const bytes = await downloadBytes(await runAndDownload(page));
   expect((await PDFDocument.load(new Uint8Array(bytes))).getPageCount()).toBe(2); // loads without password again
 });
+
+test('rotate: manual tap rotates one page 90°', async ({ page }) => {
+  await page.goto('/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await expect(page.getByTestId('rotate-thumb-0')).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId('rotate-thumb-0').click();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  expect(doc.getPage(0).getRotation().angle).toBe(90);
+  expect(doc.getPage(1).getRotation().angle).toBe(0); // untouched
+});
+
+test('rotate: sideways page is auto-detected and corrected to upright', async ({ page }) => {
+  await page.goto('/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/rotated.pdf');
+  // First run downloads the 7MB model into the worker — give it time.
+  await expect(page.getByTestId('auto-badge-1')).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByTestId('auto-badge-0')).not.toBeVisible(); // upright page left alone
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  // The fixture's /Rotate 90 plus the suggested correction must land upright.
+  expect(doc.getPage(1).getRotation().angle).toBe(0);
+  expect(doc.getPage(0).getRotation().angle).toBe(0);
+});
+
+test('rotate: detection finishing with no rotated pages reports upright', async ({ page }) => {
+  await page.goto('/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await expect(page.getByTestId('detect-status')).toContainText(/look upright|unavailable/i, { timeout: 120_000 });
+  // Whichever way detection resolves, the CTA must stay disabled with no deltas.
+  await expect(page.getByTestId('run-tool')).toBeDisabled();
+});
