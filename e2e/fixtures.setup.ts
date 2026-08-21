@@ -88,4 +88,28 @@ export default async function globalSetup() {
   opaquePage.drawRectangle({ x: 0, y: 0, width: 612, height: 792, color: rgb(1, 1, 1) });
   opaquePage.drawText('Opaque background fixture', { x: 72, y: 700, size: 14, font: opaqueFont });
   await writeFile('e2e/.fixtures/opaque.pdf', await opaque.save({ useObjectStreams: false }));
+
+  // Real JPEG/PNG fixtures for the image<->pdf converters — distinct aspect ratios
+  // (landscape vs portrait) so page-size and reorder assertions can't pass by accident.
+  const { createCanvas } = await import('@napi-rs/canvas');
+
+  const photo = createCanvas(400, 200);
+  const photoCtx = photo.getContext('2d');
+  photoCtx.fillStyle = '#3366cc';
+  photoCtx.fillRect(0, 0, 400, 200);
+  photoCtx.fillStyle = '#ffffff';
+  photoCtx.fillRect(20, 20, 100, 60);
+  photoCtx.font = '24px sans-serif';
+  photoCtx.fillText('photo.jpg fixture', 20, 120);
+  await writeFile('e2e/.fixtures/photo.jpg', await photo.encode('jpeg'));
+
+  const shot = createCanvas(200, 400);
+  const shotCtx = shot.getContext('2d');
+  shotCtx.fillStyle = '#cc6633';
+  shotCtx.fillRect(0, 0, 200, 400);
+  shotCtx.fillStyle = '#ffffff';
+  shotCtx.fillRect(20, 20, 60, 100);
+  shotCtx.font = '20px sans-serif';
+  shotCtx.fillText('shot.png fixture', 10, 200);
+  await writeFile('e2e/.fixtures/shot.png', await shot.encode('png'));
 }

@@ -285,3 +285,81 @@ test('rotate: fully unavailable detector on a small doc shows the degraded notic
   await expect(page.getByTestId('detect-status')).not.toContainText(/look upright/i);
   await expect(page.getByTestId('run-tool')).toBeDisabled();
 });
+
+test('jpg-to-pdf: mixed images -> fit-size pages in order', async ({ page }) => {
+  await page.goto('/jpg-to-pdf');
+  await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/photo.jpg', 'e2e/.fixtures/shot.png']);
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  expect(doc.getPageCount()).toBe(2);
+  const size0 = doc.getPage(0).getSize();
+  const size1 = doc.getPage(1).getSize();
+  expect(size0.width).toBeCloseTo(400, 0);
+  expect(size0.height).toBeCloseTo(200, 0);
+  expect(size1.width).toBeCloseTo(200, 0);
+  expect(size1.height).toBeCloseTo(400, 0);
+});
+
+test('jpg-to-pdf: reorder changes page order', async ({ page }) => {
+  await page.goto('/jpg-to-pdf');
+  await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/photo.jpg', 'e2e/.fixtures/shot.png']);
+  await page.getByTestId('img-up-1').click(); // moves shot.png (index 1) up to first
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  const size0 = doc.getPage(0).getSize();
+  expect(size0.width).toBeCloseTo(200, 0);
+  expect(size0.height).toBeCloseTo(400, 0);
+});
+
+test('jpg-to-pdf: A4 landscape orientation', async ({ page }) => {
+  await page.goto('/jpg-to-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/photo.jpg');
+  await page.getByTestId('page-size-a4').click();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  const { width, height } = doc.getPage(0).getSize();
+  expect(width).toBeCloseTo(841.89, 1);
+  expect(height).toBeCloseTo(595.28, 1);
+});
+
+test('pdf-to-jpg: multi-page -> zip of JPEGs', async ({ page }) => {
+  await page.goto('/pdf-to-jpg');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const download = await runAndDownload(page);
+  expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  const bytes = await downloadBytes(download);
+  const { unzipSync } = await import('fflate');
+  const entries = unzipSync(new Uint8Array(bytes));
+  const files = Object.values(entries);
+  expect(files.length).toBe(2);
+  for (const data of files) {
+    expect(data[0]).toBe(0xff);
+    expect(data[1]).toBe(0xd8);
+  }
+});
+
+test('pdf-to-png: single page at High DPI -> PNG with correct pixel width', async ({ page }) => {
+  await page.goto('/pdf-to-png');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/b.pdf');
+  await page.getByTestId('dpi-high').click();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const download = await runAndDownload(page);
+  expect(download.suggestedFilename()).toMatch(/\.png$/);
+  const bytes = await downloadBytes(download);
+  expect(bytes[0]).toBe(0x89);
+  expect(bytes[1]).toBe(0x50);
+  expect(bytes[2]).toBe(0x4e);
+  expect(bytes[3]).toBe(0x47);
+  const width = bytes.readUInt32BE(16);
+  expect(width).toBeGreaterThanOrEqual(2548);
+  expect(width).toBeLessThanOrEqual(2552);
+});
