@@ -7,13 +7,26 @@ interface Props {
   multiple?: boolean;
   label: string;
   onFiles: (files: File[]) => void;
+  accept?: string;
+  validate?: (f: File) => boolean;
+  typeErrorMessage?: string;
 }
 
 function isPdf(f: File) {
   return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
 }
 
-export function FileDropzone({ multiple = false, label, onFiles }: Props) {
+const DEFAULT_ACCEPT = 'application/pdf,.pdf';
+const DEFAULT_TYPE_ERROR = 'That doesn’t look like a PDF. Please choose a .pdf file.';
+
+export function FileDropzone({
+  multiple = false,
+  label,
+  onFiles,
+  accept: acceptAttr = DEFAULT_ACCEPT,
+  validate = isPdf,
+  typeErrorMessage = DEFAULT_TYPE_ERROR,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +34,13 @@ export function FileDropzone({ multiple = false, label, onFiles }: Props) {
   function accept(list: FileList | null) {
     if (!list) return;
     const files = Array.from(list);
-    const pdfs = files.filter(isPdf);
-    if (pdfs.length === 0) {
-      setError('That doesn’t look like a PDF. Please choose a .pdf file.');
+    const valid = files.filter(validate);
+    if (valid.length === 0) {
+      setError(typeErrorMessage);
       return;
     }
     setError(null);
-    onFiles(multiple ? pdfs : pdfs.slice(0, 1));
+    onFiles(multiple ? valid : valid.slice(0, 1));
   }
 
   function onDrop(e: DragEvent) {
@@ -66,7 +79,7 @@ export function FileDropzone({ multiple = false, label, onFiles }: Props) {
         ref={inputRef}
         data-testid="file-input"
         type="file"
-        accept="application/pdf,.pdf"
+        accept={acceptAttr}
         multiple={multiple}
         className="hidden"
         onChange={(e) => { accept(e.target.files); e.target.value = ''; }}
