@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import PdfToImageTool from '../components/tools/PdfToImageTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Is PNG lossless?', a: 'Yes. Unlike JPG, PNG uses lossless compression, so text edges, thin lines, and flat colors in diagrams or scanned forms come out exactly as rendered — no compression artifacts.' },
+  { q: 'What do the quality presets control?', a: 'Standard renders at 150 DPI, which is plenty for viewing on screen. High renders at 300 DPI, matching print resolution, producing a larger but sharper file.' },
+  { q: 'Do I get one PNG per page?', a: 'Yes. A single-page PDF downloads as one PNG. A multi-page PDF comes back as a zip containing one PNG per page, named by page number.' },
+  { q: 'Is a rendered PDF page transparent?', a: 'No. Each page is rendered as it appears in the PDF, with its full background — there’s no transparency to preserve, since a PDF page itself isn’t transparent.' },
+  { q: 'Are my files uploaded anywhere?', a: 'Never. Each page is rendered locally in your browser using the same engine that displays PDFs in Chrome and Firefox — nothing is sent to a server.' },
+];
+const description = 'Convert PDF pages to PNG images free, with no upload and no watermark. Lossless page rendering, entirely in your browser.';
+---
+<Base title="PDF to PNG — export pages free, no upload | localdobe" {description} canonicalPath="/pdf-to-png"
+  jsonLd={[webAppJsonLd('PDF to PNG', '/pdf-to-png', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Convert PDF to PNG" sub="Export every page of a PDF as a lossless PNG image — locally, in your browser.">
+    <PdfToImageTool client:load format="png" slot="tool" />
+    <h2>How to convert a PDF to PNG</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Pick a quality preset: Standard (150 DPI) or High (300 DPI).</li>
+      <li>Click <strong>Convert</strong> — a single page downloads as one PNG; multiple pages come back as a zip.</li>
+    </ol>
+    <h2>Sharp output for diagrams and graphics</h2>
+    <p>PNG's lossless compression makes it the right choice whenever a page has crisp text, thin lines, or flat colors — technical diagrams, scanned forms, slide exports, or anything where JPG's compression artifacts would blur fine detail. localdobe renders each page directly in your browser with the same engine that displays PDFs in Chrome and Firefox, so no page content is ever uploaded to convert it.</p>
+    <p>Converting photos or scans where file size matters more than pixel-perfect edges? <a href="/pdf-to-jpg/">PDF to JPG</a> produces smaller files for that kind of content.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>

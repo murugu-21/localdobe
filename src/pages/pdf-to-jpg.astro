@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import PdfToImageTool from '../components/tools/PdfToImageTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Does every page become a separate JPG?', a: 'Yes. Each page of your PDF is rendered as its own JPG image, named by page number.' },
+  { q: 'What do the quality presets mean?', a: 'Standard renders at 150 DPI — sharp enough for screens and most sharing. High renders at 300 DPI, matching print resolution, at the cost of a larger file.' },
+  { q: 'How do I download a multi-page PDF as images?', a: 'A single-page PDF downloads as one JPG. Anything with more than one page comes back as a zip file containing one JPG per page.' },
+  { q: 'Why would I want JPG instead of PNG?', a: 'JPG produces smaller files for photos and scans with lots of color detail, which is handy for sharing or emailing. If your PDF has crisp text, diagrams, or graphics, the PDF to PNG tool avoids JPG’s compression artifacts entirely.' },
+  { q: 'Is my PDF uploaded to convert it?', a: 'No. Every page is rendered to an image locally in your browser — nothing is sent to a server.' },
+];
+const description = 'Convert PDF pages to JPG images free, with no upload and no watermark. Every page is rendered locally in your browser.';
+---
+<Base title="PDF to JPG — export pages free, no upload | localdobe" {description} canonicalPath="/pdf-to-jpg"
+  jsonLd={[webAppJsonLd('PDF to JPG', '/pdf-to-jpg', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Convert PDF to JPG" sub="Export every page of a PDF as a JPG image — locally, in your browser.">
+    <PdfToImageTool client:load format="jpeg" slot="tool" />
+    <h2>How to convert a PDF to JPG</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Pick a quality preset: Standard (150 DPI) or High (300 DPI).</li>
+      <li>Click <strong>Convert</strong> — a single page downloads as one JPG; multiple pages come back as a zip.</li>
+    </ol>
+    <h2>Why convert locally</h2>
+    <p>Turning a PDF into images usually means uploading it to a converter site and waiting for a download link — a round trip that exposes every page of your document to a server you don't control. localdobe renders each page directly in your browser using the same rendering engine that displays PDFs in Chrome and Firefox, so nothing about your document ever leaves your device.</p>
+    <p>Need lossless output instead — for diagrams, screenshots, or text-heavy pages? <a href="/pdf-to-png/">PDF to PNG</a> uses the same renderer without JPG's compression artifacts.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>

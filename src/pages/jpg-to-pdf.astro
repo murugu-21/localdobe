@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import ImageToPdfTool from '../components/tools/ImageToPdfTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Can I combine multiple JPGs into one PDF?', a: 'Yes. Add as many JPGs as you like, then drag them (or use the arrow buttons) into the order you want — each image becomes its own page in a single PDF.' },
+  { q: 'What page size does the PDF use?', a: 'Choose "Fit to image" to make each page match its photo’s exact dimensions, or pick a fixed A4 / Letter page with the image centered and scaled to fit.' },
+  { q: 'Does converting reduce image quality?', a: 'No. Your JPG bytes are embedded directly into the PDF — nothing is recompressed or re-encoded, so quality is identical to the source file.' },
+  { q: 'Can I convert PNG files too?', a: 'Yes — this tool also accepts PNG images, so you can mix JPGs and PNGs in the same PDF. There’s also a dedicated PNG to PDF page with copy tailored to screenshots and graphics, though the tool itself is identical.' },
+  { q: 'Are my images uploaded anywhere?', a: 'Never. Every image is read and assembled into a PDF locally, inside your browser tab — nothing is transmitted, logged, or stored.' },
+];
+const description = 'Convert JPG images to PDF free, with no upload and no watermark. Combine multiple photos into one PDF entirely in your browser.';
+---
+<Base title="JPG to PDF — convert images free, no upload | localdobe" {description} canonicalPath="/jpg-to-pdf"
+  jsonLd={[webAppJsonLd('JPG to PDF', '/jpg-to-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Convert JPG to PDF" sub="Turn one or more JPG photos into a single PDF — locally, in your browser.">
+    <ImageToPdfTool client:load slot="tool" />
+    <h2>How to convert JPG to PDF</h2>
+    <ol>
+      <li>Drop your JPG photos into the box above (or click to browse) — add as many as you need.</li>
+      <li>Drag the thumbnails into the order you want them to appear, or use the arrow buttons.</li>
+      <li>Pick a page size: fit each page to its image, or use a fixed A4 or Letter size.</li>
+      <li>Click <strong>Convert</strong> and download your PDF.</li>
+    </ol>
+    <h2>Why convert locally</h2>
+    <p>Most "free" image-to-PDF converters upload your photos to a server before handing back a PDF — a round trip that's slow and puts a copy of your pictures somewhere you can't see. localdobe reads your JPGs and assembles the PDF entirely inside your browser tab: nothing is transmitted, logged, or stored, and it works just as well offline once the page has loaded.</p>
+    <p>Have PNG screenshots instead of photos? The <a href="/png-to-pdf/">PNG to PDF</a> tool works the same way, with page copy suited to screenshots and graphics with transparency.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>

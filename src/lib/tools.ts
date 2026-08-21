@@ -49,6 +49,35 @@ export const toolGroups: ToolGroup[] = [
     ],
   },
   {
+    label: 'Convert',
+    tools: [
+      {
+        href: '/jpg-to-pdf/',
+        name: 'JPG to PDF',
+        desc: 'Turn JPG photos and scans into a single PDF.',
+        icon: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+      },
+      {
+        href: '/png-to-pdf/',
+        name: 'PNG to PDF',
+        desc: 'Convert PNG images and screenshots into a PDF.',
+        icon: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+      },
+      {
+        href: '/pdf-to-jpg/',
+        name: 'PDF to JPG',
+        desc: 'Export every PDF page as a JPG image.',
+        icon: '<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>',
+      },
+      {
+        href: '/pdf-to-png/',
+        name: 'PDF to PNG',
+        desc: 'Export PDF pages as crisp PNG images.',
+        icon: '<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>',
+      },
+    ],
+  },
+  {
     label: 'Edit & annotate',
     tools: [
       {

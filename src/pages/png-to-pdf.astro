@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import ImageToPdfTool from '../components/tools/ImageToPdfTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'Can I turn several screenshots into one PDF?', a: 'Yes. Add all your PNG screenshots, drag them into the order you want (or use the arrow buttons), and they’ll come back as pages of a single PDF.' },
+  { q: 'What happens to transparency in my PNG?', a: 'PDF pages don’t support transparency, so any transparent areas in your PNG render as white in the final page — the same way transparency behaves when you paste an image into a document editor.' },
+  { q: 'What page size should I pick?', a: '"Fit to image" makes the PDF page match your PNG’s exact pixel dimensions — ideal for screenshots. A4 or Letter instead centers your image on a standard printable page.' },
+  { q: 'Will my PNG be recompressed?', a: 'No. Your PNG’s pixels are embedded into the PDF exactly as they are — nothing is resampled, so text and UI edges in screenshots stay crisp.' },
+  { q: 'Are my screenshots uploaded anywhere?', a: 'Never. Everything happens locally in your browser tab — your images never leave your device.' },
+];
+const description = 'Convert PNG images to PDF free, with no upload and no watermark. Turn screenshots and graphics into a PDF entirely in your browser.';
+---
+<Base title="PNG to PDF — convert images free, no upload | localdobe" {description} canonicalPath="/png-to-pdf"
+  jsonLd={[webAppJsonLd('PNG to PDF', '/png-to-pdf', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Convert PNG to PDF" sub="Turn screenshots and PNG graphics into a single PDF — locally, in your browser.">
+    <ImageToPdfTool client:load slot="tool" />
+    <h2>How to convert PNG to PDF</h2>
+    <ol>
+      <li>Drop your PNG files into the box above (or click to browse) — screenshots, graphics, or scans all work.</li>
+      <li>Drag the thumbnails into the order you want them to appear, or use the arrow buttons.</li>
+      <li>Pick a page size: fit each page exactly to its image, or use a fixed A4 or Letter size.</li>
+      <li>Click <strong>Convert</strong> and download your PDF.</li>
+    </ol>
+    <h2>Built for screenshots and graphics</h2>
+    <p>PNG is the format most screenshot tools default to, and it's also the format designers export flat graphics and diagrams in. localdobe embeds those pixels straight into the PDF with no recompression, so sharp edges and small text in a screenshot stay legible. One thing to know: PDF pages have no concept of transparency, so any transparent regions in your PNG render as solid white in the output — the same behavior you'd see pasting the image into any document editor.</p>
+    <p>Working from photos instead of screenshots? The <a href="/jpg-to-pdf/">JPG to PDF</a> tool uses the same conversion engine, with copy aimed at photos and scans.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
