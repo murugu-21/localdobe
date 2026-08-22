@@ -346,6 +346,37 @@ test('pdf-to-jpg: multi-page -> zip of JPEGs', async ({ page }) => {
   }
 });
 
+test('rotate: owner-only-encrypted PDF (empty user password) loads and rotates instead of hitting the password dead end', async ({ page }) => {
+  await page.goto('/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/owner-locked.pdf');
+  // pdfjs (thumbnails) opens owner-only-encrypted PDFs fine — this is the path
+  // that used to work while pdf-lib's tool run below dead-ended on "password-protected".
+  await expect(page.getByTestId('rotate-thumb-0')).toBeVisible({ timeout: 30_000 });
+  // Deterministic manual rotation — do not depend on auto-detect for this fixture.
+  await page.getByTestId('rotate-thumb-0').click();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  const bytes = await downloadBytes(await runAndDownload(page));
+  // The auto-decrypt fix strips the encryption: a plain (non-ignoreEncryption)
+  // PDFDocument.load must succeed on the downloaded output.
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  expect(doc.getPage(0).getRotation().angle).toBe(90);
+});
+
+test('split: owner-only-encrypted PDF (empty user password) loads and splits instead of hitting the password dead end', async ({ page }) => {
+  await page.goto('/split-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/owner-locked.pdf');
+  await page.getByRole('tab', { name: 'Type ranges' }).click();
+  await page.getByTestId('range-input').fill('1');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const doc = await PDFDocument.load(new Uint8Array(bytes));
+  expect(doc.getPageCount()).toBe(1);
+});
+
 test('pdf-to-png: single page at High DPI -> PNG with correct pixel width', async ({ page }) => {
   await page.goto('/pdf-to-png');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/b.pdf');

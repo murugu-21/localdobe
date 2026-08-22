@@ -1,5 +1,35 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, degrees, rgb } from 'pdf-lib';
+
+declare global {
+  // Provided by wasm_exec.js and the Go program respectively (see pdfcpu.worker.ts).
+  // eslint-disable-next-line no-var
+  var Go: new () => { importObject: WebAssembly.Imports; run(i: WebAssembly.Instance): Promise<void> };
+  // eslint-disable-next-line no-var
+  var __pdfcpuEncrypt: (input: Uint8Array, configJson: string) => { ok: true; bytes: Uint8Array } | { ok: false; error: string };
+}
+
+// Runs the real pdfcpu wasm engine directly under Node (globalSetup is Node, not
+// a browser), to owner-only-encrypt a fixture the same way pdfcpu itself would:
+// an EMPTY user password with restrictions locked behind an owner password. This
+// reproduces the exact shape of the IRCC-style PDFs the auto-decrypt fix targets
+// (pdfjs opens them fine; pdf-lib refuses without the fix).
+async function pdfcpuEncryptOwnerOnly(bytes: Uint8Array, ownerPw: string): Promise<Uint8Array> {
+  if (typeof globalThis.__pdfcpuEncrypt !== 'function') {
+    await import('../src/workers/go/wasm_exec.js');
+    const go = new globalThis.Go();
+    const wasmBytes = await readFile('public/wasm/pdfcpu-v3.wasm');
+    const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
+    void go.run(instance); // resolves only on exit; do not await
+    for (let i = 0; i < 200 && typeof globalThis.__pdfcpuEncrypt !== 'function'; i++) {
+      await new Promise((r) => setTimeout(r, 25));
+    }
+    if (typeof globalThis.__pdfcpuEncrypt !== 'function') throw new Error('pdfcpu wasm failed to start');
+  }
+  const res = globalThis.__pdfcpuEncrypt(bytes, JSON.stringify({ userPw: '', ownerPw }));
+  if (!res.ok) throw new Error(res.error);
+  return res.bytes;
+}
 
 export default async function globalSetup() {
   await mkdir('e2e/.fixtures', { recursive: true });
@@ -51,6 +81,13 @@ export default async function globalSetup() {
 
   await writeFile('e2e/.fixtures/a.pdf', await make(['Alpha 1', 'Alpha 2']));
   await writeFile('e2e/.fixtures/b.pdf', await make(['Beta 1']));
+
+  // Owner-password-only encryption (empty user password): pdfjs opens it fine
+  // (thumbnails/detection work) but pdf-lib refuses without the auto-decrypt fix.
+  await writeFile(
+    'e2e/.fixtures/owner-locked.pdf',
+    await pdfcpuEncryptOwnerOnly(await make(['Owner-locked 1', 'Owner-locked 2']), 'e2e-owner-secret'),
+  );
   await writeFile('e2e/.fixtures/big.pdf', await make(Array.from({ length: 40 }, (_, i) => `Page ${i + 1}`), 80));
   await writeFile('e2e/.fixtures/edit.pdf', await make(['Hello World from localdobe']));
   await writeFile('e2e/.fixtures/signed.pdf', await makeSigned());
