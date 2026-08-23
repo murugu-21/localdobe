@@ -22,10 +22,16 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'all', label: 'Split all' },
 ];
 
-export default function SplitTool() {
+interface Props {
+  /** Extraction-intent pages default the merge toggle ON: pick pages → one new PDF. */
+  defaultMerge?: boolean;
+  dropLabel?: string;
+}
+
+export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a PDF to split' }: Props) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [tab, setTab] = useState<Tab>('pages');
-  const [mergeOne, setMergeOne] = useState(false);
+  const [mergeOne, setMergeOne] = useState(defaultMerge);
   const [rangeText, setRangeText] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [phase, setPhase] = useState<Phase>('idle');
@@ -67,7 +73,7 @@ export default function SplitTool() {
   function clear() {
     setLoaded(null);
     setTab('pages');
-    setMergeOne(false);
+    setMergeOne(defaultMerge);
     setSelected(new Set());
     setRangeText('');
     setPhase('idle');
@@ -175,7 +181,7 @@ export default function SplitTool() {
 
   return (
     <div className="space-y-4">
-      {!loaded && phase !== 'working' && <FileDropzone label="Choose a PDF to split" onFiles={onFile} />}
+      {!loaded && phase !== 'working' && <FileDropzone label={dropLabel} onFiles={onFile} />}
       {phase === 'working' && !loaded && <ProgressBar value={null} />}
       {loaded && (
         <>

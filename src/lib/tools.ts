@@ -35,6 +35,12 @@ export const toolGroups: ToolGroup[] = [
         icon: '<circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>',
       },
       {
+        href: '/extract-pdf-pages/',
+        name: 'Extract Pages',
+        desc: 'Pull specific pages out of a PDF into a new file.',
+        icon: '<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m5 11-3 3 3 3"/><path d="M2 14h8"/>',
+      },
+      {
         href: '/rotate-pdf/',
         name: 'Rotate PDF',
         desc: 'Fix sideways or upside-down pages — rotation is detected automatically.',

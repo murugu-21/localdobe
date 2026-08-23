@@ -175,6 +175,22 @@ test('split: merge toggle combines typed ranges into ONE pdf', async ({ page }) 
   expect((await PDFDocument.load(bytes)).getPageCount()).toBe(3);
 });
 
+test('extract-pages: typed ranges default to ONE merged pdf (defaultMerge)', async ({ page }) => {
+  await page.goto('/extract-pdf-pages');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
+  // The extract page mounts SplitTool with the merge toggle pre-enabled — the
+  // same "2-3, 5" input that zips on /split-pdf must come back as one PDF here.
+  await expect(page.getByTestId('merge-toggle')).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('tab', { name: 'Type ranges' }).click();
+  await page.getByTestId('range-input').fill('2-3, 5');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
+  const download = await runAndDownload(page);
+  expect(download.suggestedFilename()).toMatch(/\.pdf$/);
+  const bytes = new Uint8Array(await downloadBytes(download));
+  expect((await PDFDocument.load(bytes)).getPageCount()).toBe(3);
+});
+
 test('watermark: unsupported characters are rejected with a clear message', async ({ page }) => {
   await page.goto('/watermark-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');

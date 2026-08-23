@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import SplitTool from '../components/tools/SplitTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'How do I extract a single page from a PDF?', a: 'Tap that page’s thumbnail and hit the button — you get a new PDF containing just that page. Or type its page number under “Type ranges”.' },
+  { q: 'Can I extract non-consecutive pages, like 2, 7, and 11?', a: 'Yes. Tap the thumbnails in any order, or type “2, 7, 11” under “Type ranges”. They come back together as one new PDF.' },
+  { q: 'Does extracting pages change the original PDF?', a: 'No. The original file on your device is never modified — extraction copies the pages you picked into a brand-new PDF.' },
+  { q: 'Can I save each extracted page as its own file?', a: 'Yes — flip off “Merge into a single PDF” and each selected page downloads as its own PDF, bundled in a zip.' },
+  { q: 'Is this PDF page extractor free?', a: 'Completely free, with no watermark, no signup, and no page caps. It runs on your own device, so there are no server costs to pass on.' },
+  { q: 'Can I extract pages from a password-protected PDF?', a: 'PDFs with only editing restrictions (an owner password) open automatically. If the PDF needs a password to open, remove it first with the free Unlock PDF tool.' },
+  { q: 'Are my files uploaded anywhere?', a: 'Never. Extraction happens entirely in your browser tab — your document never leaves your device, and nothing is transmitted, logged, or stored.' },
+];
+const description = 'Extract pages from a PDF online free: tap the pages you want and save them as a new PDF, or pull each one into its own file. No upload, no watermark, 100% local.';
+---
+<Base title="Extract Pages from PDF Free — Online, No Upload | localdobe" {description} canonicalPath="/extract-pdf-pages"
+  jsonLd={[webAppJsonLd('Extract PDF Pages', '/extract-pdf-pages', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="Extract Pages from PDF" sub="Pull just the pages you need into a new PDF — free, no upload, right in your browser.">
+    <SplitTool client:load slot="tool" defaultMerge dropLabel="Choose a PDF to extract pages from" />
+    <h2>How to extract pages from a PDF</h2>
+    <ol>
+      <li>Drop your PDF into the box above (or click to browse).</li>
+      <li>Tap the thumbnails of the pages you want — shift+tap selects a whole run — or type page numbers like <code>4-9</code> or <code>2, 7, 11</code> under <strong>Type ranges</strong>.</li>
+      <li>Hit the button and download a new PDF containing exactly those pages.</li>
+    </ol>
+    <h2>Extract one page — or a handful</h2>
+    <p>The signature page out of a 30-page contract. The appendix out of a report. One permission slip out of a school packet. Extraction copies a defined subset of pages into a new, standalone PDF while leaving the original untouched — so you can save a single page of a PDF as its own file, or pull any mix of pages and ranges in one go.</p>
+    <h2>One new PDF, or a file per page</h2>
+    <p>Selected pages come back merged into a single PDF by default — that’s what extraction usually means. Prefer each page as its own document? Flip off <strong>Merge into a single PDF</strong> and you’ll get a zip with one PDF per selected page. Need to break an entire document apart instead? Use the <a href="/split-pdf/">Split PDF tool</a>, which is built around ranges and one-file-per-page splitting.</p>
+    <h2>A private PDF page extractor</h2>
+    <p>Extracting pages usually means the document is sensitive — a contract, a form, a medical record. Uploading it to a “free” extractor puts a full copy on someone else’s server. localdobe copies your pages entirely inside your browser tab: nothing is transmitted, logged, or stored, the output carries no watermark, and it works in any modern browser on Windows, macOS, Linux, iPhone, or Android. Afterwards you can <a href="/merge-pdf/">merge</a> the extract with other documents or <a href="/compress-pdf/">compress it</a> for email.</p>
+    <p>Want the details? Read <a href="/blog/extract-pages-from-pdf/">how to extract specific pages from a PDF</a>.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>
