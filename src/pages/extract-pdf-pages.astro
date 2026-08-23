@@ -13,6 +13,8 @@ const faq = [
   { q: 'Is this PDF page extractor free?', a: 'Completely free, with no watermark, no signup, and no page caps. It runs on your own device, so there are no server costs to pass on.' },
   { q: 'Can I extract pages from a password-protected PDF?', a: 'PDFs with only editing restrictions (an owner password) open automatically. If the PDF needs a password to open, remove it first with the free Unlock PDF tool.' },
   { q: 'Are my files uploaded anywhere?', a: 'Never. Extraction happens entirely in your browser tab — your document never leaves your device, and nothing is transmitted, logged, or stored.' },
+  { q: 'Is it safe for bank statements, contracts, or medical records?', a: 'Yes. The document is processed entirely on your device — no third party ever receives it, so there is nothing to be stored, logged, or breached.' },
+  { q: 'Can I extract pages without an internet connection?', a: 'Yes — after your first visit the tool works fully offline. Switch on airplane mode and try it: that’s also the simplest proof that nothing is uploaded.' },
 ];
 const description = 'Extract pages from a PDF online free: tap the pages you want and save them as a new PDF, or pull each one into its own file. No upload, no watermark, 100% local.';
 ---
@@ -31,7 +33,7 @@ const description = 'Extract pages from a PDF online free: tap the pages you wan
     <h2>One new PDF, or a file per page</h2>
     <p>Selected pages come back merged into a single PDF by default — that’s what extraction usually means. Prefer each page as its own document? Flip off <strong>Merge into a single PDF</strong> and you’ll get a zip with one PDF per selected page. Need to break an entire document apart instead? Use the <a href="/split-pdf/">Split PDF tool</a>, which is built around ranges and one-file-per-page splitting.</p>
     <h2>A private PDF page extractor</h2>
-    <p>Extracting pages usually means the document is sensitive — a contract, a form, a medical record. Uploading it to a “free” extractor puts a full copy on someone else’s server. localdobe copies your pages entirely inside your browser tab: nothing is transmitted, logged, or stored, the output carries no watermark, and it works in any modern browser on Windows, macOS, Linux, iPhone, or Android. Afterwards you can <a href="/merge-pdf/">merge</a> the extract with other documents or <a href="/compress-pdf/">compress it</a> for email.</p>
+    <p>Extracting pages usually means the document is sensitive — a contract, a form, a medical record. Uploading it to a “free” extractor puts a full copy on someone else’s server (here’s <a href="/blog/split-confidential-pdf-safely/">how to handle confidential PDFs safely</a>). localdobe copies your pages entirely inside your browser tab: nothing is transmitted, logged, or stored, the output carries no watermark, and it works in any modern browser on Windows, macOS, Linux, iPhone, or Android. Afterwards you can <a href="/merge-pdf/">merge</a> the extract with other documents or <a href="/compress-pdf/">compress it</a> for email.</p>
     <p>Want the details? Read <a href="/blog/extract-pages-from-pdf/">how to extract specific pages from a PDF</a>.</p>
     <Faq items={faq} />
   </ToolPageShell>
