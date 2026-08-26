@@ -16,6 +16,7 @@
      class-based dark mode instead of being baked in at build time. */
   --color-accent: var(--brand-accent);
   --color-accent-dark: var(--brand-accent-dark);
+  --color-sponsor: var(--brand-sponsor);
   --color-ink: var(--brand-ink);
   --color-muted: var(--brand-muted);
   --color-surface: var(--brand-surface);
@@ -106,6 +107,7 @@
   --brand-surface: #f8fafc;
   --brand-accent: #2563eb;
   --brand-accent-dark: #1d4ed8;
+  --brand-sponsor: #bf3989; /* GitHub Sponsors pink (sponsors-fg), ~4.6:1 on white */
 }
 
 .dark {
@@ -149,6 +151,7 @@
   --brand-surface: #1e293b; /* slate-800: dark panel fill, subtly lighter than bg like shadcn's own --card/--muted */
   --brand-accent: #3b82f6; /* blue-500: brightened one step from the light #2563eb, ~5.4:1 contrast on the dark bg */
   --brand-accent-dark: #60a5fa; /* blue-400: lighter (not darker) hover/emphasis shade — darkening further would lose contrast on the dark bg */
+  --brand-sponsor: #f778ba; /* GitHub's own dark-mode sponsors pink, ~7:1 on the dark bg */
 }
 
 @layer base {

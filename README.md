@@ -1,5 +1,7 @@
 # localdobe
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/murugu-21)
+
 Free PDF tools that run entirely in your browser. Merge, split, compress, edit, watermark/stamp,
 check-or-remove signatures, and password-protect/unlock PDFs — no file is ever uploaded to a
 server. localdobe.com is a static site; every tool executes client-side and works offline once
@@ -102,6 +104,17 @@ direct git integration (Workers Builds) on every push to `main`. Note that `publ
 is tracked with Git LFS. One-time manual setup (connecting the repo in the Cloudflare dashboard, DNS)
 is required before the first deploy — see **`DEPLOY.md`** for the full checklist and cache-header
 details (`public/_headers`).
+
+## Sponsor
+
+localdobe is free, ad-free, and has no paid tier — nothing about a tool that runs entirely in
+your browser needs an account or a subscription. If it saved you a download or a sketchy
+upload, you can fund the time that goes into it:
+
+**[github.com/sponsors/murugu-21](https://github.com/sponsors/murugu-21)**
+
+Sponsorship keeps the domain renewed and the tools maintained. It never buys features behind a
+paywall — everything here stays free for everyone.
 
 ## Stack
 
