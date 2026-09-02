@@ -20,6 +20,16 @@ if (import.meta.env.DEV && !apiHost) {
     posthog.init(apiKey, {
       api_host: apiHost,
       defaults: '2026-01-30',
+      // Unique users are counted from a salted hash computed on PostHog's servers
+      // (salt rotates daily, then is discarded) rather than a client-side identifier,
+      // so no cookie or localStorage entry is written. Requires "Cookieless server
+      // hash mode" enabled on the PostHog project — without it these events are not
+      // processed. 'always' means we never fall back to cookies.
+      cookieless_mode: 'always',
+      // No person profiles: every event is anonymous, and identify() becomes a no-op.
+      // We never call identify() — there are no accounts — so this only removes the
+      // persistent per-person record that GDPR would treat as personal data.
+      person_profiles: 'never',
       capture_exceptions: {
         capture_unhandled_errors: true,
         capture_unhandled_rejections: true,
