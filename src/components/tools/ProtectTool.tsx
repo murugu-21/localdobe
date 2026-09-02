@@ -41,7 +41,12 @@ export default function ProtectTool() {
     setPhase('working'); setError(null);
     try {
       const { encryptPdf } = await import('../../lib/pdf/pdfcpuClient');
-      setResult(await encryptPdf(file.bytes, password));
+      const output = await encryptPdf(file.bytes, password);
+      setResult(output);
+      window.posthog?.capture('pdf_protected', {
+        input_bytes: file.bytes.length,
+        output_bytes: output.length,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Encryption failed.');

@@ -37,7 +37,12 @@ export default function UnlockTool() {
     setPhase('working'); setError(null);
     try {
       const { decryptPdf } = await import('../../lib/pdf/pdfcpuClient');
-      setResult(await decryptPdf(file.bytes, password));
+      const output = await decryptPdf(file.bytes, password);
+      setResult(output);
+      window.posthog?.capture('pdf_unlocked', {
+        input_bytes: file.bytes.length,
+        output_bytes: output.length,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Decryption failed.');

@@ -174,6 +174,11 @@ export default function RotateTool() {
       const { rotatePdf } = await import('../../lib/pdf/rotate');
       const out = await rotatePdf(loaded.bytes, deltas);
       setResult({ filename: `${loaded.name}-rotated.pdf`, bytes: out });
+      window.posthog?.capture('pdf_rotated', {
+        page_count: loaded.pageCount,
+        rotated_page_count: changed,
+        auto_straightened_page_count: autoFixed.size,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');

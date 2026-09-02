@@ -115,6 +115,10 @@ export default function EditTool() {
       }, fetchFont);
       setResult(bytes);
       setFallbackCount(n);
+      window.posthog?.capture('pdf_edited', {
+        fallback_edit_count: n,
+        resize_applied: resizeValue !== 'none',
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed — your edits are still here, try again.');
     } finally {

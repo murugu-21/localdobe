@@ -82,6 +82,10 @@ export default function WatermarkTool() {
         out = await client.addImageWatermark(file.bytes, image, { opacity, rotation, scale: imageScale });
       }
       setResult(out);
+      window.posthog?.capture('pdf_watermarked', {
+        watermark_action: action,
+        output_bytes: out.length,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Watermarking failed.');

@@ -157,6 +157,12 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
         const zipped = zipFiles(outputs.map((data, i) => ({ name: `${loaded.name}-part-${i + 1}.pdf`, data })));
         setResult({ filename: `${loaded.name}-split.zip`, bytes: zipped, mime: 'application/zip' });
       }
+      window.posthog?.capture('pdf_pages_split', {
+        split_mode: tab,
+        selected_page_count: planRanges.pages,
+        output_file_count: outputs.length,
+        merged_output: mergeOne,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');

@@ -22,7 +22,11 @@ export default function SignatureTool() {
     setPhase('working'); setReport(null); setRemoved(null); setError(null);
     try {
       const { validateSignatures } = await import('../../lib/pdf/pdfcpuClient');
-      setReport(await validateSignatures(bytes));
+      const result = await validateSignatures(bytes);
+      setReport(result);
+      window.posthog?.capture('pdf_signatures_checked', {
+        signature_count: result.length,
+      });
       setPhase('done');
     } catch (err) {
       // pdfcpu (v0.14.0) errors with its ErrNoSignatures sentinel ("validate signatures: no signatures
@@ -30,6 +34,9 @@ export default function SignatureTool() {
       // This match is coupled to that exact pdfcpu wording; revisit if the engine version changes.
       if (err instanceof Error && /no signature/i.test(err.message)) {
         setReport([]);
+        window.posthog?.capture('pdf_signatures_checked', {
+          signature_count: 0,
+        });
         setPhase('done');
       } else {
         setError(err instanceof Error ? err.message : 'Validation failed.');
@@ -52,7 +59,11 @@ export default function SignatureTool() {
     setRemoving(true); setError(null);
     try {
       const { removeSignatures } = await import('../../lib/pdf/pdfcpuClient');
-      setRemoved(await removeSignatures(file.bytes));
+      const output = await removeSignatures(file.bytes);
+      setRemoved(output);
+      window.posthog?.capture('pdf_signatures_removed', {
+        output_bytes: output.length,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not remove signatures.');
     } finally {

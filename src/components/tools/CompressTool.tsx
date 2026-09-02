@@ -44,6 +44,11 @@ export default function CompressTool() {
       const { compressPdf } = await import('../../lib/pdf/pdfcpuClient');
       const result = await compressPdf(file.bytes, preset, setStatus);
       setOut(result);
+      window.posthog?.capture('pdf_compressed', {
+        compression_preset: preset,
+        input_bytes: file.bytes.length,
+        output_bytes: result.length,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Compression failed.');

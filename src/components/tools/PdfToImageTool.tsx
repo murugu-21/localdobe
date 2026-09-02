@@ -94,6 +94,12 @@ export default function PdfToImageTool({ format }: Props) {
         const zipped = zipFiles(images.map((data, i) => ({ name: pageImageName(loaded.name, i, format), data })));
         setResult({ filename: `${loaded.name}-images.zip`, bytes: zipped, mime: 'application/zip' });
       }
+      window.posthog?.capture('pdf_converted_to_image', {
+        image_format: format,
+        dpi_preset: preset,
+        page_count: loaded.pageCount,
+        output_is_archive: images.length > 1,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof PdfToolError ? err.message : 'Something went wrong converting this PDF.');

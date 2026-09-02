@@ -68,7 +68,12 @@ export default function MergeTool() {
     try {
       const { mergePdfs } = await import('../../lib/pdf/merge');
       const buffers = await Promise.all(entries.map(async (e) => new Uint8Array(await e.file.arrayBuffer())));
-      setResult(await mergePdfs(buffers));
+      const output = await mergePdfs(buffers);
+      setResult(output);
+      window.posthog?.capture('pdfs_merged', {
+        source_file_count: entries.length,
+        output_bytes: output.length,
+      });
       setPhase('done');
     } catch (err) {
       const fileIndex = (err as { fileIndex?: number }).fileIndex;

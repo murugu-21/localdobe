@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { pwaInfo } from 'virtual:pwa-info';
 import { toolGroups } from '../lib/tools';
+import PostHog from '../components/posthog.astro';
 interface Props {
   title: string;
   description: string;
@@ -23,6 +24,7 @@ const sponsorUrl = 'https://github.com/sponsors/murugu-21';
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <PostHog />
     <script is:inline>
       // Blocking (no-FOUC) theme init: an explicit user choice in localStorage wins;
       // otherwise follow the OS/browser prefers-color-scheme. Runs before first paint —

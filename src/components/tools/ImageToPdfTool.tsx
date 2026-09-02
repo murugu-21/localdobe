@@ -93,6 +93,11 @@ export default function ImageToPdfTool() {
       const out = await imagesToPdf(bytesList, pageSize);
       const baseName = entries[0].file.name.replace(/\.(jpe?g|png)$/i, '');
       setResult({ filename: `${baseName}.pdf`, bytes: out });
+      window.posthog?.capture('images_converted_to_pdf', {
+        image_count: entries.length,
+        page_size: pageSize,
+        output_bytes: out.length,
+      });
       setPhase('done');
     } catch (err) {
       setError(err instanceof UnsupportedImageError ? err.message : 'Something went wrong.');
