@@ -18,7 +18,7 @@ you've visited it.
 | --- | --- | --- |
 | Merge | `/merge-pdf` | Combine multiple PDFs into one, reorder pages first |
 | Split | `/split-pdf` | Extract page ranges into separate PDFs, zipped client-side |
-| Compress | `/compress-pdf` | Shrink file size via pdfcpu (Light / Balanced / Maximum presets) |
+| Compress | `/compress-pdf` | Shrink file size via pdfcpu (Light / Balanced / Maximum lossless presets, plus a lossy Shrink images preset that downsamples scans to 150 dpi) |
 | Edit | `/edit-pdf` | Click-to-edit text in place, rotate and resize pages |
 | Watermark & Stamp | `/watermark-pdf` | Add a text/image watermark or stamp; remove existing ones |
 | Signatures | `/validate-pdf-signature` | Validate digital signatures, inspect evidence, or remove them |

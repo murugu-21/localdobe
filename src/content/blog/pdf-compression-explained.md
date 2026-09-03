@@ -43,3 +43,16 @@ Because this runs on a real compression engine inside your browser rather than o
 ## Why the honest answer is sometimes "not much smaller"
 
 It's tempting to want every compression tool to promise a dramatic size reduction every time, but that promise usually means quality is being sacrificed somewhere to deliver it. A tool that tells you truthfully when a file is already lean — and shrinks the genuinely bloated files by a meaningful amount — is doing the more useful and more honest job, even if the headline number is less exciting on any individual file.
+
+## When lossless isn't enough: the Shrink images preset
+
+Everything above is lossless, and for documents that came out of Word or a browser it's usually all you need. Scans and photo-heavy PDFs are different: a phone camera produces a 3000×4000 image that a viewer draws into an 8×10 inch page, so it's carrying 375 dots per inch where 150 is indistinguishable on screen.
+
+The Shrink images preset does what Ghostscript's `pdfwrite` device does with its `/ebook` settings, inside your browser:
+
+1. It reads each page's drawing instructions to learn how large every image is actually placed on the page, so the decision is based on effective resolution, not pixel count.
+2. Images drawn above 225 dpi are resampled to 150 dpi. Anything at or below that is passed through byte-for-byte, so an already-sensible JPEG never suffers a second generation of compression loss.
+3. Resampled photos are re-encoded as JPEG at quality 75; flat graphics with few colours are re-encoded losslessly.
+4. It never replaces an image with a larger one, and it never touches black-and-white scans, image masks, transparency masks, or JPEG 2000 and JBIG2 images.
+
+The trade-off is real: pixels are discarded, and any digital signature on the file stops validating because its image streams were rewritten. That's why it's a separate, clearly labelled preset rather than the default.
