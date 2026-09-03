@@ -2,6 +2,7 @@ package imgopt
 
 import (
 	"bytes"
+	"compress/zlib"
 	"fmt"
 	"image"
 	"image/color"
@@ -148,3 +149,5 @@ func onlyImageObjNr(t *testing.T, ctx *model.Context) int {
 	}
 	return 0
 }
+
+func newFlateWriter(w *bytes.Buffer) *zlib.Writer { return zlib.NewWriter(w) }
