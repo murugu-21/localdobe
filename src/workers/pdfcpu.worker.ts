@@ -136,7 +136,7 @@ function withFrozenClock<T>(atMs: number, fn: () => T): T {
   FakeDate.now = () => atMs;
   FakeDate.parse = RealDate.parse;
   FakeDate.UTC = RealDate.UTC;
-  FakeDate.prototype = RealDate.prototype;
+  (FakeDate as { prototype: Date }).prototype = RealDate.prototype;
   (globalThis as { Date: DateConstructor }).Date = FakeDate;
   try {
     return fn();
