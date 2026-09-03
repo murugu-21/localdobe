@@ -13,6 +13,7 @@ const PRESETS: { value: CompressPreset; label: string; hint: string }[] = [
   { value: 'low', label: 'Light', hint: 'Fast cleanup, safest' },
   { value: 'medium', label: 'Balanced', hint: 'Dedup shared resources' },
   { value: 'high', label: 'Maximum', hint: 'Deepest deduplication' },
+  { value: 'images', label: 'Shrink images', hint: 'Downsample scans & photos to 150 dpi' },
 ];
 
 export default function CompressTool() {
@@ -69,11 +70,12 @@ export default function CompressTool() {
               Start over
             </Button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {PRESETS.map((p) => (
               <button
                 type="button"
                 key={p.value}
+                data-testid={`preset-${p.value}`}
                 onClick={() => {
                   setPreset(p.value);
                   if (phase === 'done') { setPhase('idle'); setOut(null); }
@@ -88,6 +90,13 @@ export default function CompressTool() {
               </button>
             ))}
           </div>
+          {preset === 'images' && (
+            <p className="text-xs text-muted-foreground" data-testid="images-preset-note">
+              Lossy: photos and scans drawn above 225 dpi are resampled to 150 dpi and re-encoded (JPEG for photos, lossless for
+              flat graphics). Text, vector art, black-and-white scans and form fields are untouched. Digital signatures will no longer
+              validate afterwards.
+            </p>
+          )}
           {phase !== 'done' && (
             <Button
               type="button"

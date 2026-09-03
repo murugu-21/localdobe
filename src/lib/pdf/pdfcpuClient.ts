@@ -55,7 +55,8 @@ async function callForBytes(cmd: PdfcpuCmd, bytes: Uint8Array, config?: unknown,
 }
 
 export async function compressPdf(bytes: Uint8Array, preset: CompressPreset, onStatus?: (s: string) => void): Promise<Uint8Array> {
-  onStatus?.(engineWarm ? 'Compressing…' : 'Loading PDF engine — first run downloads it…');
+  if (!engineWarm) onStatus?.('Loading PDF engine — first run downloads it…');
+  else onStatus?.(preset === 'images' ? 'Compressing and resampling images…' : 'Compressing…');
   const out = await callForBytes('optimize', bytes, presetConfig(preset));
   engineWarm = true;
   return out;

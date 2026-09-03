@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, degrees, rgb } from 'pdf-lib';
+import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState, rgb } from 'pdf-lib';
 
 declare global {
   // Provided by wasm_exec.js and the Go program respectively (see pdfcpu.worker.ts).
@@ -43,6 +43,31 @@ export default async function globalSetup() {
       // Padding: draw repeated text to create redundant content for compression.
       for (let i = 0; i < padding; i++) page.drawText(`filler line ${i} `.repeat(5), { x: 40, y: 650 - (i % 60) * 10, size: 8, font });
     }
+    return doc.save({ useObjectStreams: false });
+  }
+
+  // A "phone scan": one 1600×1600 RGB Flate image drawn into a 4-inch box (400 dpi
+  // effective). Gradient + deterministic noise so Flate can't collapse it; the Shrink
+  // images preset must resample it to 600 px and re-encode as JPEG.
+  async function makeScan(): Promise<Uint8Array> {
+    const W = 1600;
+    const px = new Uint8Array(W * W * 3);
+    for (let y = 0; y < W; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 3;
+        const n = (x * 7919 + y * 104729) % 23;
+        px[i] = Math.min(255, (x * 255) / W + n);
+        px[i + 1] = Math.min(255, (y * 255) / W + n);
+        px[i + 2] = Math.min(255, ((x + y) * 127) / (2 * W) + n);
+      }
+    }
+    const doc = await PDFDocument.create();
+    const ref = doc.context.register(doc.context.flateStream(px, {
+      Type: 'XObject', Subtype: 'Image', Width: W, Height: W, ColorSpace: 'DeviceRGB', BitsPerComponent: 8,
+    }));
+    const page = doc.addPage([612, 792]);
+    const name = page.node.newXObject('Im1', ref);
+    page.pushOperators(pushGraphicsState(), concatTransformationMatrix(288, 0, 0, 288, 162, 252), drawObject(name), popGraphicsState());
     return doc.save({ useObjectStreams: false });
   }
 
@@ -91,6 +116,7 @@ export default async function globalSetup() {
   await writeFile('e2e/.fixtures/big.pdf', await make(Array.from({ length: 40 }, (_, i) => `Page ${i + 1}`), 80));
   await writeFile('e2e/.fixtures/edit.pdf', await make(['Hello World from localdobe']));
   await writeFile('e2e/.fixtures/signed.pdf', await makeSigned());
+  await writeFile('e2e/.fixtures/scan.pdf', await makeScan());
 
   // Two dense-prose pages; page 2 carries /Rotate 90 so it RENDERS sideways —
   // the orientation model sees what a viewer sees. Continuous body text at

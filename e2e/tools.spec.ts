@@ -88,6 +88,31 @@ test('compress: output smaller than input', async ({ page }) => {
   await PDFDocument.load(new Uint8Array(bytes)); // still a valid pdf
 });
 
+test('compress: shrink-images preset downsamples a scan', async ({ page }) => {
+  await page.goto('/compress-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/scan.pdf');
+  await page.getByTestId('preset-images').click();
+  await expect(page.getByTestId('images-preset-note')).toBeVisible();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 120_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const original = await stat('e2e/.fixtures/scan.pdf');
+  expect(bytes.length).toBeLessThan(original.size * 0.3);
+  await PDFDocument.load(new Uint8Array(bytes)); // still a valid pdf
+});
+
+test('compress: lossless presets leave the scan image untouched', async ({ page }) => {
+  await page.goto('/compress-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/scan.pdf');
+  await page.getByTestId('preset-high').click();
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 120_000 });
+  const bytes = await downloadBytes(await runAndDownload(page));
+  const original = await stat('e2e/.fixtures/scan.pdf');
+  // Structural optimize can only trim a few hundred bytes off a single-image file.
+  expect(bytes.length).toBeGreaterThan(original.size * 0.9);
+});
+
 test('edit: replace text, rotate page, and export', async ({ page }) => {
   await page.goto('/edit-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/edit.pdf');
