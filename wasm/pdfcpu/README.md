@@ -27,15 +27,26 @@ contract (function names, config JSON keys, return shapes) is unchanged.
 ```bash
 cd wasm/pdfcpu
 go mod tidy   # only if bumping the pdfcpu version
+go test ./imgopt/   # native unit tests for the image pass (no wasm needed)
 make build
 node smoke.mjs   # sanity check: exercises all six exported functions end-to-end
 ```
+
+## Image pass (`imgopt/`)
+
+Pure Go, no build tag, unit-tested natively. Order inside `optimize` when `downsampleImages` is set:
+`api.ReadValidateAndOptimize` → `imgopt.Run` → `api.WriteContext`. `Run` scans page content streams
+(and nested Form XObjects) for each image's on-page footprint, resamples only images whose effective
+resolution exceeds `imageDpi × 1.5`, decodes via `pdfcpu.ExtractImage`, resamples with `x/image/draw`,
+re-encodes (JPEG for photographic content, Flate otherwise) and swaps the xref entry only when the
+result is smaller. Masks, SMask targets, bilevel, JPX and JBIG2 images are never touched. Signed PDFs
+will fail validation after this pass, since image streams are rewritten.
 
 ## Exported JS globals
 
 All are installed on `globalThis` by the WASM module once instantiated and `go.run()`'d:
 
-- `__pdfcpuOptimize(input, configJson)`
+- `__pdfcpuOptimize(input, configJson)` → `{ ok, bytes, imagesResampled }`. Config: `{ dedupResources, dedupContentStreams, downsampleImages, imageDpi, jpegQuality }`. With `downsampleImages: true` the lossless optimize is followed by the `imgopt` image pass (see `imgopt/decide.go` for the skip rules and defaults: 150 dpi, 1.5× threshold, JPEG q75).
 - `__pdfcpuWatermark(input, configJson, imageBytes)`
 - `__pdfcpuValidateSignatures(input)`
 - `__pdfcpuRemoveSignatures(input)`
@@ -55,7 +66,7 @@ and the font files under `public/fonts/` are NOT hashed, so overwriting the file
 place will not bust caches for existing visitors.
 
 When rebuilding this WASM module, rename the output file (current name:
-`pdfcpu-v3.wasm`; bump the suffix) and update the Makefile's `-o` path, the fetch
+`pdfcpu-v4.wasm`; bump the suffix) and update the Makefile's `-o` path, the fetch
 URL in `src/workers/pdfcpu.worker.ts`, `smoke.mjs`, and DEPLOY.md to match. The
 `.gitattributes` LFS pattern (`public/wasm/*.wasm`) covers any name. Leave the old
 file in place for one deploy cycle if you want in-flight tabs to keep working, then

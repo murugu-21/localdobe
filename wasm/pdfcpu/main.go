@@ -11,6 +11,8 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/model"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
+
+	"localdobe/pdfcpu-wasm/imgopt"
 )
 
 func jsError(msg string) js.Value {
@@ -61,6 +63,9 @@ func optimize(args []js.Value) js.Value {
 	var opts struct {
 		DedupResources      bool `json:"dedupResources"`
 		DedupContentStreams bool `json:"dedupContentStreams"`
+		DownsampleImages    bool `json:"downsampleImages"`
+		ImageDpi            int  `json:"imageDpi"`
+		JpegQuality         int  `json:"jpegQuality"`
 	}
 	if err := json.Unmarshal([]byte(args[1].String()), &opts); err != nil {
 		return jsError("bad config: " + err.Error())
@@ -69,10 +74,36 @@ func optimize(args []js.Value) js.Value {
 	conf.OptimizeResourceDicts = opts.DedupResources
 	conf.OptimizeDuplicateContentStreams = opts.DedupContentStreams
 	var out bytes.Buffer
-	if err := api.Optimize(bytes.NewReader(input), &out, conf); err != nil {
+
+	if !opts.DownsampleImages {
+		if err := api.Optimize(bytes.NewReader(input), &out, conf); err != nil {
+			return jsError(err.Error())
+		}
+		return js.ValueOf(map[string]any{"ok": true, "bytes": toJSBytes(out.Bytes()), "imagesResampled": 0})
+	}
+
+	// Lossy path: same read+validate+lossless-optimize as api.Optimize, then the image
+	// pass, then write. Per-image failures are skipped inside imgopt.Run.
+	conf.Cmd = model.OPTIMIZE
+	ctx, err := api.ReadValidateAndOptimize(bytes.NewReader(input), conf)
+	if err != nil {
 		return jsError(err.Error())
 	}
-	return okBytes(&out)
+	o := imgopt.DefaultOptions()
+	if opts.ImageDpi > 0 {
+		o.TargetDPI = opts.ImageDpi
+	}
+	if opts.JpegQuality > 0 {
+		o.JPEGQuality = opts.JpegQuality
+	}
+	st, err := imgopt.Run(ctx, o)
+	if err != nil {
+		return jsError(err.Error())
+	}
+	if err := api.WriteContext(ctx, &out); err != nil {
+		return jsError(err.Error())
+	}
+	return js.ValueOf(map[string]any{"ok": true, "bytes": toJSBytes(out.Bytes()), "imagesResampled": st.Resampled})
 }
 
 func watermark(args []js.Value) js.Value {

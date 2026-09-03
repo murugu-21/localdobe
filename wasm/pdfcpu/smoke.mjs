@@ -26,7 +26,7 @@ import '../../src/workers/go/wasm_exec.js';
 }
 
 const go = new globalThis.Go();
-const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu-v3.wasm'), go.importObject);
+const { instance } = await WebAssembly.instantiate(await readFile('../../public/wasm/pdfcpu-v4.wasm'), go.importObject);
 go.run(instance);
 // Build a quick fixture PDF with pdf-lib from the repo root node_modules.
 // Note: pdf-lib's ESM build (es/index.js) uses extensionless internal imports that
@@ -39,6 +39,36 @@ const input = await doc.save();
 const res = globalThis.__pdfcpuOptimize(new Uint8Array(input), JSON.stringify({ dedupResources: true, dedupContentStreams: true }));
 if (!res.ok) throw new Error(res.error);
 console.log(`optimize: in=${input.length} out=${res.bytes.length}`);
+
+// Downsample pass: a 1600×1600 RGB Flate image drawn into a 2-inch box (800 dpi effective)
+// must be resampled to ~300 px and come out far smaller.
+const { pushGraphicsState, popGraphicsState, concatTransformationMatrix, drawObject } = await import('pdf-lib');
+const W = 1600;
+const px = new Uint8Array(W * W * 3);
+for (let y = 0; y < W; y++) {
+  for (let x = 0; x < W; x++) {
+    const i = (y * W + x) * 3;
+    const n = (x * 7919 + y * 104729) % 23; // deterministic noise so Flate can't collapse it
+    px[i] = Math.min(255, (x * 255) / W + n);
+    px[i + 1] = Math.min(255, (y * 255) / W + n);
+    px[i + 2] = Math.min(255, ((x + y) * 127) / (2 * W) + n);
+  }
+}
+const imgDoc = await PDFDocument.create();
+const imgRef = imgDoc.context.register(imgDoc.context.flateStream(px, {
+  Type: 'XObject', Subtype: 'Image', Width: W, Height: W, ColorSpace: 'DeviceRGB', BitsPerComponent: 8,
+}));
+const imgPage = imgDoc.addPage([612, 792]);
+const imgName = imgPage.node.newXObject('Im1', imgRef);
+imgPage.pushOperators(pushGraphicsState(), concatTransformationMatrix(144, 0, 0, 144, 234, 324), drawObject(imgName), popGraphicsState());
+const imgPdf = new Uint8Array(await imgDoc.save({ useObjectStreams: false }));
+const lossless = globalThis.__pdfcpuOptimize(imgPdf, JSON.stringify({ dedupResources: true, dedupContentStreams: true, downsampleImages: false }));
+if (!lossless.ok) throw new Error(lossless.error);
+const ds = globalThis.__pdfcpuOptimize(imgPdf, JSON.stringify({ dedupResources: true, dedupContentStreams: true, downsampleImages: true, imageDpi: 150, jpegQuality: 75 }));
+if (!ds.ok) throw new Error(ds.error);
+if (ds.imagesResampled !== 1) throw new Error(`downsample: expected 1 image resampled, got ${ds.imagesResampled}`);
+if (ds.bytes.length >= lossless.bytes.length / 2) throw new Error(`downsample: expected <50% of lossless ${lossless.bytes.length}, got ${ds.bytes.length}`);
+console.log(`downsample: in=${imgPdf.length} lossless=${lossless.bytes.length} images=${ds.bytes.length} resampled=${ds.imagesResampled}`);
 
 const wm = globalThis.__pdfcpuWatermark(new Uint8Array(input), JSON.stringify({ mode: 'addText', onTop: true, text: 'DRAFT', desc: 'points:48, op:0.4, rot:45' }), null);
 if (!wm.ok) throw new Error(wm.error);

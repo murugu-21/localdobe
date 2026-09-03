@@ -18,7 +18,7 @@ async function pdfcpuEncryptOwnerOnly(bytes: Uint8Array, ownerPw: string): Promi
   if (typeof globalThis.__pdfcpuEncrypt !== 'function') {
     await import('../src/workers/go/wasm_exec.js');
     const go = new globalThis.Go();
-    const wasmBytes = await readFile('public/wasm/pdfcpu-v3.wasm');
+    const wasmBytes = await readFile('public/wasm/pdfcpu-v4.wasm');
     const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
     void go.run(instance); // resolves only on exit; do not await
     for (let i = 0; i < 200 && typeof globalThis.__pdfcpuEncrypt !== 'function'; i++) {
