@@ -47,6 +47,60 @@ func IsPhotographic(img image.Image) bool {
 	return false
 }
 
+// toGrayIfNeutral returns img as *image.Gray when every pixel has r == g == b, which is
+// what pdfcpu's gray renderers produce (they emit RGB PNGs for DeviceGray sources).
+// Colour images are returned unchanged. Deciding by pixels rather than by the source
+// colour-space name also covers Indexed images, which have one component but may carry
+// a genuine colour palette.
+func toGrayIfNeutral(img image.Image) image.Image {
+	if g, ok := img.(*image.Gray); ok {
+		return g
+	}
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	if w <= 0 || h <= 0 {
+		return img
+	}
+	out := image.NewGray(image.Rect(0, 0, w, h))
+
+	// Fast path: read the 4-byte-per-pixel buffer directly. For both concrete types
+	// Bounds() is the image's own Rect, so row y starts at y*Stride.
+	var pix []uint8
+	var stride int
+	switch src := img.(type) {
+	case *image.RGBA:
+		pix, stride = src.Pix, src.Stride
+	case *image.NRGBA:
+		pix, stride = src.Pix, src.Stride
+	}
+	if pix != nil {
+		for y := 0; y < h; y++ {
+			row := pix[y*stride : y*stride+w*4]
+			dst := out.Pix[y*out.Stride : y*out.Stride+w]
+			for x := 0; x < w; x++ {
+				r, g, bl := row[x*4], row[x*4+1], row[x*4+2]
+				if r != g || g != bl {
+					return img
+				}
+				dst[x] = r
+			}
+		}
+		return out
+	}
+
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		dst := out.Pix[(y-b.Min.Y)*out.Stride:]
+		for x := b.Min.X; x < b.Max.X; x++ {
+			r, g, bl, _ := img.At(x, y).RGBA()
+			if r != g || g != bl {
+				return img
+			}
+			dst[x-b.Min.X] = uint8(r >> 8)
+		}
+	}
+	return out
+}
+
 // Resample scales src to w×h with a bilinear kernel (area-averaging when shrinking).
 // Gray stays gray; every other colour model becomes RGBA.
 func Resample(src image.Image, w, h int) image.Image {

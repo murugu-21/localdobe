@@ -47,10 +47,12 @@ func TestPlanSkipRules(t *testing.T) {
 		{"image mask", ImageInfo{Width: 1200, Height: 1200, BPC: 1, IsMask: true}, "mask"},
 		{"has smask", ImageInfo{Width: 1200, Height: 1200, BPC: 8, HasSMask: true}, "mask"},
 		{"has mask", ImageInfo{Width: 1200, Height: 1200, BPC: 8, HasMask: true}, "mask"},
+		{"decode array", ImageInfo{Width: 1200, Height: 1200, BPC: 8, HasDecode: true}, "decode"},
 		{"jpx", ImageInfo{Width: 1200, Height: 1200, BPC: 8, Filter: "JPXDecode"}, "undecodable"},
 		{"jbig2", ImageInfo{Width: 1200, Height: 1200, BPC: 1, Filter: "JBIG2Decode"}, "undecodable"},
 		{"bilevel", ImageInfo{Width: 1200, Height: 1200, BPC: 1, Filter: "CCITTFaxDecode"}, "bilevel"},
 		{"16 bpc", ImageInfo{Width: 1200, Height: 1200, BPC: 16, Filter: "FlateDecode"}, "bpc"},
+		{"4 bpc rgb", ImageInfo{Width: 1200, Height: 1200, BPC: 4, Filter: "FlateDecode"}, "bpc"},
 		{"tiny", ImageInfo{Width: 32, Height: 1200, BPC: 8}, "tiny"},
 		{"too large", ImageInfo{Width: 9000, Height: 9000, BPC: 8}, "too-large"},
 	}

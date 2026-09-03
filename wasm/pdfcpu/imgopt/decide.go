@@ -30,6 +30,7 @@ type ImageInfo struct {
 	ObjNr, Width, Height, BPC int
 	Filter                    string // last filter in the pipeline, "" when unfiltered
 	IsMask, HasSMask, HasMask bool
+	HasDecode                 bool // a /Decode array remaps sample values; pdfcpu's renderers ignore it for RGB/DCT
 }
 
 // Decision says whether to resample an image and to what pixel size.
@@ -45,11 +46,18 @@ func Plan(img ImageInfo, p *Placement, o Options) Decision {
 	switch {
 	case img.IsMask || img.HasSMask || img.HasMask:
 		return Decision{Reason: "mask"}
+	case img.HasDecode:
+		// A non-default /Decode remaps (often inverts) the samples, and pdfcpu's
+		// RGB/DCT renderers don't honour it, so a rebuilt image would lose the mapping.
+		return Decision{Reason: "decode"}
 	case img.Filter == "JPXDecode" || img.Filter == "JBIG2Decode":
 		return Decision{Reason: "undecodable"}
 	case img.BPC == 1:
 		return Decision{Reason: "bilevel"} // keep scanned text crisp; Ghostscript keeps mono at 4× colour dpi too
-	case img.BPC > 8:
+	case img.BPC != 8:
+		// 2- and 4-bpc images are small palette graphics, and pdfcpu's RGB renderers
+		// read 3 bytes per pixel regardless of bpc (they panic on a 4-bpc DeviceRGB
+		// stream). 16-bpc is likewise outside the renderers' assumptions. Skip both.
 		return Decision{Reason: "bpc"}
 	case img.Width < 64 || img.Height < 64:
 		return Decision{Reason: "tiny"}

@@ -63,9 +63,29 @@ func Run(ctx *model.Context, o Options) (Stats, error) {
 
 		before := rawLen(sd)
 		newSD, err := rebuild(ctx, sd, objNr, dec, o)
-		if err != nil || len(newSD.Raw) >= before {
-			st.Skipped++ // undecodable, or not actually smaller: keep the original
+		// StreamDict.Content is a decode cache the writer never reads (it serialises
+		// Raw only): ExtractImage fills it with the full decoded samples on the dict
+		// held by ctx.Optimize.ImageObjects, and CreateFlate/DCTImageStreamDict leave
+		// it populated on the replacement. Release both as soon as rebuild is done, or
+		// every considered image's pixel buffer stays alive until WriteContext returns.
+		sd.Content = nil
+		if err != nil {
+			st.Skipped++ // undecodable: keep the original
 			continue
+		}
+		newSD.Content = nil
+		if len(newSD.Raw) >= before {
+			st.Skipped++ // not actually smaller: keep the original
+			continue
+		}
+		// Encode builds a fresh dict, so carry over the entries that tie this XObject
+		// to the rest of the document: /OC (optional-content visibility — dropping it
+		// makes a hidden layer permanently visible), /StructParent (tagged PDF),
+		// /Intent and /Metadata.
+		for _, k := range []string{"OC", "StructParent", "Intent", "Metadata"} {
+			if v, found := sd.Find(k); found {
+				newSD.Insert(k, v)
+			}
 		}
 		entry, ok := ctx.FindTableEntry(objNr, 0)
 		if !ok || entry == nil {
@@ -115,6 +135,7 @@ func infoFor(sd *types.StreamDict, objNr int) ImageInfo {
 	}
 	_, info.HasSMask = sd.Find("SMask")
 	_, info.HasMask = sd.Find("Mask")
+	_, info.HasDecode = sd.Find("Decode")
 	if n := len(sd.FilterPipeline); n > 0 {
 		info.Filter = sd.FilterPipeline[n-1].Name
 	}
@@ -149,10 +170,22 @@ func decode(ctx *model.Context, sd *types.StreamDict, objNr int) (image.Image, e
 	return nil, fmt.Errorf("imgopt: cannot decode %q image obj#%d", img.FileType, objNr)
 }
 
-func rebuild(ctx *model.Context, sd *types.StreamDict, objNr int, dec Decision, o Options) (*types.StreamDict, error) {
+// rebuild decodes, resamples and re-encodes one image. pdfcpu's renderers index into
+// the decoded sample buffer using assumptions that malformed images can violate (a
+// 4-bpc DeviceRGB stream panics with index out of range), so any panic below is turned
+// into an error for this image alone: a panic escaping imgopt would fail the whole
+// document in main.go's wrap.
+func rebuild(ctx *model.Context, sd *types.StreamDict, objNr int, dec Decision, o Options) (newSD *types.StreamDict, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			newSD, err = nil, fmt.Errorf("imgopt: image obj#%d: %v", objNr, r)
+		}
+	}()
 	src, err := decode(ctx, sd, objNr)
 	if err != nil {
 		return nil, err
 	}
-	return Encode(ctx.XRefTable, Resample(src, dec.NewW, dec.NewH), o.JPEGQuality)
+	// pdfcpu renders DeviceGray sources to RGB PNGs; fold those back to gray before
+	// resampling so Resample keeps the gray colour model and Encode emits DeviceGray.
+	return Encode(ctx.XRefTable, Resample(toGrayIfNeutral(src), dec.NewW, dec.NewH), o.JPEGQuality)
 }

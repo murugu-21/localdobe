@@ -49,6 +49,11 @@ func (l *lexer) next() (token, bool) {
 		case c == '(':
 			l.skipString()
 			return token{kind: tokOther}, true
+		case c == ')':
+			// A stray, unbalanced ')' — skipString never left one behind, so this is
+			// malformed content. Consume it so the caller always makes progress.
+			l.i++
+			return token{kind: tokOther}, true
 		case c == '<':
 			if l.i+1 < len(l.b) && l.b[l.i+1] == '<' {
 				l.i += 2
@@ -76,6 +81,12 @@ func (l *lexer) next() (token, bool) {
 			start := l.i
 			for l.i < len(l.b) && !isWS(l.b[l.i]) && !isDelim(l.b[l.i]) {
 				l.i++
+			}
+			if l.i == start {
+				// Defensive: a delimiter with no case above would scan zero bytes and
+				// return an empty token forever. Always advance.
+				l.i++
+				return token{kind: tokOther}, true
 			}
 			s := string(l.b[start:l.i])
 			if f, err := strconv.ParseFloat(s, 64); err == nil {

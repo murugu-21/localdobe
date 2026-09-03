@@ -79,4 +79,7 @@ func TestEncodePicksFilterByContent(t *testing.T) {
 	if cs := sd.NameEntry("ColorSpace"); cs == nil || *cs != model.DeviceGrayCS {
 		t.Fatalf("gray: ColorSpace=%v, want DeviceGray", cs)
 	}
+	if f := sd.NameEntry("Filter"); f == nil || *f != "DCTDecode" {
+		t.Fatalf("gray: Filter=%v, want DCTDecode (the i%%251 ramp has >64 levels)", f)
+	}
 }
