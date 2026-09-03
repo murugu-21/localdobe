@@ -102,15 +102,19 @@ func TestRunSkipsSoftMaskedImageAndItsMask(t *testing.T) {
 }
 
 func TestRunNeverGrowsAnImage(t *testing.T) {
-	// A tiny-payload image (solid colour, Flate) drawn huge-dpi: resampling to Flate/JPEG
-	// cannot beat the original few bytes, so the pass must keep the original.
-	solid := make([]byte, 1200*1200*3)
-	for i := range solid {
-		solid[i] = 0x80
+	// Every row is the same 256-colour ramp, so Flate squeezes the 1200×1200 original down
+	// to a few KB — yet the image has 256 distinct colours and is classified photographic.
+	// Resampling to 600 px and JPEG-encoding produces far more bytes than the original, so
+	// the pass must recognise the growth and keep the original stream untouched.
+	raw := make([]byte, 0, 1200*1200*3)
+	for y := 0; y < 1200; y++ {
+		for x := 0; x < 1200; x++ {
+			raw = append(raw, byte(x%256), 128, byte((x*7)%256))
+		}
 	}
 	var flate bytes.Buffer
 	zw := newFlateWriter(&flate)
-	zw.Write(solid)
+	zw.Write(raw)
 	zw.Close()
 	in := buildPDF([]obj{
 		{dict: "/Type /Catalog /Pages 2 0 R"},
@@ -120,16 +124,18 @@ func TestRunNeverGrowsAnImage(t *testing.T) {
 		{dict: "/Type /XObject /Subtype /Image /Width 1200 /Height 1200 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode", stream: flate.Bytes()},
 	})
 	st, out := roundTrip(t, in, DefaultOptions())
+	if st.Considered != 1 || st.Resampled != 0 || st.Skipped != 1 {
+		t.Fatalf("stats %+v, want 1 considered / 0 resampled / 1 skipped (re-encode would grow the image)", st)
+	}
+	if st.BytesBefore != 0 || st.BytesAfter != 0 {
+		t.Fatalf("stats %+v, want no byte accounting for a kept image", st)
+	}
 	ctx2 := loadCtx(t, out)
 	sd := ctx2.Optimize.ImageObjects[onlyImageObjNr(t, ctx2)].ImageDict
-	w := sd.IntEntry("Width")
-	if st.Resampled == 1 && (w == nil || *w != 600) {
-		t.Fatalf("resampled but Width=%v", w)
+	if w := sd.IntEntry("Width"); w == nil || *w != 1200 {
+		t.Fatalf("Width=%v, want untouched 1200", w)
 	}
-	if st.Resampled == 0 && (w == nil || *w != 1200) {
-		t.Fatalf("skipped but Width=%v", w)
-	}
-	if st.BytesAfter > st.BytesBefore {
-		t.Fatalf("stats %+v: the pass must never grow image bytes", st)
+	if f := sd.NameEntry("Filter"); f == nil || *f != "FlateDecode" {
+		t.Fatalf("Filter=%v, want the original FlateDecode stream kept", f)
 	}
 }
