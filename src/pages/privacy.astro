@@ -65,35 +65,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
       <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>.
     </p>
 
-    <h2>4. Usage analytics (Microsoft Clarity)</h2>
-    <p>
-      We also use <a href="https://clarity.microsoft.com/">Microsoft Clarity</a> to
-      understand how the site's interface is used — where visitors click, how far they
-      scroll, and where the UI confuses people — through aggregate heatmaps and anonymized
-      session replays. To make this work, Clarity sets first-party cookies
-      (<code>_clck</code>, <code>_clsk</code>) that recognize a returning browser, and
-      collects interaction data (clicks, scrolls, page URLs, browser and device type) that
-      Microsoft processes under the
-      <a href="https://privacy.microsoft.com/privacystatement">Microsoft Privacy Statement</a>.
-    </p>
-    <ul>
-      <li><strong>Your documents are excluded.</strong> Every tool's work area is marked
-        with Clarity's masking attribute, so replays show placeholder boxes — never file
-        names, document text, rendered pages, or anything you type into a tool (passwords
-        included).</li>
-      <li><strong>EU, UK, and Swiss visitors:</strong> we do not send Clarity a consent
-        signal, so for these regions Clarity runs in its restricted no-consent mode — it
-        sets <strong>no cookies</strong> and cannot recognize you across sessions.</li>
-      <li><strong>Blocking it changes nothing.</strong> As with all analytics here, if an
-        ad-blocker stops the Clarity script (<code>clarity.ms</code>), every tool keeps
-        working exactly the same.</li>
-    </ul>
-    <p>
-      Clarity also receives the same anonymous tool events described in section 5, tagged
-      onto the session so a replay can be matched to what the visitor was doing.
-    </p>
-
-    <h2>5. Product analytics (PostHog)</h2>
+    <h2>4. Product analytics (PostHog)</h2>
     <p>
       We use <a href="https://posthog.com/">PostHog</a> to see which tools people use and
       where they get stuck — for example, how many visitors who open Compress PDF actually
@@ -123,6 +95,31 @@ const description = 'localdobe processes every PDF locally in your browser — f
       <a href="https://posthog.com/privacy">PostHog Privacy Policy</a>.
     </p>
 
+    <h2>5. Session replays (Microsoft Clarity)</h2>
+    <p>
+      We use <a href="https://clarity.microsoft.com/">Microsoft Clarity</a> to see how the
+      interface is actually used — where people click, how far they scroll, and where the UI
+      confuses them — through aggregate heatmaps and anonymized session replays. Replays are
+      what make it possible to work out <em>why</em> a tool went wrong for someone rather than
+      just counting that it did. Clarity records interaction data (clicks, scrolls, page URLs,
+      browser and device type), which Microsoft processes under the
+      <a href="https://privacy.microsoft.com/privacystatement">Microsoft Privacy Statement</a>.
+    </p>
+    <ul>
+      <li><strong>Your documents are excluded.</strong> Every tool's work area is marked with
+        Clarity's masking attribute, so replays show placeholder boxes — never file names,
+        document text, rendered pages, or anything you type into a tool (passwords included).</li>
+      <li><strong>It records no product events.</strong> Clarity is used for replays only. The
+        usage events in section 4 go to PostHog and are not sent to Microsoft.</li>
+      <li><strong>No cookies.</strong> We never send Clarity a consent signal, so it runs in
+        its cookieless mode and cannot recognize a returning browser. We have verified in a
+        real browser that loading this site sets no cookies and writes nothing to local or
+        session storage.</li>
+      <li><strong>Blocking it changes nothing.</strong> As with all analytics here, if an
+        ad-blocker stops the Clarity script (<code>clarity.ms</code>), every tool keeps
+        working exactly the same.</li>
+    </ul>
+
     <h2>6. Data stored on your device</h2>
     <p>
       localdobe stores a small amount of data <em>in your browser, on your device</em>, none
@@ -144,19 +141,19 @@ const description = 'localdobe processes every PDF locally in your browser — f
     <h2>7. What we don't collect</h2>
     <p>
       We have no accounts, no sign-ups, and no way to associate site usage with a real-world
-      identity. We run no advertising and never sell or share data. The only cookies on this
-      site are the Clarity analytics cookies described in section 4 — masked so they can
-      never touch your documents — and nothing else.
+      identity. We run no advertising and never sell or share data. <strong>This site sets no
+      cookies</strong> — it writes none of its own, PostHog is configured in cookieless mode,
+      and Clarity is loaded without a consent signal so it runs cookieless too. We verified
+      this in a real browser: loading the site sets no cookies, first- or third-party.
     </p>
 
     <h2>8. Your rights</h2>
     <p>
       Because localdobe itself stores no personal data about you, there is nothing for us to
       access, correct, export, or delete on request — the data described in sections 2–5 is
-      processed by Cloudflare, Microsoft, and PostHog, and requests concerning it can be
-      directed to them under their privacy policies. Data stored on your device (section 6) is under
-      your direct control through your browser, including the Clarity cookies, which you can
-      clear at any time.
+      processed by Cloudflare, PostHog, and Microsoft, and requests concerning it can be
+      directed to them under their privacy policies. Data stored on your device (section 6)
+      is under your direct control through your browser and can be cleared at any time.
     </p>
 
     <h2>9. Children</h2>
