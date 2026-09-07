@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PageSize } from '../../lib/pdf/imagesToPdf';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { track } from '../../lib/analytics';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -47,6 +48,7 @@ export default function ImageToPdfTool() {
   function move(i: number, dir: -1 | 1) {
     const j = i + dir;
     if (j < 0 || j >= entries.length) return;
+    track('tool_option_changed', { option: 'image_order', value: 'buttons' });
     setEntries((prev) => {
       const next = [...prev];
       [next[i], next[j]] = [next[j], next[i]];
@@ -57,6 +59,7 @@ export default function ImageToPdfTool() {
 
   function reorder(from: number, to: number) {
     if (from === to) return;
+    track('tool_option_changed', { option: 'image_order', value: 'drag' });
     setEntries((prev) => {
       const next = [...prev];
       const [moved] = next.splice(from, 1);
@@ -67,6 +70,7 @@ export default function ImageToPdfTool() {
   }
 
   function remove(id: number) {
+    track('tool_option_changed', { option: 'image_removed', value: 'one' });
     setEntries((prev) => {
       const target = prev.find((x) => x.id === id);
       if (target) URL.revokeObjectURL(target.url);
@@ -76,6 +80,7 @@ export default function ImageToPdfTool() {
   }
 
   function clearAll() {
+    track('tool_reset');
     entries.forEach((e) => URL.revokeObjectURL(e.url));
     setEntries([]);
     setPhase('idle');
@@ -87,20 +92,33 @@ export default function ImageToPdfTool() {
     if (entries.length === 0) return;
     setPhase('working');
     setError(null);
+    const inputBytes = entries.reduce((sum, e) => sum + e.file.size, 0);
+    track('tool_run_started', { image_count: entries.length, page_size: pageSize, input_bytes: inputBytes });
+    const startedAt = Date.now();
     const { imagesToPdf, UnsupportedImageError } = await import('../../lib/pdf/imagesToPdf');
     try {
       const bytesList = await Promise.all(entries.map(async (e) => new Uint8Array(await e.file.arrayBuffer())));
       const out = await imagesToPdf(bytesList, pageSize);
       const baseName = entries[0].file.name.replace(/\.(jpe?g|png)$/i, '');
       setResult({ filename: `${baseName}.pdf`, bytes: out });
-      window.posthog?.capture('images_converted_to_pdf', {
+      track('images_converted_to_pdf', {
         image_count: entries.length,
         page_size: pageSize,
+        input_bytes: inputBytes,
         output_bytes: out.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof UnsupportedImageError ? err.message : 'Something went wrong.');
+      const unsupported = err instanceof UnsupportedImageError;
+      const message = unsupported ? err.message : 'Something went wrong.';
+      track('tool_failed', {
+        message,
+        reason: unsupported ? 'unsupported_image' : 'engine_error',
+        image_count: entries.length,
+        duration_ms: Date.now() - startedAt,
+      });
+      setError(message);
       setPhase('error');
     }
   }
@@ -175,7 +193,10 @@ export default function ImageToPdfTool() {
                   role="tab"
                   aria-selected={pageSize === p.id}
                   data-testid={`page-size-${p.id}`}
-                  onClick={() => { setPageSize(p.id); reset(); }}
+                  onClick={() => {
+                    if (p.id !== pageSize) track('tool_option_changed', { option: 'page_size', value: p.id });
+                    setPageSize(p.id); reset();
+                  }}
                   className={cn(
                     'rounded-lg px-3 py-2 text-sm font-medium transition',
                     pageSize === p.id ? 'bg-background text-ink shadow-sm' : 'text-muted hover:text-ink',

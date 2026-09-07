@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { formatBytes } from '../../lib/format';
 import { parsePageRanges, RangeSyntaxError } from '../../lib/pdf/split';
 import { FileDropzone } from './shared/FileDropzone';
+import { track } from '../../lib/analytics';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 
@@ -63,6 +64,7 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
       setLoaded({ bytes, name: file.name.replace(/\.pdf$/i, ''), size: file.size, pageCount: doc.numPages, thumbs });
       setPhase('idle');
     } catch {
+      track('tool_failed', { message: 'could not read pdf', reason: 'load_failed', input_bytes: file.size });
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
     } finally {
@@ -71,6 +73,7 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
   }
 
   function clear() {
+    track('tool_reset');
     setLoaded(null);
     setTab('pages');
     setMergeOne(defaultMerge);
@@ -147,6 +150,13 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
   async function run() {
     if (!loaded || !planRanges) return;
     setPhase('working'); setError(null);
+    track('tool_run_started', {
+      split_mode: tab,
+      selected_page_count: planRanges.pages,
+      page_count: loaded.pageCount,
+      merged_output: mergeOne,
+    });
+    const startedAt = Date.now();
     try {
       const { splitPdf } = await import('../../lib/pdf/split');
       const outputs = await splitPdf(loaded.bytes, planRanges.ranges);
@@ -157,15 +167,19 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
         const zipped = zipFiles(outputs.map((data, i) => ({ name: `${loaded.name}-part-${i + 1}.pdf`, data })));
         setResult({ filename: `${loaded.name}-split.zip`, bytes: zipped, mime: 'application/zip' });
       }
-      window.posthog?.capture('pdf_pages_split', {
+      track('pdf_pages_split', {
         split_mode: tab,
         selected_page_count: planRanges.pages,
+        page_count: loaded.pageCount,
         output_file_count: outputs.length,
         merged_output: mergeOne,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      track('tool_failed', { message, reason: 'split_failed', split_mode: tab, duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }
@@ -208,7 +222,10 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
                 type="button"
                 role="tab"
                 aria-selected={tab === t.id}
-                onClick={() => { setTab(t.id); resetOutcome(); }}
+                onClick={() => {
+                  if (t.id !== tab) track('tool_option_changed', { option: 'split_mode', value: t.id });
+                  setTab(t.id); resetOutcome();
+                }}
                 className={cn(
                   'rounded-lg px-3 py-2 text-sm font-medium transition',
                   tab === t.id ? 'bg-background text-ink shadow-sm' : 'text-muted hover:text-ink',
@@ -225,7 +242,10 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
               role="switch"
               aria-checked={mergeOne}
               data-testid="merge-toggle"
-              onClick={() => { setMergeOne((v) => !v); resetOutcome(); }}
+              onClick={() => {
+                track('tool_option_changed', { option: 'merged_output', value: String(!mergeOne) });
+                setMergeOne((v) => !v); resetOutcome();
+              }}
               className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-left"
             >
               <span>

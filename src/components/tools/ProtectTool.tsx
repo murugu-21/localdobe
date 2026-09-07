@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { track } from '../../lib/analytics';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -26,6 +27,7 @@ export default function ProtectTool() {
   }
 
   function clear() {
+    track('tool_reset');
     setFile(null);
     setPassword('');
     setConfirm('');
@@ -36,20 +38,33 @@ export default function ProtectTool() {
 
   async function run() {
     if (!file) return;
-    if (password.length < 4) { setError('Password must be at least 4 characters.'); setPhase('error'); return; }
-    if (password !== confirm) { setError('Passwords don’t match.'); setPhase('error'); return; }
+    // Both guards below are tracked: people abandoning here look identical to people
+    // who never pressed the button unless the bounce is recorded.
+    if (password.length < 4) {
+      track('tool_failed', { message: 'password too short', reason: 'password_too_short' });
+      setError('Password must be at least 4 characters.'); setPhase('error'); return;
+    }
+    if (password !== confirm) {
+      track('tool_failed', { message: 'passwords do not match', reason: 'password_mismatch' });
+      setError('Passwords don’t match.'); setPhase('error'); return;
+    }
     setPhase('working'); setError(null);
+    track('tool_run_started', { input_bytes: file.bytes.length });
+    const startedAt = Date.now();
     try {
       const { encryptPdf } = await import('../../lib/pdf/pdfcpuClient');
       const output = await encryptPdf(file.bytes, password);
       setResult(output);
-      window.posthog?.capture('pdf_protected', {
+      track('pdf_protected', {
         input_bytes: file.bytes.length,
         output_bytes: output.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Encryption failed.');
+      const message = err instanceof Error ? err.message : 'Encryption failed.';
+      track('tool_failed', { message, reason: 'engine_error', duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }

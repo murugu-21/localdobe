@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { track } from '../../../lib/analytics';
 import { LocalBadge } from './LocalBadge';
 
 interface Props {
@@ -31,22 +32,33 @@ export function FileDropzone({
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function accept(list: FileList | null) {
+  // Every tool funnels its file input through here, so the first two steps of the
+  // funnel — a file arriving, or being turned away — are recorded once for all of
+  // them. Sizes and counts only; a file name must never reach an event.
+  function accept(list: FileList | null, source: 'drop' | 'browse') {
     if (!list) return;
     const files = Array.from(list);
     const valid = files.filter(validate);
     if (valid.length === 0) {
       setError(typeErrorMessage);
+      track('file_rejected', { reason: 'wrong_type', source, file_count: files.length });
       return;
     }
     setError(null);
-    onFiles(multiple ? valid : valid.slice(0, 1));
+    const chosen = multiple ? valid : valid.slice(0, 1);
+    track('file_selected', {
+      source,
+      file_count: chosen.length,
+      total_bytes: chosen.reduce((sum, f) => sum + f.size, 0),
+      rejected_count: files.length - valid.length,
+    });
+    onFiles(chosen);
   }
 
   function onDrop(e: DragEvent) {
     e.preventDefault();
     setDragOver(false);
-    accept(e.dataTransfer.files);
+    accept(e.dataTransfer.files, 'drop');
   }
 
   return (
@@ -82,7 +94,7 @@ export function FileDropzone({
         accept={acceptAttr}
         multiple={multiple}
         className="hidden"
-        onChange={(e) => { accept(e.target.files); e.target.value = ''; }}
+        onChange={(e) => { accept(e.target.files, 'browse'); e.target.value = ''; }}
       />
       {error && (
         <Alert variant="destructive" role="alert" className="mt-3">

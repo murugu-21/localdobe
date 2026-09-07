@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { track } from '../../lib/analytics';
 import { formatBytes } from '../../lib/format';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
@@ -31,6 +32,7 @@ export default function MergeTool() {
   function move(i: number, dir: -1 | 1) {
     const j = i + dir;
     if (j < 0 || j >= entries.length) return;
+    track('tool_option_changed', { option: 'file_order', value: 'buttons' });
     setEntries((prev) => {
       const next = [...prev];
       [next[i], next[j]] = [next[j], next[i]];
@@ -41,6 +43,7 @@ export default function MergeTool() {
 
   function reorder(from: number, to: number) {
     if (from === to) return;
+    track('tool_option_changed', { option: 'file_order', value: 'drag' });
     setEntries((prev) => {
       const next = [...prev];
       const [moved] = next.splice(from, 1);
@@ -51,11 +54,13 @@ export default function MergeTool() {
   }
 
   function remove(id: number) {
+    track('tool_option_changed', { option: 'file_removed', value: 'one' });
     setEntries((prev) => prev.filter((x) => x.id !== id));
     reset();
   }
 
   function clearAll() {
+    track('tool_reset');
     setEntries([]);
     setPhase('idle');
     setResult(null);
@@ -65,19 +70,32 @@ export default function MergeTool() {
   async function merge() {
     setPhase('working');
     setError(null);
+    const inputBytes = entries.reduce((sum, e) => sum + e.file.size, 0);
+    track('tool_run_started', { source_file_count: entries.length, input_bytes: inputBytes });
+    const startedAt = Date.now();
     try {
       const { mergePdfs } = await import('../../lib/pdf/merge');
       const buffers = await Promise.all(entries.map(async (e) => new Uint8Array(await e.file.arrayBuffer())));
       const output = await mergePdfs(buffers);
       setResult(output);
-      window.posthog?.capture('pdfs_merged', {
+      track('pdfs_merged', {
         source_file_count: entries.length,
+        input_bytes: inputBytes,
         output_bytes: output.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
       const fileIndex = (err as { fileIndex?: number }).fileIndex;
       const detail = err instanceof Error ? err.message : 'Something went wrong.';
+      // Only `detail` is tracked — the message shown to the user is prefixed with the
+      // offending file's name, which must never reach an analytics sink.
+      track('tool_failed', {
+        message: detail,
+        source_file_count: entries.length,
+        failed_on_file: fileIndex !== undefined,
+        duration_ms: Date.now() - startedAt,
+      });
       setError(fileIndex !== undefined ? `${entries[fileIndex]?.file.name}: ${detail}` : detail);
       setPhase('error');
     }

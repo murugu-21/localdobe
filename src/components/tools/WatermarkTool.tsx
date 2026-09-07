@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { track } from '../../lib/analytics';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -43,6 +44,7 @@ export default function WatermarkTool() {
   }
 
   function clear() {
+    track('tool_reset');
     setFile(null);
     setAction('text');
     setText('CONFIDENTIAL');
@@ -61,6 +63,14 @@ export default function WatermarkTool() {
   async function run() {
     if (!file) return;
     setPhase('working'); setError(null);
+    // The watermark *text* is user content and is never sent — only its length, which
+    // is what distinguishes a real watermark from an accidental empty run.
+    track('tool_run_started', {
+      watermark_action: action,
+      input_bytes: file.bytes.length,
+      text_length: action === 'text' ? text.length : 0,
+    });
+    const startedAt = Date.now();
     try {
       const client = await import('../../lib/pdf/pdfcpuClient');
       let out: Uint8Array;
@@ -72,23 +82,37 @@ export default function WatermarkTool() {
         const { unsupportedWatermarkChars } = await import('../../lib/pdf/watermarkDesc');
         const bad = unsupportedWatermarkChars(text);
         if (bad.length > 0) {
+          // The unsupported characters themselves are user content; only the count goes out.
+          track('tool_failed', {
+            message: 'unsupported watermark characters',
+            reason: 'unsupported_chars',
+            watermark_action: action,
+            unsupported_char_count: bad.length,
+          });
           setError(`The watermark font can't draw these characters: ${bad.join(' ')} — letters, numbers, and Western European accents work. For other scripts or symbols, add your text as an image instead.`);
           setPhase('error');
           return;
         }
         out = await client.addTextWatermark(file.bytes, text, { opacity, rotation, fontSize, colorHex });
       } else {
-        if (!image) { setError('Choose a PNG or JPG image first.'); setPhase('error'); return; }
+        if (!image) {
+          track('tool_failed', { message: 'no watermark image chosen', reason: 'missing_image', watermark_action: action });
+          setError('Choose a PNG or JPG image first.'); setPhase('error'); return;
+        }
         out = await client.addImageWatermark(file.bytes, image, { opacity, rotation, scale: imageScale });
       }
       setResult(out);
-      window.posthog?.capture('pdf_watermarked', {
+      track('pdf_watermarked', {
         watermark_action: action,
+        input_bytes: file.bytes.length,
         output_bytes: out.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Watermarking failed.');
+      const message = err instanceof Error ? err.message : 'Watermarking failed.';
+      track('tool_failed', { message, reason: 'engine_error', watermark_action: action, duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }
@@ -108,7 +132,10 @@ export default function WatermarkTool() {
           </div>
           <RadioGroup
             value={action}
-            onValueChange={(v) => { setAction(v as Action); resetIfDone(); }}
+            onValueChange={(v) => {
+              if (v !== action) track('tool_option_changed', { option: 'watermark_action', value: v });
+              setAction(v as Action); resetIfDone();
+            }}
             className="flex w-auto flex-row flex-wrap items-center gap-4"
           >
             {ACTIONS.map(({ value, label }) => (

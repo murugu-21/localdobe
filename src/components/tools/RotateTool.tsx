@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { track } from '../../lib/analytics';
 import { formatBytes } from '../../lib/format';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
@@ -31,11 +32,15 @@ export default function RotateTool() {
   // Bumped on every new load (onFile) and on clear() — lets an in-flight detect() from a
   // stale file recognize it's no longer current and stop writing into the new file's state.
   const generation = useRef(0);
+  // Whether the ONNX orientation model ran at all on this device. Reported with the
+  // rotate events so a widely-failing detector is visible rather than silent.
+  const detectorAvailable = useRef(true);
 
   useEffect(() => () => { abort.current = true; }, []);
 
   async function onFile([file]: File[]) {
     const gen = ++generation.current;
+    detectorAvailable.current = true;
     setPhase('working'); setError(null); setResult(null); setAutoFixed(new Set()); setDetectNote(null);
     let doc: PDFDocumentProxy | null = null;
     let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
@@ -70,6 +75,7 @@ export default function RotateTool() {
       setPhase('idle');
       void detect(next, gen); // Un-awaited: classification runs in the background while the UI stays interactive.
     } catch {
+      track('tool_failed', { message: 'could not read pdf', reason: 'load_failed', input_bytes: file.size });
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
     } finally {
@@ -122,6 +128,7 @@ export default function RotateTool() {
       // total-failure case here too so a fully degraded detector never reports the
       // (affirmatively false) "look upright" success text.
       if (failures > 0 && failures === l.detectInputs.length && fixed === 0) {
+        detectorAvailable.current = false;
         setDetectNote('Automatic detection is unavailable on this device — tap pages to rotate them manually.');
         return;
       }
@@ -132,11 +139,13 @@ export default function RotateTool() {
       );
     } catch {
       if (stale()) return;
+      detectorAvailable.current = false;
       setDetectNote('Automatic detection is unavailable on this device — tap pages to rotate them manually.');
     }
   }
 
   function clear() {
+    track('tool_reset');
     generation.current++;
     setLoaded(null); setDeltas([]); setAutoFixed(new Set()); setDetectNote(null);
     setPhase('idle'); setError(null); setResult(null);
@@ -148,18 +157,21 @@ export default function RotateTool() {
   }
 
   function bump(i: number, by = 90) {
+    track('tool_option_changed', { option: 'rotation', value: 'single_page' });
     setDeltas((prev) => prev.map((d, j) => (j === i ? (d + by) % 360 : d)));
     setAutoFixed((prev) => { const next = new Set(prev); next.delete(i); return next; });
     resetOutcome();
   }
 
   function rotateAll() {
+    track('tool_option_changed', { option: 'rotation', value: 'all_pages' });
     setDeltas((prev) => prev.map((d) => (d + 90) % 360));
     setAutoFixed(new Set());
     resetOutcome();
   }
 
   function resetAll() {
+    track('tool_option_changed', { option: 'rotation', value: 'reset_all' });
     setDeltas((prev) => prev.map(() => 0));
     setAutoFixed(new Set());
     resetOutcome();
@@ -170,18 +182,30 @@ export default function RotateTool() {
   async function run() {
     if (!loaded || changed === 0) return;
     setPhase('working'); setError(null);
+    track('tool_run_started', {
+      page_count: loaded.pageCount,
+      rotated_page_count: changed,
+      detector_available: detectorAvailable.current,
+    });
+    const startedAt = Date.now();
     try {
       const { rotatePdf } = await import('../../lib/pdf/rotate');
       const out = await rotatePdf(loaded.bytes, deltas);
       setResult({ filename: `${loaded.name}-rotated.pdf`, bytes: out });
-      window.posthog?.capture('pdf_rotated', {
+      track('pdf_rotated', {
         page_count: loaded.pageCount,
         rotated_page_count: changed,
         auto_straightened_page_count: autoFixed.size,
+        detector_available: detectorAvailable.current,
+        input_bytes: loaded.size,
+        output_bytes: out.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      track('tool_failed', { message, reason: 'rotate_failed', page_count: loaded.pageCount, duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }

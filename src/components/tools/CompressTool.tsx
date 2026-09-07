@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
+import { track } from '../../lib/analytics';
 import { formatBytes, percentSaved } from '../../lib/format';
 import type { CompressPreset } from '../../lib/pdf/compressPresets';
 
@@ -30,6 +31,7 @@ export default function CompressTool() {
   }
 
   function clear() {
+    track('tool_reset');
     setFile(null);
     setPreset('medium');
     setPhase('idle');
@@ -41,18 +43,23 @@ export default function CompressTool() {
   async function run() {
     if (!file) return;
     setPhase('working'); setError(null);
+    track('tool_run_started', { compression_preset: preset, input_bytes: file.bytes.length });
+    const startedAt = Date.now();
     try {
       const { compressPdf } = await import('../../lib/pdf/pdfcpuClient');
       const result = await compressPdf(file.bytes, preset, setStatus);
       setOut(result);
-      window.posthog?.capture('pdf_compressed', {
+      track('pdf_compressed', {
         compression_preset: preset,
         input_bytes: file.bytes.length,
         output_bytes: result.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Compression failed.');
+      const message = err instanceof Error ? err.message : 'Compression failed.';
+      track('tool_failed', { message, compression_preset: preset, duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }
@@ -77,6 +84,7 @@ export default function CompressTool() {
                 key={p.value}
                 data-testid={`preset-${p.value}`}
                 onClick={() => {
+                  if (p.value !== preset) track('tool_option_changed', { option: 'compression_preset', value: p.value });
                   setPreset(p.value);
                   if (phase === 'done') { setPhase('idle'); setOut(null); }
                 }}

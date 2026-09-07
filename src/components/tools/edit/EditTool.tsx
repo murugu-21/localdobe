@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { track } from '../../../lib/analytics';
 import { FileDropzone } from '../shared/FileDropzone';
 import { DownloadResult } from '../shared/DownloadResult';
 import { ProgressBar } from '../shared/ProgressBar';
@@ -74,11 +75,13 @@ export default function EditTool() {
       setResult(null);
       setFallbackCount(0);
     } catch {
+      track('tool_failed', { message: 'could not open pdf', reason: 'load_failed', input_bytes: file.size });
       setError('Could not open this PDF. It may be corrupt or password-protected (see /unlock-pdf).');
     }
   }
 
   function clear() {
+    track('tool_reset');
     if (docRef.current) {
       const previous = docRef.current;
       void import('../../../lib/pdf/render').then(({ closePdf }) => closePdf(previous)).catch(() => {});
@@ -97,6 +100,7 @@ export default function EditTool() {
   }
 
   function onResizeChange(value: string) {
+    if (value !== resizeValue) track('tool_option_changed', { option: 'resize', value });
     setResizeValue(value);
     session.current.resize = RESIZE_OPTIONS.find((o) => o.value === value)?.spec ?? null;
     setDirty(!session.current.isEmpty);
@@ -105,6 +109,16 @@ export default function EditTool() {
   async function exportPdf() {
     if (!srcBytes) return;
     setExporting(true); setError(null);
+    // Counts only — the edited text itself is the user's document content.
+    const editCount = session.current.edits.length;
+    const boxCount = session.current.boxes.length;
+    track('tool_run_started', {
+      edit_count: editCount,
+      new_text_box_count: boxCount,
+      resize_applied: resizeValue !== 'none',
+      input_bytes: srcBytes.length,
+    });
+    const startedAt = Date.now();
     try {
       const { exportEditedPdf } = await import('../../../lib/pdf/edit/export');
       const { bytes, fallbackCount: n } = await exportEditedPdf(srcBytes, {
@@ -115,12 +129,24 @@ export default function EditTool() {
       }, fetchFont);
       setResult(bytes);
       setFallbackCount(n);
-      window.posthog?.capture('pdf_edited', {
+      track('pdf_edited', {
         fallback_edit_count: n,
+        edit_count: editCount,
+        new_text_box_count: boxCount,
         resize_applied: resizeValue !== 'none',
+        input_bytes: srcBytes.length,
+        output_bytes: bytes.length,
+        duration_ms: Date.now() - startedAt,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Export failed — your edits are still here, try again.');
+      const message = err instanceof Error ? err.message : 'Export failed — your edits are still here, try again.';
+      track('tool_failed', {
+        message,
+        reason: 'export_failed',
+        edit_count: editCount,
+        duration_ms: Date.now() - startedAt,
+      });
+      setError(message);
     } finally {
       setExporting(false);
     }
@@ -135,7 +161,10 @@ export default function EditTool() {
       {doc && (
         <>
           <ExportBar dirty={dirty} exporting={exporting} addTextMode={addTextMode} resizeValue={resizeValue}
-            onToggleAddText={() => setAddTextMode((m) => !m)} onResizeChange={onResizeChange} onExport={exportPdf}
+            onToggleAddText={() => {
+              track('tool_option_changed', { option: 'add_text_mode', value: String(!addTextMode) });
+              setAddTextMode((m) => !m);
+            }} onResizeChange={onResizeChange} onExport={exportPdf}
             onClear={clear} />
           {exporting && <div className="mb-4"><ProgressBar value={null} /></div>}
           {result && (

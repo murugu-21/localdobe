@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { track } from '../../lib/analytics';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -25,6 +26,7 @@ export default function UnlockTool() {
   }
 
   function clear() {
+    track('tool_reset');
     setFile(null);
     setPassword('');
     setPhase('idle');
@@ -35,17 +37,24 @@ export default function UnlockTool() {
   async function run() {
     if (!file) return;
     setPhase('working'); setError(null);
+    // The password itself is never recorded — only whether one was supplied, which
+    // is what separates a real failure from an empty-password attempt.
+    track('tool_run_started', { input_bytes: file.bytes.length, has_password: password.length > 0 });
+    const startedAt = Date.now();
     try {
       const { decryptPdf } = await import('../../lib/pdf/pdfcpuClient');
       const output = await decryptPdf(file.bytes, password);
       setResult(output);
-      window.posthog?.capture('pdf_unlocked', {
+      track('pdf_unlocked', {
         input_bytes: file.bytes.length,
         output_bytes: output.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Decryption failed.');
+      const message = err instanceof Error ? err.message : 'Decryption failed.';
+      track('tool_failed', { message, has_password: password.length > 0, duration_ms: Date.now() - startedAt });
+      setError(message);
       setPhase('error');
     }
   }

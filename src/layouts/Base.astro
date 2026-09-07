@@ -285,6 +285,38 @@ const sponsorUrl = 'https://github.com/sponsors/murugu-21';
         </footer>
       </div>
     </div>
+    <script>
+      // Site-level analytics. One delegated listener rather than a handler per link:
+      // the sidebar, the mobile drawer, the landing-page cards and the related-tool
+      // links all render the same tool hrefs, and this records which surface a visit
+      // actually came from — the input for deciding which tool to build next.
+      import { track, toolFromPath } from '../lib/analytics';
+
+      function surface(el: Element): string {
+        if (el.closest('#mobile-nav')) return 'mobile-nav';
+        if (el.closest('aside')) return 'sidebar';
+        if (el.closest('footer')) return 'footer';
+        if (el.closest('header')) return 'header';
+        return 'page';
+      }
+
+      document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const link = target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href') ?? '';
+
+        if (href.includes('github.com/sponsors')) {
+          track('sponsor_clicked', { location: surface(link) });
+          return;
+        }
+        // Same-origin only: `new URL` on an external href would still parse, so the
+        // tool allowlist below is what keeps this from tagging outbound links.
+        const tool = toolFromPath(new URL(href, window.location.origin).pathname);
+        if (tool) track('nav_tool_clicked', { target_tool: tool, location: surface(link) });
+      });
+    </script>
     <script is:inline>
       // Toggle click handler: placed after the buttons so they exist in the DOM already
       // (no DOMContentLoaded needed). Two toggles exist — sidebar (desktop) and header

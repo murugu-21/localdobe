@@ -4,6 +4,7 @@ import type { DpiPreset, ImageFormat } from '../../lib/pdf/pdfToImages';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatBytes } from '../../lib/format';
+import { track } from '../../lib/analytics';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -53,6 +54,7 @@ export default function PdfToImageTool({ format }: Props) {
       setLoaded({ bytes, name: file.name.replace(/\.pdf$/i, ''), size: file.size, pageCount: doc.numPages, thumbs });
       setPhase('idle');
     } catch {
+      track('tool_failed', { message: 'could not read pdf', reason: 'load_failed', input_bytes: file.size });
       setError('Could not read this PDF. It may be corrupt or password-protected.');
       setPhase('error');
     } finally {
@@ -61,6 +63,7 @@ export default function PdfToImageTool({ format }: Props) {
   }
 
   function clear() {
+    track('tool_reset');
     setLoaded(null);
     setPreset('standard');
     setPhase('idle');
@@ -77,6 +80,13 @@ export default function PdfToImageTool({ format }: Props) {
   async function run() {
     if (!loaded) return;
     setPhase('working'); setError(null); setProgress({ done: 0, total: loaded.pageCount });
+    track('tool_run_started', {
+      image_format: format,
+      dpi_preset: preset,
+      page_count: loaded.pageCount,
+      input_bytes: loaded.size,
+    });
+    const startedAt = Date.now();
     const { pdfToImages, DPI_PRESETS, pageImageName } = await import('../../lib/pdf/pdfToImages');
     const { PdfToolError } = await import('../../lib/pdf/errors');
     try {
@@ -94,15 +104,27 @@ export default function PdfToImageTool({ format }: Props) {
         const zipped = zipFiles(images.map((data, i) => ({ name: pageImageName(loaded.name, i, format), data })));
         setResult({ filename: `${loaded.name}-images.zip`, bytes: zipped, mime: 'application/zip' });
       }
-      window.posthog?.capture('pdf_converted_to_image', {
+      track('pdf_converted_to_image', {
         image_format: format,
         dpi_preset: preset,
         page_count: loaded.pageCount,
         output_is_archive: images.length > 1,
+        input_bytes: loaded.size,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
-      setError(err instanceof PdfToolError ? err.message : 'Something went wrong converting this PDF.');
+      const known = err instanceof PdfToolError;
+      const message = known ? err.message : 'Something went wrong converting this PDF.';
+      track('tool_failed', {
+        message,
+        reason: known ? 'render_failed' : 'engine_error',
+        image_format: format,
+        dpi_preset: preset,
+        page_count: loaded.pageCount,
+        duration_ms: Date.now() - startedAt,
+      });
+      setError(message);
       setPhase('error');
     }
   }
@@ -146,7 +168,10 @@ export default function PdfToImageTool({ format }: Props) {
                   role="tab"
                   aria-selected={preset === p.id}
                   data-testid={`dpi-${p.id}`}
-                  onClick={() => { setPreset(p.id); resetOutcome(); }}
+                  onClick={() => {
+                    if (p.id !== preset) track('tool_option_changed', { option: 'dpi_preset', value: p.id });
+                    setPreset(p.id); resetOutcome();
+                  }}
                   className={cn(
                     'rounded-lg px-3 py-2 text-sm font-medium transition',
                     preset === p.id ? 'bg-background text-ink shadow-sm' : 'text-muted hover:text-ink',

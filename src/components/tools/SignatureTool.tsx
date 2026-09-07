@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { track } from '../../lib/analytics';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -20,12 +21,18 @@ export default function SignatureTool() {
     const bytes = new Uint8Array(await f.arrayBuffer());
     setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes });
     setPhase('working'); setReport(null); setRemoved(null); setError(null);
+    // Validation starts the moment a file lands here — there is no separate run button,
+    // so file_selected is immediately followed by the run rather than a user action.
+    track('tool_run_started', { input_bytes: bytes.length });
+    const startedAt = Date.now();
     try {
       const { validateSignatures } = await import('../../lib/pdf/pdfcpuClient');
       const result = await validateSignatures(bytes);
       setReport(result);
-      window.posthog?.capture('pdf_signatures_checked', {
+      track('pdf_signatures_checked', {
         signature_count: result.length,
+        input_bytes: bytes.length,
+        duration_ms: Date.now() - startedAt,
       });
       setPhase('done');
     } catch (err) {
@@ -34,18 +41,23 @@ export default function SignatureTool() {
       // This match is coupled to that exact pdfcpu wording; revisit if the engine version changes.
       if (err instanceof Error && /no signature/i.test(err.message)) {
         setReport([]);
-        window.posthog?.capture('pdf_signatures_checked', {
+        track('pdf_signatures_checked', {
           signature_count: 0,
+          input_bytes: bytes.length,
+          duration_ms: Date.now() - startedAt,
         });
         setPhase('done');
       } else {
-        setError(err instanceof Error ? err.message : 'Validation failed.');
+        const message = err instanceof Error ? err.message : 'Validation failed.';
+        track('tool_failed', { message, reason: 'validate_failed', duration_ms: Date.now() - startedAt });
+        setError(message);
         setPhase('error');
       }
     }
   }
 
   function clear() {
+    track('tool_reset');
     setFile(null);
     setPhase('idle');
     setReport(null);
@@ -57,15 +69,21 @@ export default function SignatureTool() {
   async function remove() {
     if (!file) return;
     setRemoving(true); setError(null);
+    track('tool_run_started', { action: 'remove_signatures', signature_count: report?.length ?? 0 });
+    const startedAt = Date.now();
     try {
       const { removeSignatures } = await import('../../lib/pdf/pdfcpuClient');
       const output = await removeSignatures(file.bytes);
       setRemoved(output);
-      window.posthog?.capture('pdf_signatures_removed', {
+      track('pdf_signatures_removed', {
+        signature_count: report?.length ?? 0,
         output_bytes: output.length,
+        duration_ms: Date.now() - startedAt,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not remove signatures.');
+      const message = err instanceof Error ? err.message : 'Could not remove signatures.';
+      track('tool_failed', { message, reason: 'remove_failed', duration_ms: Date.now() - startedAt });
+      setError(message);
     } finally {
       setRemoving(false);
     }

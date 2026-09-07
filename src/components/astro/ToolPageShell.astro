@@ -13,3 +13,10 @@ const { h1, sub } = Astro.props;
 <article class="prose prose-slate mx-auto mt-20 max-w-3xl px-4 dark:prose-invert">
   <slot />
 </article>
+
+{/* Top of the funnel. Every tool page renders through this shell, so one script
+    here records the view for all of them — the tool is derived from the URL. */}
+<script>
+  import { track } from '../../lib/analytics';
+  track('tool_viewed');
+</script>
