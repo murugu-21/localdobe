@@ -31,31 +31,45 @@ file. Verify this after the first deploy (step 4 below).
    *pointer* instead of the object; prepend `git lfs pull && ` to the build
    command in the Cloudflare build settings and redeploy.
 
-## Analytics (PostHog + Microsoft Clarity)
+## Analytics (PostHog for events, Clarity for replays)
 
-Both sinks are fed from a single helper, `src/lib/analytics.ts` — `track(event, props)`
-sends every event to `window.posthog.capture` *and* to `window.clarity` (as a smart
-event plus string tags; numbers are bucketed on the way in because Clarity stores only
-strings). Nothing in that module throws, so a blocked analytics script can never break
-a tool. Never pass a file name, document text, or a password into an event; see the
-privacy note at the top of that file.
+The two tools do different jobs and do not overlap:
 
-### PostHog
+- **PostHog** takes every product event. `src/lib/analytics.ts` — `track(event, props)` —
+  sends to `window.posthog.capture` with properties intact. Nothing in that module throws,
+  so a blocked analytics script can never break a tool. Never pass a file name, document
+  text, or a password into an event; see the privacy note at the top of that file.
+- **Clarity** does session replay and heatmaps, and nothing else. It receives **no**
+  product events — `analytics.ts` never calls `window.clarity`.
+
+The split is forced: PostHog cannot record sessions while `cookieless_mode: 'always'` is
+set (see below), and giving that up would mean cookies and a consent banner. Clarity
+records fine with no cookies at all, so it covers replay and PostHog covers events.
+
+The cost of the split is that a PostHog event and a Clarity replay cannot be linked — you
+cannot jump from "this run failed" to "watch that session". If that becomes a real
+problem, the fix is to send Clarity a small number of tags (tool name, failure) purely so
+replays are filterable, which would mean `analytics.ts` calling `window.clarity` again.
 
 `src/components/posthog.astro` inlines the snippet **at build time** from
-`PUBLIC_POSTHOG_PROJECT_TOKEN` and `PUBLIC_POSTHOG_HOST` — same constraint as Clarity
-below, they must be set as Cloudflare **build** variables, not runtime Worker vars.
-When either is unset no snippet is emitted at all (and `astro dev` throws, to stop the
-misconfiguration from going unnoticed).
+`PUBLIC_POSTHOG_PROJECT_TOKEN` and `PUBLIC_POSTHOG_HOST`. Because the site is static, a
+runtime Worker variable does nothing — both must be set as Cloudflare **build** variables
+(the Worker → Settings → Build → Variables and secrets). When either is unset no snippet
+is emitted at all (and `astro dev` throws, to stop the misconfiguration going unnoticed).
 
 Two properties of this setup silently drop events. Both are configured correctly as of
 2026-09-07; check them first if the dashboard ever looks emptier than it should, because
 neither failure is visible from the site:
 
 - **`cookieless_mode: 'always'` requires "Cookieless server hash mode" enabled on the
-  PostHog project** (Project settings → Autocapture & data capture). With the option off
-  PostHog *rejects every event the site sends* — the site behaves normally and the
-  dashboard stays empty. This is enabled.
+  PostHog project** — Project Settings → **Web analytics**. PostHog's SDK reference is
+  explicit: "Cookieless mode must also be enabled in your PostHog project settings,
+  otherwise cookieless events are ignored." The site behaves normally and the dashboard
+  stays empty. This is enabled.
+
+  Identity in this mode is `hash(team_id, daily_salt, ip_address, user_agent, hostname)`,
+  where the salt "changes daily which we delete once that day's events have been
+  processed" — so there is no client-side identifier and no cross-day linkage.
 - **Ad-blockers stop `us.i.posthog.com` outright** — uBlock Origin, Brave, and Safari's
   built-in protection all carry it, which for a developer-leaning audience is a large and
   non-random share of traffic. `PUBLIC_POSTHOG_HOST` therefore points at
@@ -109,28 +123,46 @@ short-circuits to `true` and posthog-js ignores consent entirely ("Consent opt i
 not valid with cookieless_mode=\"always\" and will be ignored"). Do not add a consent
 banner to try to fix it.
 
-## Analytics (Microsoft Clarity)
+### PostHog session recording is off, and cannot be turned on from the dashboard alone
+
+Enabling session replay in the PostHog project has no effect while
+`src/components/posthog.astro` sets `cookieless_mode: 'always'`. Replay needs a session
+id, and posthog-js refuses to construct one in that mode — its SessionIdManager throws
+`'SessionIdManager cannot be used with cookieless_mode="always"'`, and `sessionRecording`
+is only wired up for `cookieless_mode: 'on_reject'`. Live traffic confirms it: the site
+POSTs to `/e/` and `/i/v0/e/` and never to `/s/`, the replay endpoint.
+
+**This limitation is undocumented.** It is absent from PostHog's cookieless tracking
+docs, from the `cookieless_mode` SDK config reference, and from the session replay
+troubleshooting page (which does not mention cookieless mode at all). It was established
+here by reading the shipped `array.js` and watching production network traffic. Two
+consequences: nothing in the dashboard warns you that enabling replay does nothing, and
+because the behaviour is not a documented contract it could change in a future
+posthog-js release — so re-check it rather than assuming, if replay ever matters.
+
+Turning PostHog replay on therefore means giving up cookieless mode — cookies, a consent
+story for EEA/UK/CH visitors, and real changes to `src/pages/privacy.astro` (§4 and §7
+both state the site sets no cookies). Clarity is used for replay precisely so none of
+that is necessary.
+
+## Session replay (Microsoft Clarity)
 
 The Clarity snippet in `src/layouts/Base.astro` is inlined **at build time** from
-`PUBLIC_CLARITY_PROJECT_ID`. Because the site is static, a runtime Worker variable
-does nothing — the variable must be present during `npm run build`:
+`PUBLIC_CLARITY_PROJECT_ID`; like the PostHog vars it must be a Cloudflare **build**
+variable, and when unset no script is emitted at all.
 
-- Cloudflare dashboard → the Worker → **Settings → Build → Variables and secrets** →
-  add `PUBLIC_CLARITY_PROJECT_ID` = your Clarity project ID (from clarity.microsoft.com
-  → project → Settings → Overview), then redeploy.
-- When the variable is unset (e.g. local `npm run dev`/`npm run build`), no Clarity
-  script is emitted at all.
-- Clarity receives the same events as PostHog (see above) as smart events plus session
-  tags, which is what makes a replay filterable by tool and outcome.
-- Tool work areas are wrapped in `data-clarity-mask="true"`
-  (`src/components/astro/ToolPageShell.astro`) so session replays never capture file
-  names, document text, or tool inputs. Keep that attribute if the shell is refactored,
-  and additionally set the project's masking mode to **Strict** in the Clarity dashboard
-  (Settings → Masking) as a second layer.
-- No consent banner is shipped: for EEA/UK/CH visitors Clarity receives no consent
-  signal and runs in cookieless no-consent mode (degraded sessions/funnels there, by
-  design). The privacy policy (`src/pages/privacy.astro` §4) documents all of this —
-  update it if any of the above changes — PostHog is documented in §5 and Clarity in §4.
+- Tool work areas carry **both** `data-clarity-mask="true"` and `ph-no-capture`
+  (`src/components/astro/ToolPageShell.astro`) so replays never capture file names,
+  document text, or passwords. The Clarity attribute is load-bearing today; the PostHog
+  class is defence in depth for the day someone drops cookieless mode. Keep both, and
+  also set the project's masking mode to **Strict** in the Clarity dashboard.
+- Clarity sets **no cookies**. It is loaded without a `clarity('consent')` call, so it
+  runs cookieless everywhere — verified in a real browser: loading the site produces
+  `POST j.clarity.ms/collect` payloads (a DOM snapshot plus incremental mutations) while
+  setting zero cookies and writing nothing to local or session storage. The trade is that
+  sessions cannot be stitched across page loads and returning visitors are not recognized.
+- Note this contradicts what the privacy policy claimed before 2026-09-07 (that Clarity
+  set `_clck`/`_clsk`). It does not, under this configuration. §5 and §7 now say so.
 
 ## Tests
 
