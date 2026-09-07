@@ -5,7 +5,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
 <Base title="Privacy Policy — localdobe" {description} canonicalPath="/privacy">
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
     <h1>Privacy Policy</h1>
-    <p><em>Last updated: August 10, 2026</em></p>
+    <p><em>Last updated: September 7, 2026</em></p>
     <p>
       The short version: <strong>your files never leave your device.</strong> Every tool on
       localdobe — merge, split, compress, edit, watermark, protect, unlock, and signature
@@ -88,8 +88,42 @@ const description = 'localdobe processes every PDF locally in your browser — f
         ad-blocker stops the Clarity script (<code>clarity.ms</code>), every tool keeps
         working exactly the same.</li>
     </ul>
+    <p>
+      Clarity also receives the same anonymous tool events described in section 5, tagged
+      onto the session so a replay can be matched to what the visitor was doing.
+    </p>
 
-    <h2>5. Data stored on your device</h2>
+    <h2>5. Product analytics (PostHog)</h2>
+    <p>
+      We use <a href="https://posthog.com/">PostHog</a> to see which tools people use and
+      where they get stuck — for example, how many visitors who open Compress PDF actually
+      download a result, and which errors they hit on the way. Each event records the tool
+      being used, the step reached, and coarse measurements of the work: the number of files
+      or pages, file sizes in bytes, how long the operation took, and which options
+      (compression preset, page size, split mode) were selected.
+    </p>
+    <ul>
+      <li><strong>Nothing about your documents is included.</strong> Events never carry file
+        names, file contents, page text, or passwords. Error messages are scrubbed of
+        anything resembling a file name before they are sent.</li>
+      <li><strong>No profile is built.</strong> PostHog is configured in cookieless mode
+        with person profiles disabled: it writes no cookie and no
+        <code>localStorage</code> entry, and there is no identifier that links your events
+        together across visits or that could identify you.</li>
+      <li><strong>Blocking it changes nothing.</strong> If an ad-blocker stops the PostHog
+        script, every tool keeps working exactly the same.</li>
+      <li><strong>It is served from our own subdomain.</strong> To keep these measurements
+        from being skewed by ad-blockers, the PostHog script and its events go through
+        <code>e.localdobe.com</code>, which forwards to PostHog. We mention it because it
+        means the traffic is not obviously PostHog's if you inspect it yourself — the data
+        collected is exactly what is listed above, and no more.</li>
+    </ul>
+    <p>
+      This data is processed by PostHog under the
+      <a href="https://posthog.com/privacy">PostHog Privacy Policy</a>.
+    </p>
+
+    <h2>6. Data stored on your device</h2>
     <p>
       localdobe stores a small amount of data <em>in your browser, on your device</em>, none
       of which is transmitted to anyone:
@@ -107,7 +141,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
       the site.
     </p>
 
-    <h2>6. What we don't collect</h2>
+    <h2>7. What we don't collect</h2>
     <p>
       We have no accounts, no sign-ups, and no way to associate site usage with a real-world
       identity. We run no advertising and never sell or share data. The only cookies on this
@@ -115,24 +149,24 @@ const description = 'localdobe processes every PDF locally in your browser — f
       never touch your documents — and nothing else.
     </p>
 
-    <h2>7. Your rights</h2>
+    <h2>8. Your rights</h2>
     <p>
       Because localdobe itself stores no personal data about you, there is nothing for us to
-      access, correct, export, or delete on request — the data described in sections 2–4 is
-      processed by Cloudflare and Microsoft, and requests concerning it can be directed to
-      them under their privacy policies. Data stored on your device (section 5) is under
+      access, correct, export, or delete on request — the data described in sections 2–5 is
+      processed by Cloudflare, Microsoft, and PostHog, and requests concerning it can be
+      directed to them under their privacy policies. Data stored on your device (section 6) is under
       your direct control through your browser, including the Clarity cookies, which you can
       clear at any time.
     </p>
 
-    <h2>8. Children</h2>
+    <h2>9. Children</h2>
     <p>
       This site provides document utilities and does not target children. We do not
       knowingly collect personal information from anyone, children included — the site has
       no mechanism to do so.
     </p>
 
-    <h2>9. Changes to this policy</h2>
+    <h2>10. Changes to this policy</h2>
     <p>
       If how the site works ever changes in a way that affects this page — a new analytics
       tool, a new third party, anything that touches data — we will update this policy and
