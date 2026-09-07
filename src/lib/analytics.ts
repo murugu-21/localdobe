@@ -1,23 +1,18 @@
 /**
- * One call site for both analytics sinks.
+ * One call site for analytics.
  *
- * `track()` fans a single event out to PostHog (`window.posthog.capture`) and to
- * Microsoft Clarity (`window.clarity`). The two want different shapes:
+ * `track()` sends an event to PostHog (`window.posthog.capture`) with its properties
+ * intact, so funnels can average and compare the numbers.
  *
- *   - PostHog takes arbitrary properties and keeps numbers as numbers, so funnels
- *     can average and compare them.
- *   - Clarity only stores *string* tags, and a tag with unbounded values is
- *     useless in its filter UI — so every number is bucketed on the way in.
- *
- * Either sink may be missing: both scripts are third-party and routinely blocked
- * by extensions, and neither is emitted at all when its env var is unset. Nothing
- * here throws, so a blocked script can never take a PDF tool down with it.
+ * PostHog is a third-party script and is routinely blocked by extensions; it is also
+ * absent entirely when its env var is unset. Nothing here throws, so a blocked script
+ * can never take a PDF tool down with it.
  *
  * PRIVACY: localdobe's whole promise is that files never leave the device. Never
  * pass a file name, page text, password, or any file content into an event —
  * counts, byte sizes, durations, and fixed option values only. `message` is
  * scrubbed by `sanitizeMessage` because engine errors sometimes embed a name.
- * See `src/pages/privacy.astro` §4 and the `data-clarity-mask` wrapper in
+ * See `src/pages/privacy.astro` §4 and the `ph-no-capture` wrapper in
  * `src/components/astro/ToolPageShell.astro`.
  */
 
@@ -76,38 +71,6 @@ export type AnalyticsEvent =
   | 'pdf_signatures_checked'
   | 'pdf_signatures_removed';
 
-const KB = 1024;
-const MB = 1024 * KB;
-
-/** Size buckets for Clarity tags. Boundaries chosen to separate the cases we act on. */
-export function bucketBytes(n: number): string {
-  if (n < 100 * KB) return '<100kb';
-  if (n < MB) return '100kb-1mb';
-  if (n < 5 * MB) return '1-5mb';
-  if (n < 10 * MB) return '5-10mb';
-  if (n < 50 * MB) return '10-50mb';
-  return '50mb+';
-}
-
-/** Count buckets for Clarity tags (pages, files, signatures). */
-export function bucketCount(n: number): string {
-  if (n <= 0) return '0';
-  if (n === 1) return '1';
-  if (n <= 5) return '2-5';
-  if (n <= 20) return '6-20';
-  if (n <= 100) return '21-100';
-  return '100+';
-}
-
-/** Duration buckets for Clarity tags — how slow a run felt, not how long it took. */
-export function bucketMs(n: number): string {
-  if (n < 1_000) return '<1s';
-  if (n < 5_000) return '1-5s';
-  if (n < 15_000) return '5-15s';
-  if (n < 60_000) return '15-60s';
-  return '60s+';
-}
-
 const MESSAGE_MAX = 120;
 /** Any path-ish or bare token ending in a document/image extension. */
 const FILE_NAME = /\S*[\w)\]]\.(pdf|jpe?g|png|zip|tiff?|webp|gif|bmp|heic)\b/gi;
@@ -140,17 +103,7 @@ export function toolFromPath(pathname: string): ToolId | undefined {
   return (TOOL_SLUGS as readonly string[]).includes(slug) ? (slug as ToolId) : undefined;
 }
 
-/** Turns one property into the string Clarity will store for it. */
-function tagValue(key: string, value: string | number | boolean): string {
-  if (typeof value === 'number') {
-    if (key.endsWith('_bytes')) return bucketBytes(value);
-    if (key.endsWith('_ms')) return bucketMs(value);
-    return bucketCount(value);
-  }
-  return String(value).slice(0, MESSAGE_MAX);
-}
-
-/** Runs a sink, swallowing anything it throws — analytics never breaks a tool. */
+/** Runs the sink, swallowing anything it throws — analytics never breaks a tool. */
 function attempt(fn: () => void): void {
   try {
     fn();
@@ -160,7 +113,7 @@ function attempt(fn: () => void): void {
 }
 
 /**
- * Records one user interaction in both sinks.
+ * Records one user interaction.
  *
  * `tool` is filled in automatically from the current path; pass it explicitly only
  * to attribute an event to a tool other than the page it happened on.
@@ -178,10 +131,4 @@ export function track(event: AnalyticsEvent, props: Record<string, unknown> = {}
   }
 
   attempt(() => window.posthog?.capture(event, Object.fromEntries(entries)));
-  attempt(() => {
-    const clarity = window.clarity;
-    if (!clarity) return;
-    clarity('event', event);
-    for (const [key, value] of entries) clarity('set', key, tagValue(key, value));
-  });
 }

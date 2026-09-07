@@ -1,17 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * End-to-end proof that the funnel actually reaches both sinks in a real browser.
+ * End-to-end proof that the funnel actually reaches PostHog in a real browser.
  *
  * PostHog is asserted through its own snippet rather than a stub: before `array.js`
  * loads, `window.posthog` IS the queue array the snippet builds, and `capture(name,
  * props)` pushes `['capture', name, props]` onto it. Blocking the PostHog host below
  * keeps that stub in place for the whole test — and guarantees the suite never sends
  * real events to the production project.
- *
- * Clarity emits no snippet locally (PUBLIC_CLARITY_PROJECT_ID is unset in dev), and
- * its snippet is written `w.clarity = w.clarity || ...`, so the recorder installed in
- * `addInitScript` survives either way.
  */
 
 interface PostHogCall { event: string; props: Record<string, unknown> }
@@ -28,11 +24,6 @@ async function setUpSinks(page: Page) {
       ? route.continue()
       : route.abort();
   });
-  await page.addInitScript(() => {
-    const calls: unknown[][] = [];
-    (window as unknown as { __clarity: unknown[][] }).__clarity = calls;
-    window.clarity = (...args: unknown[]) => { calls.push(args); };
-  });
 }
 
 /** Every `capture()` the PostHog snippet queued, in order. */
@@ -44,10 +35,6 @@ async function posthogCalls(page: Page): Promise<PostHogCall[]> {
       .filter((entry) => entry[0] === 'capture')
       .map((entry) => ({ event: String(entry[1]), props: (entry[2] ?? {}) as Record<string, unknown> }));
   });
-}
-
-async function clarityCalls(page: Page): Promise<unknown[][]> {
-  return page.evaluate(() => (window as unknown as { __clarity: unknown[][] }).__clarity ?? []);
 }
 
 function eventNames(calls: PostHogCall[]): string[] {
@@ -93,28 +80,6 @@ test('merge funnel reaches PostHog in order, from page view to download', async 
 
   const downloaded = calls.find((c) => c.event === 'result_downloaded')!;
   expect(downloaded.props.output_type).toBe('pdf');
-});
-
-test('the same funnel reaches Clarity, with numbers bucketed into string tags', async ({ page }) => {
-  await setUpSinks(page);
-  await page.goto('/merge-pdf');
-  await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/a.pdf', 'e2e/.fixtures/b.pdf']);
-  await page.getByTestId('run-tool').click();
-  await expect(page.getByTestId('download-result')).toBeVisible();
-
-  const calls = await clarityCalls(page);
-  const events = calls.filter((c) => c[0] === 'event').map((c) => String(c[1]));
-  expect(events).toContain('tool_viewed');
-  expect(events).toContain('file_selected');
-  expect(events).toContain('pdfs_merged');
-
-  const tags = Object.fromEntries(
-    calls.filter((c) => c[0] === 'set').map((c) => [String(c[1]), String(c[2])]),
-  );
-  expect(tags.tool).toBe('merge-pdf');
-  // Clarity stores strings only — a raw byte count would be a useless filter value.
-  expect(tags.output_bytes).toMatch(/^(<100kb|100kb-1mb|1-5mb|5-10mb|10-50mb|50mb\+)$/);
-  expect(tags.source_file_count).toBe('2-5');
 });
 
 test('a rejected file is recorded instead of vanishing', async ({ page }) => {
@@ -179,13 +144,11 @@ test('no event ever carries a file name', async ({ page }) => {
   await expect(page.getByTestId('download-result')).toBeVisible();
 
   const posthog = await posthogCalls(page);
-  const clarity = await clarityCalls(page);
   // Guard against passing vacuously: this assertion is only meaningful if events
   // actually fired, so prove the funnel ran before asserting what it did not contain.
   expect(eventNames(posthog)).toContain('images_converted_to_pdf');
-  expect(clarity.length).toBeGreaterThan(0);
 
-  const serialized = JSON.stringify(posthog) + JSON.stringify(clarity);
+  const serialized = JSON.stringify(posthog);
   for (const name of ['photo.jpg', 'shot.png', 'photo', 'shot']) {
     expect(serialized).not.toContain(name);
   }

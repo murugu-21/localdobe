@@ -12,6 +12,8 @@ interface Props {
 const { title, description, canonicalPath, jsonLd = [] } = Astro.props;
 // Inlined at build time — set PUBLIC_CLARITY_PROJECT_ID as a Cloudflare build
 // variable (the site is static; runtime Worker vars never reach this code).
+// Clarity is here for session replay only; product events go to PostHog via
+// src/lib/analytics.ts, which never calls window.clarity.
 const clarityId = import.meta.env.PUBLIC_CLARITY_PROJECT_ID;
 const canonicalHref = new URL(canonicalPath, Astro.site).href;
 const canonical = canonicalHref.endsWith('/') ? canonicalHref : `${canonicalHref}/`;
