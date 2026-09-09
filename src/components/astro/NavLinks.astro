@@ -15,9 +15,13 @@ interface Props {
 }
 const { size = 'sm' } = Astro.props;
 
-// Active nav state: match the page path with or without its trailing slash.
-const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isActive = (href: string) => currentPath === href;
+// Active nav state. Both sides get their trailing slash stripped: the tool hrefs in
+// tools.ts carry one and Astro.url.pathname does too, but the old comparison stripped
+// only the latter, so '/merge-pdf' never equalled '/merge-pdf/' and no tool row has
+// ever highlighted as current.
+const strip = (path: string) => path.replace(/\/$/, '') || '/';
+const currentPath = strip(Astro.url.pathname);
+const isActive = (href: string) => strip(href) === currentPath;
 
 // Written as whole literal class strings so Tailwind's source scanner sees them.
 const rowSize = size === 'sm' ? 'px-3 py-2 text-sm' : 'px-3 py-2.5 text-base';
