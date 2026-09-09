@@ -340,7 +340,7 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
 
           {tab === 'all' && (
             <div className="rounded-xl border border-border p-4 text-sm text-muted-foreground">
-              Every page becomes its own PDF — you'll get a zip with {loaded.pageCount} files.
+              Every page becomes its own PDF — you’ll get a zip with {loaded.pageCount} files.
             </div>
           )}
 

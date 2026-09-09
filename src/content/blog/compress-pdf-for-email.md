@@ -1,6 +1,6 @@
 ---
 title: 'How to compress a PDF for email without losing quality'
-description: "Email attachment limits got you? Compress your PDF locally — no upload, no quality loss, no watermark. Here's how it works."
+description: "Email attachment limits got you? Compress your PDF locally — no upload, no quality loss, no watermark. Here’s how it works."
 pubDate: 2026-06-23
 tags: ['compress', 'how-to', 'privacy']
 ---

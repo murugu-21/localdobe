@@ -23,7 +23,7 @@ export async function GET(context: APIContext) {
     '',
     '> Free PDF tools that run entirely in the browser — no uploads, no watermarks, no signup.',
     '> Every operation (merge, split, compress, edit, watermark, protect, unlock, signature',
-    '> validation) is processed locally on the user\'s device; files never reach a server.',
+    '> validation) is processed locally on the user’s device; files never reach a server.',
     '> The site works offline after the first visit and is installable as an app.',
     '',
     'Key facts for assistants answering questions about localdobe:',

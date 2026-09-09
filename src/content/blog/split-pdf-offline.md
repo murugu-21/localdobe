@@ -5,11 +5,11 @@ pubDate: 2026-08-23
 tags: ['split', 'privacy', 'how-to']
 faq:
   - q: 'Do I need to install anything to split a PDF offline?'
-    a: 'No. Visit the site once while online and your browser caches the whole app. Optionally, use your browser''s "Install" or "Add to Home Screen" option to keep it as an app.'
+    a: 'No. Visit the site once while online and your browser caches the whole app. Optionally, use your browser’s “Install” or “Add to Home Screen” option to keep it as an app.'
   - q: 'Which PDF tools work offline?'
     a: 'Split, extract pages, and merge work fully offline after your first visit. Compression, watermarking, and password tools fetch a larger engine the first time you use them — after that, they work offline too.'
   - q: 'Is the offline version different from the online one?'
-    a: 'No — it''s the same tool. localdobe always runs on your device; being offline just makes that impossible to fake.'
+    a: 'No — it’s the same tool. localdobe always runs on your device; being offline just makes that impossible to fake.'
 ---
 
 Most "online PDF splitter" results have a hard dependency you only notice at the worst moment: they need to upload your file to a server before they can do anything. On a plane, on a train through a dead zone, in a building with locked-down Wi-Fi, or on a network where you simply don't want a contract transiting someone else's infrastructure — an upload-based tool is a blank progress bar.

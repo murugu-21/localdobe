@@ -223,7 +223,7 @@ test('watermark: unsupported characters are rejected with a clear message', asyn
   await page.getByTestId('run-tool').click();
   // Regression: the engine silently drops undrawable characters, producing a
   // "successful" download with no watermark — the UI must reject the text instead.
-  await expect(page.getByRole('alert')).toContainText(/can't draw/i, { timeout: 30_000 });
+  await expect(page.getByRole('alert')).toContainText(/can[’']t draw/i, { timeout: 30_000 });
   await expect(page.getByTestId('download-result')).not.toBeVisible();
 });
 

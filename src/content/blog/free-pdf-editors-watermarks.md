@@ -1,6 +1,6 @@
 ---
 title: 'Why free PDF editors add watermarks (and how to avoid them)'
-description: 'The watermark is the business model. Why "free" PDF editors stamp your documents and how browser-based tools do it truly free.'
+description: 'The watermark is the business model. Why “free” PDF editors stamp your documents and how browser-based tools do it truly free.'
 pubDate: 2026-07-02
 tags: ['watermark', 'edit', 'privacy']
 ---

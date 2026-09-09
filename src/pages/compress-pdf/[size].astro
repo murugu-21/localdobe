@@ -29,7 +29,7 @@ const description = `Compress a PDF to around ${label} for free — no upload, n
 const faq = [
   {
     q: `Can I compress a PDF to exactly ${label}?`,
-    a: `Not to an exact byte count — how much a file shrinks depends on what's inside it. But Maximum compression gets most bloated PDFs down to roughly ${label}; if it comes out a little over, split the PDF or remove heavy pages first and try again.`,
+    a: `Not to an exact byte count — how much a file shrinks depends on what’s inside it. But Maximum compression gets most bloated PDFs down to roughly ${label}; if it comes out a little over, split the PDF or remove heavy pages first and try again.`,
   },
   { q: 'Will the quality be reduced?', a: 'No. localdobe removes redundancy (duplicate fonts, unused objects, repeated streams) rather than recompressing your images, so pages look identical — you get a smaller file with no visible quality hit.' },
   { q: 'Are my files uploaded?', a: 'No. Compression runs entirely inside a Web Worker in your browser — your PDF never leaves your device. Disconnect from the internet after the page loads and it still works.' },
@@ -46,8 +46,8 @@ const faq = [
       <li>Click <strong>Compress PDF</strong> and download your smaller file.</li>
     </ol>
     <p>
-      Aiming for {label}? To be honest: you can't force a PDF down to an exact byte count, because
-      how much it shrinks depends on what's inside it. A PDF built from scans at print resolution,
+      Aiming for {label}? To be honest: you can’t force a PDF down to an exact byte count, because
+      how much it shrinks depends on what’s inside it. A PDF built from scans at print resolution,
       duplicated fonts, or leftover objects often drops by 20–70% — usually enough to land near {label}.
       If the result is still too big, <a href="/split-pdf/">split the PDF</a> and compress just the pages
       you actually need to send.

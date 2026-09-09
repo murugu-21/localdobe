@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { aboutJsonLd } from '../lib/seo';
-const description = "localdobe is a set of free PDF tools that run entirely in your browser — no uploads, no watermarks, no signup. Here's why it exists and how it works.";
+const description = "localdobe is a set of free PDF tools that run entirely in your browser — no uploads, no watermarks, no signup. Here’s why it exists and how it works.";
 ---
 <Base title="About localdobe — free, private PDF tools" {description} canonicalPath="/about"
   jsonLd={[aboutJsonLd(description)]}>
@@ -17,13 +17,13 @@ const description = "localdobe is a set of free PDF tools that run entirely in y
       Working with PDFs has long meant choosing between two compromises. You could
       install a heavyweight desktop suite — a multi-gigabyte download with update
       prompts, bundled extras, and the features you actually need locked behind a
-      subscription. Or you could use a "free" online tool that requires uploading your
+      subscription. Or you could use a “free” online tool that requires uploading your
       document — often a contract, a bank statement, a medical form — to a server you
-      know nothing about, with retention policies you'll never read, plus paywalls,
+      know nothing about, with retention policies you’ll never read, plus paywalls,
       watermarks, and page caps for good measure.
     </p>
     <p>
-      localdobe removes the choice: there's nothing to install <em>and</em> nothing to
+      localdobe removes the choice: there’s nothing to install <em>and</em> nothing to
       upload. Modern browsers can do this work themselves, so localdobe just does the
       work on your machine instead of asking you to trust ours — free, with no watermarks
       and no account.
@@ -35,20 +35,20 @@ const description = "localdobe is a set of free PDF tools that run entirely in y
       everywhere — one library handles document assembly like merging and page
       manipulation, another powers compression, encryption, and watermarking, and a third
       renders pages so you can preview and edit them. None of it requires a plugin, an
-      account, or a network round-trip for your file data. If you're curious about the
+      account, or a network round-trip for your file data. If you’re curious about the
       details, our <a href="/blog/webassembly-pdf-tools/">blog post on the technology behind
       it</a> goes deeper.
     </p>
     <h2>Being honest about it</h2>
     <p>
-      We'd rather you understand how this works than just trust a badge that says
-      "private." Read the <a href="/privacy/">privacy page</a> for the specifics on what
-      does and doesn't leave your device, or check the <a href="/blog/">blog</a> for
+      We’d rather you understand how this works than just trust a badge that says
+      “private.” Read the <a href="/privacy/">privacy page</a> for the specifics on what
+      does and doesn’t leave your device, or check the <a href="/blog/">blog</a> for
       deeper dives into individual tools.
     </p>
     <h2>Open source</h2>
     <p>
-      Trust shouldn't rely on our word alone, so localdobe is fully open source. All of the
+      Trust shouldn’t rely on our word alone, so localdobe is fully open source. All of the
       code — under the permissive MIT License — is published in a public repository you can
       read, audit, or fork:{" "}
       <a href="https://github.com/murugu-21/localdobe" class="font-medium text-accent underline underline-offset-2 hover:text-ink">
@@ -59,21 +59,21 @@ const description = "localdobe is a set of free PDF tools that run entirely in y
     </p>
     <h2>Get in touch</h2>
     <p>
-      There's no account system and no support portal — if a tool mishandles one of your
-      files, a result looks wrong, or there's a tool you wish existed, email{" "}
+      There’s no account system and no support portal — if a tool mishandles one of your
+      files, a result looks wrong, or there’s a tool you wish existed, email{" "}
       <a href="mailto:murugu2001@gmail.com" class="font-medium text-accent underline underline-offset-2 hover:text-ink">
         murugu2001@gmail.com
       </a>
       . Bug reports are just as welcome on the{" "}
       <a href="https://github.com/murugu-21/localdobe/issues">GitHub issue tracker</a>, which
       is the better place for anything worth discussing in public. Since files are never
-      uploaded, we can't look at yours to debug a problem — describing what the document
+      uploaded, we can’t look at yours to debug a problem — describing what the document
       contains and which step failed is what helps most.
     </p>
     <h2>Support localdobe</h2>
     <p>
       There are no ads, no trackers on your files, no paid tier, and no plan to add one.
-      Because nothing is uploaded, there's no server bill to cover either — just a domain
+      Because nothing is uploaded, there’s no server bill to cover either — just a domain
       renewal and the hours that go into building and maintaining the tools. If localdobe
       saved you a bloated download or a risky upload, you can chip in:{" "}
       <a href="https://github.com/sponsors/murugu-21" class="font-medium text-sponsor underline underline-offset-2 hover:text-ink" target="_blank" rel="noopener">

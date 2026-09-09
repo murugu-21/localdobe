@@ -1,6 +1,6 @@
 ---
 title: 'How to merge PDF files without uploading them anywhere'
-description: "Merge PDFs free with no upload, no watermark, and no signup — everything runs locally in your browser. Here's how, and why it matters."
+description: "Merge PDFs free with no upload, no watermark, and no signup — everything runs locally in your browser. Here’s how, and why it matters."
 pubDate: 2026-06-15
 tags: ['privacy', 'how-to', 'merge']
 ---

@@ -6,9 +6,9 @@ tags: ['split', 'privacy', 'how-to']
 faq:
   - q: 'Is it safe to split a bank statement PDF online?'
     a: 'Only if the tool never receives the file. Upload-based splitters hold a full copy of your statement on their servers, at least temporarily. A local-first splitter processes it in your browser, so no copy ever exists anywhere but your device.'
-  - q: 'How can I verify a PDF splitter isn''t uploading my file?'
+  - q: 'How can I verify a PDF splitter isn’t uploading my file?'
     a: 'Disconnect from the internet (airplane mode works) and try the split. If it still completes, nothing was sent. Upload-based tools fail this test immediately.'
-  - q: 'Do the pages I don''t select end up anywhere?'
+  - q: 'Do the pages I don’t select end up anywhere?'
     a: 'No. Splitting copies only the selected pages into the new file, and with a local tool the unselected pages never leave the original document on your device.'
   - q: 'What if the confidential PDF is password-protected?'
     a: 'PDFs with only editing restrictions open and split automatically. If the file needs a password to open, remove it first with the Unlock PDF tool — the password, like the document, never leaves your browser.'

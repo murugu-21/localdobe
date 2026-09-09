@@ -172,7 +172,7 @@ export default function EditTool() {
               <DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." />
               {fallbackCount > 0 && (
                 <p className="mt-2 text-center text-xs text-muted">
-                  For {fallbackCount} edit{fallbackCount === 1 ? '' : 's'}, the original text couldn't be
+                  For {fallbackCount} edit{fallbackCount === 1 ? '' : 's'}, the original text couldn’t be
                   cleanly removed, so it was covered with a solid rectangle instead.
                 </p>
               )}
@@ -187,7 +187,7 @@ export default function EditTool() {
           <p className="mt-4 text-xs text-muted">
             How editing works: the original text is genuinely removed from the PDF, and your replacement is drawn
             in a closely matching font (sized to line up with the fonts most documents use). Surrounding
-            text does not reflow. In the rare case the original can't be cleanly removed (scanned pages, unusual
+            text does not reflow. In the rare case the original can’t be cleanly removed (scanned pages, unusual
             PDF structure), we fall back to covering it with a solid rectangle instead — and flag that after export.
           </p>
         </>

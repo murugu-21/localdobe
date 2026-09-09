@@ -131,7 +131,7 @@ export default function ImageToPdfTool() {
         onFiles={addFiles}
         accept="image/jpeg,image/png,.jpg,.jpeg,.png"
         validate={isImage}
-        typeErrorMessage="That doesn't look like a JPG or PNG image."
+        typeErrorMessage="That doesn’t look like a JPG or PNG image."
       />
       {entries.length > 0 && (
         <>

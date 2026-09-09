@@ -89,7 +89,7 @@ export default function WatermarkTool() {
             watermark_action: action,
             unsupported_char_count: bad.length,
           });
-          setError(`The watermark font can't draw these characters: ${bad.join(' ')} — letters, numbers, and Western European accents work. For other scripts or symbols, add your text as an image instead.`);
+          setError(`The watermark font can’t draw these characters: ${bad.join(' ')} — letters, numbers, and Western European accents work. For other scripts or symbols, add your text as an image instead.`);
           setPhase('error');
           return;
         }

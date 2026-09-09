@@ -1,6 +1,6 @@
 ---
-title: 'The hidden costs of "free" online PDF converters'
-description: 'Watermarks, upsells, file retention, sold data. What "free" really costs on upload-based converter sites, and the local alternative.'
+title: 'The hidden costs of “free” online PDF converters'
+description: 'Watermarks, upsells, file retention, sold data. What “free” really costs on upload-based converter sites, and the local alternative.'
 pubDate: 2026-07-22
 tags: ['privacy', 'how-to']
 ---
