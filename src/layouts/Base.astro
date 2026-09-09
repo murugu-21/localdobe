@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { pwaInfo } from 'virtual:pwa-info';
 import { toolGroups } from '../lib/tools';
 import PostHog from '../components/posthog.astro';
+import { Heart } from 'lucide-react';
 interface Props {
   title: string;
   description: string;
@@ -77,9 +78,10 @@ const supportEmail = 'murugu2001@gmail.com';
   <body class="bg-background text-ink antialiased">
     <div class="flex min-h-screen">
       {/* Desktop sidebar — every tool one click away from every page (ilovepdf/ihatepdf
-          dashboard pattern). Sticky + own scrollbar so long pages don't scroll it away. */}
-      <aside class="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-y-auto border-r border-border lg:flex" aria-label="PDF tools">
-        <a href="/" class="flex items-center gap-2 px-5 pt-5 pb-4 text-lg font-bold tracking-tight">
+          dashboard pattern). Sticky so long pages don't scroll it away; only the tool
+          list scrolls, keeping the logo and the Sponsor/theme bar pinned in view. */}
+      <aside class="sticky top-0 hidden h-screen w-60 shrink-0 flex-col overflow-hidden border-r border-border lg:flex" aria-label="PDF tools">
+        <a href="/" class="flex shrink-0 items-center gap-2 px-5 pt-5 pb-4 text-lg font-bold tracking-tight">
           {/* Inline "ld" mark — same geometry as the PWA icon (scripts/generate-icons.mjs) */}
           <svg viewBox="0 0 512 512" class="h-6 w-6 shrink-0" aria-hidden="true">
             <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="#2563eb" />
@@ -91,7 +93,7 @@ const supportEmail = 'murugu2001@gmail.com';
           </svg>
           <span>local<span class="text-accent">dobe</span></span>
         </a>
-        <nav class="flex-1 px-3 pb-4">
+        <nav class="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
           <a
             href="/"
             class:list={[
@@ -154,22 +156,21 @@ const supportEmail = 'murugu2001@gmail.com';
                 </svg>
                 About
               </a>
-              {/* Sponsor — the only ask on the site; localdobe has no ads and no paid tier. */}
-              <a
-                href={sponsorUrl}
-                target="_blank"
-                rel="noopener"
-                class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-panel hover:text-ink"
-              >
-                <svg class="h-4 w-4 shrink-0 text-sponsor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                </svg>
-                Sponsor
-              </a>
             </div>
           </div>
         </nav>
-        <div class="border-t border-border p-3">
+        <div class="grid shrink-0 gap-0.5 border-t border-border p-3">
+          {/* Sponsor — the only ask on the site; localdobe has no ads and no paid tier.
+              Pinned here rather than listed under Resources so it survives scrolling. */}
+          <a
+            href={sponsorUrl}
+            target="_blank"
+            rel="noopener"
+            class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-panel hover:text-ink"
+          >
+            <Heart className="h-4 w-4 shrink-0 fill-current text-sponsor" aria-hidden="true" />
+            Sponsor
+          </a>
           <button
             type="button"
             aria-label="Toggle dark mode"
@@ -252,9 +253,7 @@ const supportEmail = 'murugu2001@gmail.com';
               ))}
               <a href="/blog/" class="mt-2 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
               <a href={sponsorUrl} target="_blank" rel="noopener" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">
-                <svg class="h-4 w-4 shrink-0 text-sponsor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                </svg>
+                <Heart className="h-4 w-4 shrink-0 fill-current text-sponsor" aria-hidden="true" />
                 Sponsor
               </a>
             </div>
