@@ -4,6 +4,7 @@ import { pwaInfo } from 'virtual:pwa-info';
 import { toolGroups } from '../lib/tools';
 import PostHog from '../components/posthog.astro';
 import { Heart } from 'lucide-react';
+import NavLinks from '../components/astro/NavLinks.astro';
 interface Props {
   title: string;
   description: string;
@@ -70,6 +71,51 @@ const supportEmail = 'murugu2001@gmail.com';
       />
     )}
     {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+    <style is:global>
+      /* A <dialog> is display:none until opened, and the UA opens it as display:block —
+         so the flex column has to be re-asserted for the open state. */
+      #mobile-nav[open] {
+        display: flex;
+      }
+      /* Slide in from the left. `allow-discrete` plus @starting-style are what let a
+         display:none -> flex transition animate at all; browsers without them just show
+         the drawer immediately, which is a perfectly good outcome. */
+      #mobile-nav,
+      #mobile-nav::backdrop {
+        transition:
+          translate 200ms ease-out,
+          opacity 200ms ease-out,
+          overlay 200ms allow-discrete,
+          display 200ms allow-discrete;
+      }
+      #mobile-nav {
+        translate: -100% 0;
+      }
+      #mobile-nav[open] {
+        translate: 0 0;
+      }
+      #mobile-nav::backdrop {
+        background: rgb(0 0 0 / 0.5);
+        opacity: 0;
+      }
+      #mobile-nav[open]::backdrop {
+        opacity: 1;
+      }
+      @starting-style {
+        #mobile-nav[open] {
+          translate: -100% 0;
+        }
+        #mobile-nav[open]::backdrop {
+          opacity: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #mobile-nav,
+        #mobile-nav::backdrop {
+          transition: none;
+        }
+      }
+    </style>
     <script>
       import { registerSW } from 'virtual:pwa-register';
       registerSW({ immediate: true });
@@ -94,70 +140,7 @@ const supportEmail = 'murugu2001@gmail.com';
           <span>local<span class="text-accent">dobe</span></span>
         </a>
         <nav class="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
-          <a
-            href="/"
-            class:list={[
-              'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
-              isActive('/') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
-            ]}
-            aria-current={isActive('/') ? 'page' : undefined}
-          >
-            <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />
-            </svg>
-            All tools
-          </a>
-          {toolGroups.map((group) => (
-            <div class="mt-5">
-              <p class="px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase">{group.label}</p>
-              <div class="mt-1.5 grid gap-0.5">
-                {group.tools.map((t) => (
-                  <a
-                    href={t.href}
-                    class:list={[
-                      'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
-                      isActive(t.href) ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
-                    ]}
-                    aria-current={isActive(t.href) ? 'page' : undefined}
-                  >
-                    <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <Fragment set:html={t.icon} />
-                    </svg>
-                    {t.name}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div class="mt-5">
-            <p class="px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase">Resources</p>
-            <div class="mt-1.5 grid gap-0.5">
-              <a
-                href="/blog/"
-                class:list={[
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  currentPath.startsWith('/blog') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
-                ]}
-              >
-                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-                </svg>
-                Blog
-              </a>
-              <a
-                href="/about/"
-                class:list={[
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive('/about') ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
-                ]}
-              >
-                <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
-                </svg>
-                About
-              </a>
-            </div>
-          </div>
+          <NavLinks />
         </nav>
         <div class="grid shrink-0 gap-0.5 border-t border-border p-3">
           {/* Sponsor — the only ask on the site; localdobe has no ads and no paid tier.
@@ -227,52 +210,89 @@ const supportEmail = 'murugu2001@gmail.com';
                 aria-controls="mobile-nav"
                 class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
               >
-                <svg id="nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                   <path d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <svg id="nav-icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
               </button>
             </div>
           </nav>
-          <div id="mobile-nav" class="hidden border-t border-border">
-            <div class="grid gap-1 px-4 py-3 text-base font-medium text-muted">
-              {toolGroups.map((group) => (
-                <>
-                  <p class="mt-2 px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase first:mt-0">{group.label}</p>
-                  {group.tools.map((t) => (
-                    <a href={t.href} class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">
-                      <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <Fragment set:html={t.icon} />
-                      </svg>
-                      {t.name}
-                    </a>
-                  ))}
-                </>
-              ))}
-              <a href="/blog/" class="mt-2 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">Blog</a>
-              <a href={sponsorUrl} target="_blank" rel="noopener" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 hover:bg-panel hover:text-ink">
-                <Heart className="h-4 w-4 shrink-0 fill-current text-sponsor" aria-hidden="true" />
-                Sponsor
-              </a>
-            </div>
-          </div>
-          <script>
-            const navToggle = document.getElementById('nav-toggle');
-            const mobileNav = document.getElementById('mobile-nav');
-            const iconOpen = document.getElementById('nav-icon-open');
-            const iconClose = document.getElementById('nav-icon-close');
-            navToggle?.addEventListener('click', () => {
-              const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-              navToggle.setAttribute('aria-expanded', String(!expanded));
-              navToggle.setAttribute('aria-label', expanded ? 'Open menu' : 'Close menu');
-              mobileNav?.classList.toggle('hidden', expanded);
-              iconOpen?.classList.toggle('hidden', !expanded);
-              iconClose?.classList.toggle('hidden', expanded);
-            });
-          </script>
         </header>
+
+        {/* Mobile drawer — an overlay panel rather than an in-flow accordion: opening
+            the menu used to push the whole page down by its full height (~900px on a
+            phone), so the content you came for scrolled off screen. `invisible` when
+            closed keeps its links out of the tab order and the a11y tree, and lets the
+            slide-out finish before the panel disappears. */}
+        <dialog
+          id="mobile-nav"
+          aria-label="PDF tools"
+          class="m-0 mr-auto h-dvh max-h-dvh w-[min(20rem,85vw)] max-w-none flex-col overflow-hidden border-0 border-r border-border bg-background p-0 text-ink lg:hidden"
+        >
+          <div class="flex shrink-0 items-center justify-between px-4 pt-4 pb-2">
+            <a href="/" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+              <svg viewBox="0 0 512 512" class="h-6 w-6 shrink-0" aria-hidden="true">
+                <rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="#2563eb" />
+                <g fill="#ffffff">
+                  <rect x="145" y="120" width="46" height="260" rx="23" />
+                  <rect x="345" y="120" width="46" height="260" rx="23" />
+                  <path fill-rule="evenodd" d="M 300 208 a 92 92 0 1 0 0.1 0 Z M 300 248 a 52 52 0 1 0 0.1 0 Z" />
+                </g>
+              </svg>
+              <span>local<span class="text-accent">dobe</span></span>
+            </a>
+            <button
+              type="button"
+              id="nav-close"
+              autofocus
+              aria-label="Close menu"
+              class="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel hover:text-ink"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <nav class="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+            <NavLinks size="md" />
+          </nav>
+          {/* Sponsor pins to the bottom as it does on the desktop rail. The theme
+              toggle stays in the header instead, where it is reachable without
+              opening the drawer at all. */}
+          <div class="shrink-0 border-t border-border p-3">
+            <a href={sponsorUrl} target="_blank" rel="noopener" class="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-base font-medium text-muted transition hover:bg-panel hover:text-ink">
+              <Heart className="h-4 w-4 shrink-0 fill-current text-sponsor" aria-hidden="true" />
+              Sponsor
+            </a>
+          </div>
+        </dialog>
+        <script>
+          // The drawer is a native <dialog>. showModal() supplies the focus trap,
+          // Escape-to-close, the backdrop and inert-behind — all the parts a div
+          // overlay has to hand-roll and usually gets subtly wrong. It also restores
+          // focus to the hamburger on close by itself.
+          const navToggle = document.getElementById('nav-toggle');
+          const navClose = document.getElementById('nav-close');
+          const drawer = document.getElementById('mobile-nav') as HTMLDialogElement | null;
+
+          navToggle?.addEventListener('click', () => {
+            drawer?.showModal();
+            navToggle.setAttribute('aria-expanded', 'true');
+            // The one thing showModal() does not do: stop the page underneath from
+            // scrolling under your finger.
+            document.body.style.overflow = 'hidden';
+          });
+          navClose?.addEventListener('click', () => drawer?.close());
+          // A click landing on the dialog element itself is a click on the backdrop —
+          // the panel's own children cover everything else.
+          drawer?.addEventListener('click', (event) => {
+            if (event.target === drawer) drawer.close();
+          });
+          // Fires for the close button, Escape and the backdrop alike.
+          drawer?.addEventListener('close', () => {
+            navToggle?.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+          });
+        </script>
         <main class="flex-1"><slot /></main>
         <footer class="mt-24 border-t border-border py-10 text-center text-sm text-muted">
           <p class="font-medium">No watermarks. No uploads. No signup.</p>

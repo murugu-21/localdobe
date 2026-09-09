@@ -1,0 +1,69 @@
+---
+/**
+ * The tool catalog as navigation rows, rendered by both the desktop sidebar rail
+ * and the mobile drawer in Base.astro. Both surfaces used to carry their own copy
+ * of this markup, which meant every nav change had to be made twice — and the two
+ * copies had already drifted (the drawer was missing "All tools" and "About").
+ *
+ * `size` is the only difference between the two: the rail is compact, the drawer
+ * gets roomier tap targets.
+ */
+import { toolGroups } from '../../lib/tools';
+
+interface Props {
+  size?: 'sm' | 'md';
+}
+const { size = 'sm' } = Astro.props;
+
+// Active nav state: match the page path with or without its trailing slash.
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => currentPath === href;
+
+// Written as whole literal class strings so Tailwind's source scanner sees them.
+const rowSize = size === 'sm' ? 'px-3 py-2 text-sm' : 'px-3 py-2.5 text-base';
+const row = (active: boolean) =>
+  [
+    'flex items-center gap-2.5 rounded-lg font-medium transition',
+    rowSize,
+    active ? 'bg-primary/10 text-accent' : 'text-muted hover:bg-panel hover:text-ink',
+  ].join(' ');
+const groupLabel = 'px-3 text-[0.68rem] font-semibold tracking-widest text-muted uppercase';
+---
+<a href="/" class={row(isActive('/'))} aria-current={isActive('/') ? 'page' : undefined}>
+  <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" />
+  </svg>
+  All tools
+</a>
+{toolGroups.map((group) => (
+  <div class="mt-5">
+    <p class={groupLabel}>{group.label}</p>
+    <div class="mt-1.5 grid gap-0.5">
+      {group.tools.map((t) => (
+        <a href={t.href} class={row(isActive(t.href))} aria-current={isActive(t.href) ? 'page' : undefined}>
+          <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <Fragment set:html={t.icon} />
+          </svg>
+          {t.name}
+        </a>
+      ))}
+    </div>
+  </div>
+))}
+<div class="mt-5">
+  <p class={groupLabel}>Resources</p>
+  <div class="mt-1.5 grid gap-0.5">
+    <a href="/blog/" class={row(currentPath.startsWith('/blog'))}>
+      <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 7v14" /><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+      </svg>
+      Blog
+    </a>
+    <a href="/about/" class={row(isActive('/about'))} aria-current={isActive('/about') ? 'page' : undefined}>
+      <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+      </svg>
+      About
+    </a>
+  </div>
+</div>
