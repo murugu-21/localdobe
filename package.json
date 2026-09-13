@@ -47,6 +47,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@playwright/test": "^1.62.1",
+    "@posthog/rollup-plugin": "^1.6.0",
     "@types/emscripten": "^1.41.5",
     "@types/node": "^26.2.0",
     "@vite-pwa/astro": "^1.2.0",

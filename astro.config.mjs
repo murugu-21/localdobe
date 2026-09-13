@@ -4,6 +4,16 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import AstroPWA from '@vite-pwa/astro';
+import posthog from '@posthog/rollup-plugin';
+
+// PostHog source maps for error tracking. The plugin switches the production
+// build to hidden source maps, injects the chunk-id comments PostHog's
+// symbol-set lookup keys on, uploads chunks and maps, then deletes the .map
+// files — nothing extra is served, and an upload that fails fails the build
+// instead of deploying unmapped. Both values live in the Cloudflare build
+// variables (see DEPLOY.md); without them local builds stay map-free.
+const POSTHOG_API_KEY = process.env.POSTHOG_API_KEY?.trim();
+const POSTHOG_PROJECT_ID = process.env.POSTHOG_PROJECT_ID?.trim();
 
 export default defineConfig({
   site: 'https://localdobe.com',
@@ -58,7 +68,20 @@ export default defineConfig({
     }),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      // Source maps for PostHog's error tracking (see above). The host default
+      // (us.i.posthog.com) matches the US project the SDK reports to.
+      ...(POSTHOG_API_KEY && POSTHOG_PROJECT_ID
+        ? [
+            posthog({
+              personalApiKey: POSTHOG_API_KEY,
+              projectId: POSTHOG_PROJECT_ID,
+              sourcemaps: { enabled: true, deleteAfterUpload: true },
+            }),
+          ]
+        : []),
+    ],
     // onnxruntime-web's default export bundles its wasm binaries as `_astro/`
     // assets via `new URL(..., import.meta.url)` (the largest, the JSEP
     // variant, is 26.8MB — well past the PWA precache limit below, and Vite
