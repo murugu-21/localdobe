@@ -5,6 +5,7 @@ import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes, percentSaved } from '../../lib/format';
 import type { CompressPreset } from '../../lib/pdf/compressPresets';
 
@@ -26,7 +27,9 @@ export default function CompressTool() {
   const [out, setOut] = useState<Uint8Array | null>(null);
 
   async function onFile([f]: File[]) {
-    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes: new Uint8Array(await f.arrayBuffer()) });
+    const bytes = await readFileBytes(f);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes });
     setPhase('idle'); setOut(null); setError(null); setStatus('');
   }
 

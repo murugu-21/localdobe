@@ -3,6 +3,7 @@ import type { PageSize } from '../../lib/pdf/imagesToPdf';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -97,7 +98,12 @@ export default function ImageToPdfTool() {
     const startedAt = Date.now();
     const { imagesToPdf, UnsupportedImageError } = await import('../../lib/pdf/imagesToPdf');
     try {
-      const bytesList = await Promise.all(entries.map(async (e) => new Uint8Array(await e.file.arrayBuffer())));
+      const bytesList: Uint8Array[] = [];
+      for (const e of entries) {
+        const bytes = await readFileBytes(e.file);
+        if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+        bytesList.push(bytes);
+      }
       const out = await imagesToPdf(bytesList, pageSize);
       const baseName = entries[0].file.name.replace(/\.(jpe?g|png)$/i, '');
       setResult({ filename: `${baseName}.pdf`, bytes: out });

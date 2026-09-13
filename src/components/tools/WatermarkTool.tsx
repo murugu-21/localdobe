@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -39,7 +40,9 @@ export default function WatermarkTool() {
   }
 
   async function onFile([f]: File[]) {
-    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes: new Uint8Array(await f.arrayBuffer()) });
+    const bytes = await readFileBytes(f);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes });
     setPhase('idle'); setResult(null); setError(null);
   }
 
@@ -203,8 +206,11 @@ export default function WatermarkTool() {
                       className="hidden"
                       onChange={async (e) => {
                         const f = e.target.files?.[0];
-                        setImage(f ? new Uint8Array(await f.arrayBuffer()) : null);
-                        setImageName(f ? f.name : null);
+                        if (!f) { setImage(null); setImageName(null); resetIfDone(); return; }
+                        const bytes = await readFileBytes(f);
+                        if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+                        setImage(bytes);
+                        setImageName(f.name);
                         resetIfDone();
                       }}
                     />

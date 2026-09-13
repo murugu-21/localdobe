@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -18,7 +19,8 @@ export default function SignatureTool() {
   const [error, setError] = useState<string | null>(null);
 
   async function onFile([f]: File[]) {
-    const bytes = new Uint8Array(await f.arrayBuffer());
+    const bytes = await readFileBytes(f);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
     setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes });
     setPhase('working'); setReport(null); setRemoved(null); setError(null);
     // Validation starts the moment a file lands here — there is no separate run button,

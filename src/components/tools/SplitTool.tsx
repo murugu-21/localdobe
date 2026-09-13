@@ -7,6 +7,7 @@ import { formatBytes } from '../../lib/format';
 import { parsePageRanges, RangeSyntaxError } from '../../lib/pdf/split';
 import { FileDropzone } from './shared/FileDropzone';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 
@@ -45,10 +46,11 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
 
   async function onFile([file]: File[]) {
     setPhase('working'); setError(null); setResult(null); setSelected(new Set()); setRangeText('');
+    const bytes = await readFileBytes(file);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
     let doc: PDFDocumentProxy | null = null;
     let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
     try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
       const render = await import('../../lib/pdf/render');
       closePdf = render.closePdf;
       doc = await render.openPdf(bytes);

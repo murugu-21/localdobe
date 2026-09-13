@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatBytes } from '../../lib/format';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -35,10 +36,11 @@ export default function PdfToImageTool({ format }: Props) {
 
   async function onFile([file]: File[]) {
     setPhase('working'); setError(null); setResult(null); setProgress(null);
+    const bytes = await readFileBytes(file);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
     let doc: PDFDocumentProxy | null = null;
     let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
     try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
       const render = await import('../../lib/pdf/render');
       closePdf = render.closePdf;
       doc = await render.openPdf(bytes);

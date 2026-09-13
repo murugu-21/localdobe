@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
@@ -75,7 +76,12 @@ export default function MergeTool() {
     const startedAt = Date.now();
     try {
       const { mergePdfs } = await import('../../lib/pdf/merge');
-      const buffers = await Promise.all(entries.map(async (e) => new Uint8Array(await e.file.arrayBuffer())));
+      const buffers: Uint8Array[] = [];
+      for (const e of entries) {
+        const bytes = await readFileBytes(e.file);
+        if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+        buffers.push(bytes);
+      }
       const output = await mergePdfs(buffers);
       setResult(output);
       track('pdfs_merged', {

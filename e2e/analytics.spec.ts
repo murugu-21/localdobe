@@ -153,3 +153,24 @@ test('no event ever carries a file name', async ({ page }) => {
     expect(serialized).not.toContain(name);
   }
 });
+
+test('an unreadable file is a handled failure, not an unhandled rejection', async ({ page }) => {
+  await setUpSinks(page);
+  const pageErrors: string[] = [];
+  page.on('pageerror', (e) => pageErrors.push(e.message));
+  // Reproduce a browser losing access to the selected file (cloud placeholder,
+  // moved/deleted file, expired picker grant) — the DOMException that used to
+  // escape `onFile` as an unhandled rejection and land in error tracking.
+  await page.addInitScript(() => {
+    File.prototype.arrayBuffer = () =>
+      Promise.reject(new DOMException('The requested file could not be read', 'NotReadableError'));
+  });
+  await page.goto('/compress-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+
+  await expect(page.getByRole('alert')).toContainText(/could not read that file/i);
+  await expect.poll(async () => eventNames(await posthogCalls(page))).toContain('tool_failed');
+  const failed = (await posthogCalls(page)).find((c) => c.event === 'tool_failed')!;
+  expect(failed.props).toMatchObject({ tool: 'compress-pdf', reason: 'read_failed' });
+  expect(pageErrors).toEqual([]);
+});

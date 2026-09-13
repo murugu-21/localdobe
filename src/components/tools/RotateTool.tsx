@@ -3,6 +3,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
@@ -42,10 +43,11 @@ export default function RotateTool() {
     const gen = ++generation.current;
     detectorAvailable.current = true;
     setPhase('working'); setError(null); setResult(null); setAutoFixed(new Set()); setDetectNote(null);
+    const bytes = await readFileBytes(file);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
     let doc: PDFDocumentProxy | null = null;
     let closePdf: ((d: PDFDocumentProxy) => Promise<void>) | null = null;
     try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
       const render = await import('../../lib/pdf/render');
       const { MODEL_SHORT_SIDE } = await import('../../lib/pdf/orientation');
       closePdf = render.closePdf;

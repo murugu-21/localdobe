@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { track } from '../../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../../lib/readFile';
 import { FileDropzone } from '../shared/FileDropzone';
 import { DownloadResult } from '../shared/DownloadResult';
 import { ProgressBar } from '../shared/ProgressBar';
@@ -57,8 +58,9 @@ export default function EditTool() {
 
   async function onFile([file]: File[]) {
     setError(null);
+    const bytes = await readFileBytes(file);
+    if (!bytes) { setError(FILE_READ_ERROR); return; }
     try {
-      const bytes = new Uint8Array(await file.arrayBuffer());
       const { openPdf, closePdf } = await import('../../../lib/pdf/render');
       if (docRef.current) {
         const previous = docRef.current;

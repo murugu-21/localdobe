@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { track } from '../../lib/analytics';
+import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -21,7 +22,9 @@ export default function UnlockTool() {
   }
 
   async function onFile([f]: File[]) {
-    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes: new Uint8Array(await f.arrayBuffer()) });
+    const bytes = await readFileBytes(f);
+    if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+    setFile({ name: f.name.replace(/\.pdf$/i, ''), bytes });
     setPhase('idle'); setResult(null); setError(null);
   }
 
