@@ -7,12 +7,10 @@ const { h1, sub } = Astro.props;
   <p class="mx-auto mt-3 max-w-xl text-lg text-muted">{sub}</p>
   <p class="mt-2 text-sm font-semibold text-accent">No watermarks. No uploads. No signup.</p>
   {/* Session replays must never capture document content — file names, pdf.js text
-      layers, passwords — only masked placeholders.
-      data-clarity-mask is load-bearing: Clarity records every session.
-      ph-no-capture is defence in depth: PostHog replay cannot run under
-      cookieless_mode 'always', but would start recording unmasked if that ever
-      changed. Keep both. */}
-  <div class="mt-8 text-left ph-no-capture" data-clarity-mask="true"><slot name="tool" /></div>
+      layers, passwords — only masked placeholders. ph-no-capture is load-bearing:
+      PostHog's session recording blocks any element carrying it, and its whole
+      subtree, by default (blockClass). Keep it on every tool that renders user files. */}
+  <div class="mt-8 text-left ph-no-capture"><slot name="tool" /></div>
 </section>
 <article class="prose prose-slate mx-auto mt-20 max-w-3xl px-4 dark:prose-invert">
   <slot />

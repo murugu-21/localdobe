@@ -20,16 +20,20 @@ if (import.meta.env.DEV && !apiHost) {
     posthog.init(apiKey, {
       api_host: apiHost,
       defaults: '2026-01-30',
-      // Unique users are counted from a salted hash computed on PostHog's servers
-      // (salt rotates daily, then is discarded) rather than a client-side identifier,
-      // so no cookie or localStorage entry is written. Requires "Cookieless server
-      // hash mode" enabled on the PostHog project — without it these events are not
-      // processed. 'always' means we never fall back to cookies.
-      cookieless_mode: 'always',
-      // No person profiles: every event is anonymous, and identify() becomes a no-op.
-      // We never call identify() — there are no accounts — so this only removes the
-      // persistent per-person record that GDPR would treat as personal data.
+      // Cookies are on (persistence defaults to 'localStorage+cookie'). The random id
+      // they hold is what lets PostHog stitch a visit into a single session and record
+      // a replay — posthog-js cannot build a session id in cookieless mode. The cookie
+      // is first-party and analytics-only; person profiles stay disabled, so no person
+      // record is built and identify() remains a no-op.
       person_profiles: 'never',
+      // Session replay. Tool work areas carry `ph-no-capture` (PostHog's default
+      // blockClass), which replaces the whole subtree with a placeholder in the
+      // replay, and `maskAllInputs` is pinned here so typed values stay masked
+      // regardless of the project's dashboard masking mode. Recording itself is
+      // switched on in the PostHog project settings ("Record user sessions").
+      session_recording: {
+        maskAllInputs: true,
+      },
       capture_exceptions: {
         capture_unhandled_errors: true,
         capture_unhandled_rejections: true,

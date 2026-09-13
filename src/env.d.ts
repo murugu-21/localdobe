@@ -3,8 +3,6 @@
 /// <reference types="vite-plugin-pwa/info" />
 
 interface ImportMetaEnv {
-  /** Microsoft Clarity project ID; when unset, no session-replay script is emitted. */
-  readonly PUBLIC_CLARITY_PROJECT_ID?: string;
   /** PostHog browser analytics configuration. */
   readonly PUBLIC_POSTHOG_PROJECT_TOKEN?: string;
   readonly PUBLIC_POSTHOG_HOST?: string;
