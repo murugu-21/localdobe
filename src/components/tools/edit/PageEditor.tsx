@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
-import { renderPageToCanvas } from '../../../lib/pdf/render';
+import { getPdfjs, renderPageToCanvas } from '../../../lib/pdf/render';
 import { textItemToPdfBox } from '../../../lib/pdf/edit/coords';
 import { classifyFont, cssFontStack, type FontClass } from '../../../lib/pdf/edit/fontMatch';
 import type { EditSession, NewTextBox } from '../../../lib/pdf/edit/session';
@@ -62,7 +62,7 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty, fitT
       setScale(s);
       setPageHeightPt(viewport.height / s);
       const content = await page.getTextContent();
-      const pdfjs = await import('pdfjs-dist');
+      const pdfjs = await getPdfjs();
       const result: SpanInfo[] = [];
       const alreadyEdited = new Set<string>();
       content.items.forEach((item, i) => {

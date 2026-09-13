@@ -1,11 +1,17 @@
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 
-let pdfjsPromise: Promise<typeof import('pdfjs-dist')> | null = null;
+// The LEGACY build is load-bearing, not a preference. The default build calls
+// Map.prototype.getOrInsertComputed directly, a method too new for many browsers
+// (Chrome < 140, Safari < 26), which fails as `getOrInsertComputed is not a
+// function` the moment any document is opened. The legacy build ships polyfills
+// for those methods in both the main bundle and the worker. Do not switch back
+// without checking those polyfills still exist.
+let pdfjsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
 
 export function getPdfjs() {
-  pdfjsPromise ??= import('pdfjs-dist').then((pdfjs) => {
+  pdfjsPromise ??= import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
     pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
+      'pdfjs-dist/legacy/build/pdf.worker.min.mjs',
       import.meta.url,
     ).toString();
     return pdfjs;
