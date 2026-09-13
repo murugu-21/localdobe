@@ -5,7 +5,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
 <Base title="Privacy Policy — localdobe" {description} canonicalPath="/privacy">
   <article class="prose prose-slate mx-auto max-w-3xl px-4 pt-12 dark:prose-invert">
     <h1>Privacy Policy</h1>
-    <p><em>Last updated: September 9, 2026</em></p>
+    <p><em>Last updated: September 13, 2026</em></p>
     <p>
       The short version: <strong>your files never leave your device.</strong> Every tool on
       localdobe — merge, split, compress, edit, watermark, protect, unlock, and signature
@@ -16,8 +16,8 @@ const description = 'localdobe processes every PDF locally in your browser — f
     </p>
     <p>
       The rest of this page describes, completely, the data that <em>does</em> exist when
-      you use this site: standard hosting logs, site analytics, and a few preferences
-      stored on your own device.
+      you use this site: standard hosting logs, site analytics (including a single
+      analytics cookie), and a few preferences stored on your own device.
     </p>
 
     <h2>1. Your files</h2>
@@ -65,23 +65,37 @@ const description = 'localdobe processes every PDF locally in your browser — f
       the <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a>.
     </p>
 
-    <h2>4. Product analytics (PostHog)</h2>
+    <h2>4. Product analytics and session replays (PostHog)</h2>
     <p>
-      We use <a href="https://posthog.com/">PostHog</a> to see which tools people use and
-      where they get stuck — for example, how many visitors who open Compress PDF actually
-      download a result, and which errors they hit on the way. Each event records the tool
-      being used, the step reached, and coarse measurements of the work: the number of files
-      or pages, file sizes in bytes, how long the operation took, and which options
-      (compression preset, page size, split mode) were selected.
+      We use <a href="https://posthog.com/">PostHog</a> for two jobs: product analytics —
+      seeing which tools people use and where they get stuck, for example how many visitors
+      who open Compress PDF actually download a result, and which errors they hit on the
+      way — and session replays, which show how the interface is actually used (where
+      people click, how far they scroll, and where the UI confuses them). Replays are what
+      make it possible to work out <em>why</em> a tool went wrong for someone rather than
+      just counting that it did.
+    </p>
+    <p>
+      Product events record the tool being used, the step reached, and coarse measurements
+      of the work: the number of files or pages, file sizes in bytes, how long the operation
+      took, and which options (compression preset, page size, split mode) were selected.
+      Replays record interaction data — clicks, scrolls, mouse movement, page URLs, and
+      browser and device type.
     </p>
     <ul>
       <li><strong>Nothing about your documents is included.</strong> Events never carry file
         names, file contents, page text, or passwords. Error messages are scrubbed of
-        anything resembling a file name before they are sent.</li>
-      <li><strong>No profile is built.</strong> PostHog is configured in cookieless mode
-        with person profiles disabled: it writes no cookie and
-        no <code>localStorage</code> entry, and there is no identifier that links your events
-        together across visits or that could identify you.</li>
+        anything resembling a file name before they are sent. In replays, every tool’s work
+        area is marked with PostHog’s <code>ph-no-capture</code> attribute, which excludes
+        the whole area from the recording, and form inputs are masked by default — so
+        replays show placeholder boxes, never file names, document text, rendered pages, or
+        anything you type into a tool (passwords included).</li>
+      <li><strong>Cookies identify a session, not a person.</strong> PostHog stores a random
+        identifier in a first-party cookie and in <code>localStorage</code>. That identifier
+        is what lets the events and a replay from one visit be stitched into a single
+        session. It is not a profile: person profiles are disabled, we never
+        call <code>identify()</code>, and there are no accounts to link it to. It is not
+        used for advertising and is not shared with anyone else.</li>
       <li><strong>Blocking it changes nothing.</strong> If an ad-blocker stops the PostHog
         script, every tool keeps working exactly the same.</li>
       <li><strong>It is served from our own subdomain.</strong> To keep these measurements
@@ -92,45 +106,24 @@ const description = 'localdobe processes every PDF locally in your browser — f
     </ul>
     <p>
       This data is processed by PostHog under
-      the <a href="https://posthog.com/privacy">PostHog Privacy Policy</a>.
+      the <a href="https://posthog.com/privacy">PostHog Privacy Policy</a>. You can stop it
+      at any time with an ad-blocker, or clear PostHog’s cookie and
+      its <code>localStorage</code> entry from your browser’s site-data settings.
     </p>
 
-    <h2>5. Session replays (Microsoft Clarity)</h2>
+    <h2>5. Data stored on your device</h2>
     <p>
-      We use <a href="https://clarity.microsoft.com/">Microsoft Clarity</a> to see how the
-      interface is actually used — where people click, how far they scroll, and where the UI
-      confuses them — through aggregate heatmaps and anonymized session replays. Replays are
-      what make it possible to work out <em>why</em> a tool went wrong for someone rather than
-      just counting that it did. Clarity records interaction data (clicks, scrolls, page URLs,
-      browser and device type), which Microsoft processes under
-      the <a href="https://privacy.microsoft.com/privacystatement">Microsoft Privacy Statement</a>.
-    </p>
-    <ul>
-      <li><strong>Your documents are excluded.</strong> Every tool’s work area is marked with
-        Clarity’s masking attribute, so replays show placeholder boxes — never file names,
-        document text, rendered pages, or anything you type into a tool (passwords included).</li>
-      <li><strong>It records no product events.</strong> Clarity is used for replays only. The
-        usage events in section 4 go to PostHog and are not sent to Microsoft.</li>
-      <li><strong>No cookies.</strong> We never send Clarity a consent signal, so it runs in
-        its cookieless mode and cannot recognize a returning browser. We have verified in a
-        real browser that loading this site sets no cookies and writes nothing to local or
-        session storage.</li>
-      <li><strong>Blocking it changes nothing.</strong> As with all analytics here, if an
-        ad-blocker stops the Clarity script (<code>clarity.ms</code>), every tool keeps
-        working exactly the same.</li>
-    </ul>
-
-    <h2>6. Data stored on your device</h2>
-    <p>
-      localdobe stores a small amount of data <em>in your browser, on your device</em>, none
-      of which is transmitted to anyone:
+      localdobe stores a small amount of data <em>in your browser, on your device</em>:
     </p>
     <ul>
       <li><strong>Theme preference</strong> — if you toggle dark mode, your choice is kept
-        in <code>localStorage</code> so the site remembers it.</li>
+        in <code>localStorage</code> so the site remembers it. It never leaves your device.</li>
       <li><strong>Offline caches</strong> — a service worker caches the site’s pages and
         engines so the tools work offline and load faster. This is standard browser cache
-        storage.</li>
+        storage, and it never leaves your device.</li>
+      <li><strong>PostHog’s session identifier</strong> — the random id described in
+        section 4, kept in a cookie and <code>localStorage</code> and sent to PostHog with
+        analytics events and replays so they belong to the same session.</li>
     </ul>
     <p>
       You can remove all of it at any time through your browser’s site-data settings
@@ -138,32 +131,33 @@ const description = 'localdobe processes every PDF locally in your browser — f
       the site.
     </p>
 
-    <h2>7. What we don’t collect</h2>
+    <h2>6. What we don’t collect</h2>
     <p>
       We have no accounts, no sign-ups, and no way to associate site usage with a real-world
-      identity. We run no advertising and never sell or share data. <strong>This site sets no
-      cookies</strong> — it writes none of its own, PostHog is configured in cookieless mode,
-      and Clarity is loaded without a consent signal so it runs cookieless too. We verified
-      this in a real browser: loading the site sets no cookies, first- or third-party.
+      identity. We run no advertising and never sell or share data. The only cookie the site
+      sets is the first-party PostHog session identifier described in section 4 — there are
+      no advertising cookies, no cross-site tracking cookies, and no cookies of our own. We
+      verified this in a real browser: loading the site sets no cookies other than
+      PostHog’s.
     </p>
 
-    <h2>8. Your rights</h2>
+    <h2>7. Your rights</h2>
     <p>
       Because localdobe itself stores no personal data about you, there is nothing for us to
-      access, correct, export, or delete on request — the data described in sections 2–5 is
-      processed by Cloudflare, PostHog, and Microsoft, and requests concerning it can be
-      directed to them under their privacy policies. Data stored on your device (section 6)
-      is under your direct control through your browser and can be cleared at any time.
+      access, correct, export, or delete on request — the data described in sections 2–4 is
+      processed by Cloudflare and PostHog, and requests concerning it can be directed to
+      them under their privacy policies. Data stored on your device (section 5) is under
+      your direct control through your browser and can be cleared at any time.
     </p>
 
-    <h2>9. Children</h2>
+    <h2>8. Children</h2>
     <p>
       This site provides document utilities and does not target children. We do not
       knowingly collect personal information from anyone, children included — the site has
       no mechanism to do so.
     </p>
 
-    <h2>10. Changes to this policy</h2>
+    <h2>9. Changes to this policy</h2>
     <p>
       If how the site works ever changes in a way that affects this page — a new analytics
       tool, a new third party, anything that touches data — we will update this policy and
@@ -171,7 +165,7 @@ const description = 'localdobe processes every PDF locally in your browser — f
       processed on your device, full stop.
     </p>
 
-    <h2>11. Contact</h2>
+    <h2>10. Contact</h2>
     <p>
       Questions about this policy, or about anything on this site, can go to{" "}
       <a href="mailto:murugu2001@gmail.com" class="font-medium text-accent underline underline-offset-2 hover:text-ink">

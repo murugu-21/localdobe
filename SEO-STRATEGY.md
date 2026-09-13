@@ -8,7 +8,7 @@ schemata, or targeting changes.
 
 1. Increase organic rankings & clicks (Search Console impressions / CTR / position).
 2. Stay visible in AI/generative answers and stay resilient to AI click-loss (GEO).
-3. Increase retention once visitors land (Clarity: engaged sessions, low pogo-sticking).
+3. Increase retention once visitors land (PostHog session replays: engaged sessions, low pogo-sticking).
 
 ## How the site earns search traffic (the model)
 

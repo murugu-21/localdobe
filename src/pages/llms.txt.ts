@@ -45,7 +45,7 @@ export async function GET(context: APIContext) {
     '',
     '## Policies',
     '',
-    `- [Privacy policy](${site}/privacy/): local processing, Cloudflare hosting logs, cookieless analytics — full disclosure.`,
+    `- [Privacy policy](${site}/privacy/): local processing, Cloudflare hosting logs, disclosed analytics — full disclosure.`,
     `- [About](${site}/about/)`,
     '',
     `Full guide content for ingestion: ${site}/llms-full.txt`,
