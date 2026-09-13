@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "astro dev",
@@ -14,8 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "refresh-aatl": "node scripts/refresh-aatl.mjs",
-    "refresh-doc-ori": "node scripts/refresh-doc-ori.mjs"
+    "refresh-aatl": "bun scripts/refresh-aatl.mjs",
+    "refresh-doc-ori": "bun scripts/refresh-doc-ori.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
@@ -58,8 +58,6 @@
     "wrangler": "^4.120.0"
   },
   "overrides": {
-    "@vite-pwa/astro": {
-      "astro": "^1.6.0 || ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
-    }
+    "astro": "^1.6.0 || ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
   }
 }

@@ -16,9 +16,11 @@ file. Verify this after the first deploy (step 4 below).
    normal push (`git push` handles it; ensure `git lfs install` has run locally).
 2. **Connect the repo in the Cloudflare dashboard**: Workers & Pages → Create →
    connect to the GitHub repo, branch `main`. Build settings:
-   - Build command: `npm run build`
-   - Deploy command: `npx wrangler deploy`
+   - Build command: `bun run build`
+   - Deploy command: `bunx wrangler deploy`
    - Root directory: `/` (wrangler reads `wrangler.jsonc`)
+   - Build variable `BUN_VERSION=1.3.11` — the build image ships Bun 1.2.x by
+     default; Cloudflare auto-installs dependencies from `bun.lock`.
    No API token or secrets are needed — the git integration deploys with the
    account's own credentials.
 3. **Point localdobe.com's DNS at Cloudflare** (add the domain to the account /
@@ -134,15 +136,15 @@ discloses the cookie rather than gating it. If a gate is ever needed, the pieces
 
 ## Tests
 
-Cloudflare's build runs `npm run build` only. Run `npm run check && npm test &&
-npm run test:e2e` locally before pushing (or re-add a test-only GitHub Actions
+Cloudflare's build runs `bun run build` only. Run `bun run check && bun run test &&
+bun run test:e2e` locally before pushing (or re-add a test-only GitHub Actions
 workflow later if you want a remote gate).
 
 ## Local verification
 
 ```bash
-npm run build
-npx wrangler deploy --dry-run   # validates config without deploying
+bun run build
+bunx wrangler deploy --dry-run   # validates config without deploying
 ```
 
 ## Cache headers

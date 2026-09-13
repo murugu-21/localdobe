@@ -30,28 +30,29 @@ Plus a 14-post blog (`/blog`) and trust pages (`/about`, `/privacy`).
 ## Local development
 
 ```bash
-npm install
-npm run dev        # http://localhost:4321
+bun install
+bun run dev        # http://localhost:4321
 ```
 
-Requires Node ≥ 22.12 (see `.nvmrc` — pinned to `22`).
+Requires Bun ≥ 1.3 (`bun.lock`); Node ≥ 24 stays pinned in `.nvmrc` for tooling that
+shells out to Node.
 
 ## Tests
 
 ```bash
-npm run check       # astro check + tsc --noEmit
-npm test            # vitest (unit tests, 42 tests across 9 files)
-npm run test:watch  # vitest in watch mode
-npm run test:e2e    # playwright, drives real tool flows end-to-end (7 tests)
-npm run build       # production build to dist/
-npm run preview     # serve the dist/ build locally, for e2e/PWA/Lighthouse checks
+bun run check       # astro check + tsc --noEmit
+bun run test        # vitest (unit tests, 42 tests across 9 files)
+bun run test:watch  # vitest in watch mode
+bun run test:e2e    # playwright, drives real tool flows end-to-end (7 tests)
+bun run build       # production build to dist/
+bun run preview     # serve the dist/ build locally, for e2e/PWA/Lighthouse checks
 ```
 
-`npm run test:e2e` builds and serves the site itself — `playwright.config.ts`'s `webServer`
-runs `npm run build && npm run preview` before the suite starts (reusing an already-running
+`bun run test:e2e` builds and serves the site itself — `playwright.config.ts`'s `webServer`
+runs `bun run build && bun run preview` before the suite starts (reusing an already-running
 preview server outside CI), so it always exercises a fresh production build.
 
-There is no CI test job — run `npm run check && npm test && npm run test:e2e` locally before
+There is no CI test job — run `bun run check && bun run test && bun run test:e2e` locally before
 pushing (deploys are handled by Cloudflare's git integration, which only runs the build).
 
 ## Architecture

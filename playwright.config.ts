@@ -6,7 +6,7 @@ export default defineConfig({
   timeout: 120_000,
   use: { baseURL: 'http://localhost:4321' },
   webServer: {
-    command: 'npm run build && npm run preview',
+    command: 'bun run build && bun run preview',
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

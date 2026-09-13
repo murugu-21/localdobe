@@ -6,7 +6,7 @@
 // project (the official PaddlePaddle repo publishes only .pdiparams, no ONNX).
 //
 // Run manually (network required), then commit the regenerated files:
-//   npm run refresh-doc-ori
+//   bun run refresh-doc-ori
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 
@@ -32,7 +32,7 @@ await writeFile(
   'public/models/README.md',
   `# public/models
 
-Committed build artifacts, refreshed manually via \`npm run refresh-doc-ori\`.
+Committed build artifacts, refreshed manually via \`bun run refresh-doc-ori\`.
 
 ## doc-ori.onnx
 

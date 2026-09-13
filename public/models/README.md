@@ -1,6 +1,6 @@
 # public/models
 
-Committed build artifacts, refreshed manually via `npm run refresh-doc-ori`.
+Committed build artifacts, refreshed manually via `bun run refresh-doc-ori`.
 
 ## doc-ori.onnx
 

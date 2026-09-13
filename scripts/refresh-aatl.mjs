@@ -9,7 +9,7 @@
 // over-trusting is worse than the honest "couldn't verify".
 //
 // Run manually (network required), then commit the regenerated file:
-//   npm run refresh-aatl
+//   bun run refresh-aatl
 import { mkdir, writeFile } from 'node:fs/promises';
 import { inflateSync } from 'node:zlib';
 
@@ -56,7 +56,7 @@ const header = [
   `Certificate authorities from Adobe's publicly published trust list (AATL).`,
   `Source: ${SOURCE}`,
   `Generated: ${new Date().toISOString().slice(0, 10)} — ${anchors.length} trust anchors (identities flagged Root=1 of ${identities.length} total).`,
-  `Regenerate with: npm run refresh-aatl`,
+  `Regenerate with: bun run refresh-aatl`,
   '',
 ].join('\n');
 
