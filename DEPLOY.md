@@ -58,6 +58,17 @@ runtime Worker variable does nothing — both must be set as Cloudflare **build*
 (the Worker → Settings → Build → Variables and secrets). When either is unset no snippet
 is emitted at all (and `astro dev` throws, to stop the misconfiguration going unnoticed).
 
+**Error stack traces are de-minified by source map upload.** The production build runs
+`@posthog/rollup-plugin` (`astro.config.mjs`), enabled only when `POSTHOG_API_KEY` (a
+personal API key with error-tracking write) and `POSTHOG_PROJECT_ID` are set — add both
+to the same Cloudflare **build** variables as the snippet above. They must *not* carry a
+`PUBLIC_` prefix: that would inline the key into client code. When on, the plugin emits
+hidden source maps, injects a chunk-id comment into every JS chunk, uploads chunks and
+maps to the project, then deletes the `.map` files before deploy, so nothing extra is
+served — and a failed upload fails the build rather than deploying without maps. Without
+the two variables (local builds, `astro dev`) the plugin is absent and the build is
+unchanged.
+
 Session replay has a second switch that is not in this repo: the PostHog project's
 **Record user sessions** setting. The SDK config only controls masking; if replays are
 missing, check that toggle first.
