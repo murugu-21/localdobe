@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { track } from '../../../lib/analytics';
 import { downloadBytes } from '../../../lib/download';
+import { REPLAY_MASK } from '../../../lib/replay';
 
 interface Props { filename: string; bytes: Uint8Array; note?: string; mime?: string }
 
@@ -22,7 +23,7 @@ export function DownloadResult({ filename, bytes, note, mime = 'application/pdf'
       <CardContent className="p-5">
         {note && <p className="mb-3 text-sm text-green-900 dark:text-green-100">{note}</p>}
         <Button size="lg" data-testid="download-result" onClick={onDownload}>
-          Download {filename}
+          Download <span className={REPLAY_MASK}>{filename}</span>
         </Button>
       </CardContent>
     </Card>

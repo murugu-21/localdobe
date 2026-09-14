@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_BLOCK } from '../../lib/replay';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -178,7 +179,7 @@ export default function ImageToPdfTool() {
                   {i + 1}
                 </span>
                 <span className="flex aspect-square items-center justify-center bg-panel/40 p-1">
-                  <img src={e.url} alt={`Image ${i + 1}`} className="max-h-full max-w-full" />
+                  <img src={e.url} alt={`Image ${i + 1}`} className={`max-h-full max-w-full ${REPLAY_BLOCK}`} />
                 </span>
                 <div className="flex items-center justify-center gap-1 border-t border-border py-1">
                   <Button type="button" variant="ghost" size="icon-sm" aria-label="Move up" data-testid={`img-up-${i}`} onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>

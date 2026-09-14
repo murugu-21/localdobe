@@ -221,3 +221,31 @@ test('an unreadable file is a handled failure, not an unhandled rejection', asyn
   expect(failed.props).toMatchObject({ tool: 'compress-pdf', reason: 'read_failed' });
   expect(pageErrors).toEqual([]);
 });
+
+test('replays keep tool controls visible and hide only document content', async ({ page }) => {
+  await gotoHydrated(page, '/split-pdf');
+  // The file input is blocked because its `.value` exposes the selected file's
+  // name (check before the upload, while the dropzone is still mounted).
+  await expect(page.getByTestId('file-input')).toHaveClass(/ph-no-capture/);
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+
+  // Document-derived content is hidden: the displayed file name is text-masked
+  // and rendered page thumbnails are blocked.
+  await expect(page.locator('span.ph-mask', { hasText: 'a.pdf' })).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('img.ph-no-capture').first()).toBeVisible();
+
+  // The work area itself must not be blocked: a blocked ancestor would remove the
+  // whole tool — buttons and options included — from the replay. This guards
+  // against the ph-no-capture wrapper that used to sit in ToolPageShell. (Checked
+  // after a file loads: the run button only exists once a tool has something to do.)
+  const blockedAncestor = page
+    .locator('[data-testid="run-tool"]')
+    .locator('xpath=ancestor-or-self::*[contains(concat(" ", normalize-space(@class), " "), " ph-no-capture ")]');
+  await expect(blockedAncestor).toHaveCount(0);
+
+  // The editor's rendered page and its editable text overlay are document content too.
+  await gotoHydrated(page, '/edit-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/edit.pdf');
+  await expect(page.locator('canvas.ph-no-capture').first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('span[contenteditable].ph-mask').first()).toBeAttached();
+});

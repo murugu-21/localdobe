@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -96,7 +97,7 @@ export default function SignatureTool() {
       {!file && <FileDropzone label="Choose a PDF to inspect" onFiles={onFile} />}
       {file && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+          <p className="text-sm text-muted-foreground"><span className={REPLAY_MASK}>{file.name}.pdf</span></p>
           <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
             Start over
           </Button>
@@ -128,15 +129,15 @@ export default function SignatureTool() {
                 {sig.status === 'unknown' && '⚠ Signature found — couldn’t be fully verified'}
               </p>
               <dl className="mt-3 space-y-1.5">
-                <div><dt className="inline font-medium">Signed by:</dt> <dd className="inline">{sig.signer}</dd></div>
+                <div><dt className="inline font-medium">Signed by:</dt> <dd className={`inline ${REPLAY_MASK}`}>{sig.signer}</dd></div>
                 {sig.authority && (
-                  <div><dt className="inline font-medium">Issuing authority:</dt> <dd className="inline">{sig.authority}</dd></div>
+                  <div><dt className="inline font-medium">Issuing authority:</dt> <dd className={`inline ${REPLAY_MASK}`}>{sig.authority}</dd></div>
                 )}
-                {sig.signedAt && <div><dt className="inline font-medium">Signed on:</dt> <dd className="inline">{sig.signedAt}</dd></div>}
+                {sig.signedAt && <div><dt className="inline font-medium">Signed on:</dt> <dd className={`inline ${REPLAY_MASK}`}>{sig.signedAt}</dd></div>}
                 {sig.certValidUntil && (
                   <div>
                     <dt className="inline font-medium">Certificate valid:</dt>{' '}
-                    <dd className="inline">
+                    <dd className={`inline ${REPLAY_MASK}`}>
                       {sig.certValidFrom} – {sig.certValidUntil}
                       {sig.certExpired && <span className="ml-1 font-medium text-red-700 dark:text-red-300">(expired)</span>}
                     </dd>
@@ -153,7 +154,7 @@ export default function SignatureTool() {
                 {sig.fieldName && (
                   <div>
                     <dt className="inline font-medium">Signature field:</dt>{' '}
-                    <dd className="inline">{sig.fieldName}{sig.pageNr ? ` (page ${sig.pageNr})` : ''}</dd>
+                    <dd className={`inline ${REPLAY_MASK}`}>{sig.fieldName}{sig.pageNr ? ` (page ${sig.pageNr})` : ''}</dd>
                   </div>
                 )}
               </dl>

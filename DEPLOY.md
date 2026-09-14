@@ -47,12 +47,16 @@ PostHog does both jobs, so a session in the dashboard links the two:
 - **Session replay.** `src/lib/analytics.ts` configures recording with masking, and
   `initAnalytics` calls `startSessionRecording()` on the visitor's first interaction
   (the recorder is the heaviest extension; a reader who never interacts never downloads
-  it). Tool work areas carry `ph-no-capture`
-  (`src/components/astro/ToolPageShell.astro`), which is PostHog's default `blockClass`
-  — the element and its subtree are replaced by a placeholder in the replay — and
-  `maskAllInputs` is pinned in the config so typed values stay masked
-  regardless of the project's dashboard masking mode. Keep all of that, and
-  set the project's masking mode to **Strict** as well.
+  it). Replays show tool controls on purpose, so only document-derived content is
+  hidden. Tool components mark file names, document text, and signature details with
+  `ph-mask` (PostHog's default `maskTextClass` — text becomes asterisks, layout and
+  controls stay visible) and rendered page/image pixels, plus the hidden file inputs
+  whose `.value` exposes a file name, with `ph-no-capture` (PostHog's default
+  `blockClass` — the element and its subtree become a placeholder). The markers live in
+  `src/lib/replay.ts`. Do not wrap a whole tool in `ph-no-capture`: that is what used to
+  hide every control and option from the replays. `maskAllInputs` is pinned in the
+  config so typed values stay masked regardless of the project's dashboard masking mode.
+  Keep all of that, and set the project's masking mode to **Strict** as well.
 
 Replay needs a session id, and posthog-js refuses to build one in cookieless mode, so the
 config uses the default `localStorage+cookie` persistence: the site sets one first-party

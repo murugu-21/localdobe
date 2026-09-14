@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -128,7 +129,7 @@ export default function WatermarkTool() {
       {file && (
         <>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+            <p className="text-sm text-muted-foreground"><span className={REPLAY_MASK}>{file.name}.pdf</span></p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
               Start over
             </Button>
@@ -195,7 +196,7 @@ export default function WatermarkTool() {
                       >
                         Choose image…
                       </Button>
-                      {imageName && <span className="truncate text-sm text-muted-foreground">{imageName}</span>}
+                      {imageName && <span className={`truncate text-sm text-muted-foreground ${REPLAY_MASK}`}>{imageName}</span>}
                     </div>
                     <input
                       id="wm-image"
@@ -203,7 +204,7 @@ export default function WatermarkTool() {
                       data-testid="wm-image-input"
                       type="file"
                       accept="image/png,image/jpeg"
-                      className="hidden"
+                      className={`hidden ${REPLAY_BLOCK}`}
                       onChange={async (e) => {
                         const f = e.target.files?.[0];
                         if (!f) { setImage(null); setImageName(null); resetIfDone(); return; }

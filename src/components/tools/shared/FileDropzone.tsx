@@ -2,6 +2,7 @@ import { useRef, useState, type DragEvent } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { track } from '../../../lib/analytics';
+import { REPLAY_BLOCK } from '../../../lib/replay';
 import { LocalBadge } from './LocalBadge';
 
 interface Props {
@@ -87,13 +88,15 @@ export function FileDropzone({
           Choose file
         </span>
       </button>
+      {/* A file input's `.value` is the selected file's (faked) path, so it must be
+          blocked from replays even though the control itself is hidden. */}
       <input
         ref={inputRef}
         data-testid="file-input"
         type="file"
         accept={acceptAttr}
         multiple={multiple}
-        className="hidden"
+        className={`hidden ${REPLAY_BLOCK}`}
         onChange={(e) => { accept(e.target.files, 'browse'); e.target.value = ''; }}
       />
       {error && (

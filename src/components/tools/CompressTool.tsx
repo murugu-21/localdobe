@@ -7,6 +7,7 @@ import { ProgressBar } from './shared/ProgressBar';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes, percentSaved } from '../../lib/format';
+import { REPLAY_MASK } from '../../lib/replay';
 import type { CompressPreset } from '../../lib/pdf/compressPresets';
 
 type Phase = 'idle' | 'working' | 'done' | 'error';
@@ -75,7 +76,7 @@ export default function CompressTool() {
       {file && (
         <>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{file.name}.pdf — {formatBytes(file.bytes.length)}</p>
+            <p className="text-sm text-muted-foreground"><span className={REPLAY_MASK}>{file.name}.pdf</span> — {formatBytes(file.bytes.length)}</p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
               Start over
             </Button>

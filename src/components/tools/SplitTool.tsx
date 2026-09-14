@@ -8,6 +8,7 @@ import { parsePageRanges, RangeSyntaxError } from '../../lib/pdf/split';
 import { FileDropzone } from './shared/FileDropzone';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 
@@ -209,7 +210,7 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
         <>
           <div className="flex items-center justify-between gap-3">
             <p className="min-w-0 truncate text-sm">
-              <span className="font-medium">{loaded.name}.pdf</span>{' '}
+              <span className={`font-medium ${REPLAY_MASK}`}>{loaded.name}.pdf</span>{' '}
               <span className="text-muted-foreground">· {loaded.pageCount} pages · {formatBytes(loaded.size)}</span>
             </p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
@@ -332,7 +333,7 @@ export default function SplitTool({ defaultMerge = false, dropLabel = 'Choose a 
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                       </span>
                     )}
-                    <img src={src} alt={`Page ${i + 1}`} className="w-full" />
+                    <img src={src} alt={`Page ${i + 1}`} className={`w-full ${REPLAY_BLOCK}`} />
                     <span className="block py-1 text-center text-xs text-muted">{i + 1}</span>
                   </button>
                 ))}

@@ -85,11 +85,14 @@ const description = 'localdobe processes every PDF locally in your browser — f
     <ul>
       <li><strong>Nothing about your documents is included.</strong> Events never carry file
         names, file contents, page text, or passwords. Error messages are scrubbed of
-        anything resembling a file name before they are sent. In replays, every tool’s work
-        area is marked with PostHog’s <code>ph-no-capture</code> attribute, which excludes
-        the whole area from the recording, and form inputs are masked by default — so
-        replays show placeholder boxes, never file names, document text, rendered pages, or
-        anything you type into a tool (passwords included).</li>
+        anything resembling a file name before they are sent. Replays follow the same rule:
+        the parts of a tool that show your document — file names, rendered pages and
+        images, document text, signature details — are replaced with masked placeholders
+        before the recording is sent, and form inputs are masked by default. The tool’s own
+        controls and options (buttons, sliders, page counts and sizes) stay visible, because
+        replays help us see how the interface is actually used. A replay never contains file
+        names, document text, rendered pages, or anything you type into a tool (passwords
+        included).</li>
       <li><strong>Cookies identify a session, not a person.</strong> PostHog stores a random
         identifier in a first-party cookie and in <code>localStorage</code>. That identifier
         is what lets the events and a replay from one visit be stitched into a single

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -78,7 +79,7 @@ export default function ProtectTool() {
       {file && (
         <>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{file.name}.pdf</p>
+            <p className="text-sm text-muted-foreground"><span className={REPLAY_MASK}>{file.name}.pdf</span></p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
               Start over
             </Button>

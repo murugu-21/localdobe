@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
+import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -220,7 +221,7 @@ export default function RotateTool() {
         <>
           <div className="flex items-center justify-between gap-3">
             <p className="min-w-0 truncate text-sm">
-              <span className="font-medium">{loaded.name}.pdf</span>{' '}
+              <span className={`font-medium ${REPLAY_MASK}`}>{loaded.name}.pdf</span>{' '}
               <span className="text-muted-foreground">· {loaded.pageCount} pages · {formatBytes(loaded.size)}</span>
             </p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
@@ -278,7 +279,7 @@ export default function RotateTool() {
                   <img
                     src={src}
                     alt={`Page ${i + 1}`}
-                    className="max-h-full max-w-full transition-transform"
+                    className={`max-h-full max-w-full transition-transform ${REPLAY_BLOCK}`}
                     style={{ transform: `rotate(${deltas[i]}deg)` }}
                   />
                 </span>

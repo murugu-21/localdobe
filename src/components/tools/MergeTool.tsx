@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
+import { REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
@@ -16,7 +17,7 @@ export default function MergeTool() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [phase, setPhase] = useState<Phase>('idle');
   const [result, setResult] = useState<Uint8Array | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ file?: string; detail: string } | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
 
@@ -79,7 +80,7 @@ export default function MergeTool() {
       const buffers: Uint8Array[] = [];
       for (const e of entries) {
         const bytes = await readFileBytes(e.file);
-        if (!bytes) { setError(FILE_READ_ERROR); setPhase('error'); return; }
+        if (!bytes) { setError({ detail: FILE_READ_ERROR }); setPhase('error'); return; }
         buffers.push(bytes);
       }
       const output = await mergePdfs(buffers);
@@ -102,7 +103,9 @@ export default function MergeTool() {
         failed_on_file: fileIndex !== undefined,
         duration_ms: Date.now() - startedAt,
       });
-      setError(fileIndex !== undefined ? `${entries[fileIndex]?.file.name}: ${detail}` : detail);
+      // The name is kept beside the (generic) detail so the UI can show which file
+      // failed while replays mask just the name (REPLAY_MASK).
+      setError({ file: fileIndex !== undefined ? entries[fileIndex]?.file.name : undefined, detail });
       setPhase('error');
     }
   }
@@ -149,7 +152,7 @@ export default function MergeTool() {
                   <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
                   <circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" />
                 </svg>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">{e.file.name}</span>
+                <span className={`min-w-0 flex-1 truncate text-sm font-medium ${REPLAY_MASK}`}>{e.file.name}</span>
                 <span className="shrink-0 text-xs text-muted">{formatBytes(e.file.size)}</span>
                 <Button type="button" variant="ghost" size="icon-sm" aria-label="Move up" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
                 <Button type="button" variant="ghost" size="icon-sm" aria-label="Move down" onClick={() => move(i, 1)} disabled={i === entries.length - 1}>↓</Button>
@@ -172,7 +175,12 @@ export default function MergeTool() {
         </Button>
       )}
       {phase === 'working' && <ProgressBar value={null} />}
-      {phase === 'error' && error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {phase === 'error' && error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error.file && <span className={REPLAY_MASK}>{error.file}: </span>}
+          {error.detail}
+        </p>
+      )}
       {phase === 'done' && result && <DownloadResult filename="merged.pdf" bytes={result} note="Merged entirely on your device." />}
     </div>
   );

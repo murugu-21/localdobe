@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy, PageViewport } from 'pdfjs-dist';
 import { Button } from '@/components/ui/button';
 import { getPdfjs, renderPageToCanvas } from '../../../lib/pdf/render';
+import { REPLAY_BLOCK, REPLAY_MASK } from '../../../lib/replay';
 import { textItemToPdfBox } from '../../../lib/pdf/edit/coords';
 import { classifyFont, cssFontStack, type FontClass } from '../../../lib/pdf/edit/fontMatch';
 import type { EditSession, NewTextBox } from '../../../lib/pdf/edit/session';
@@ -143,7 +144,7 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty, fitT
           onClick={(e) => { e.stopPropagation(); rotate(90); }}>⟳</Button>
         {rotDelta !== 0 && <span className="px-1 py-1 text-xs text-muted">{rotDelta}°</span>}
       </div>
-      <canvas ref={canvasRef} className="block" />
+      <canvas ref={canvasRef} className={`block ${REPLAY_BLOCK}`} />
       {spans.map((s) => (
         <span
           key={s.itemKey}
@@ -157,7 +158,7 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty, fitT
           // Edited spans stay opaque (white bg over the original canvas text) so the
           // preview reflects the edit instead of reverting on blur.
           className={`absolute origin-top-left whitespace-pre caret-black outline-none
-            focus:bg-white focus:text-slate-900 focus:ring-1 focus:ring-accent ${
+            focus:bg-white focus:text-slate-900 focus:ring-1 focus:ring-accent ${REPLAY_MASK} ${
               editedKeys.has(s.itemKey)
                 ? 'bg-white text-slate-900 ring-1 ring-accent/40'
                 : 'text-transparent hover:bg-yellow-100/60 hover:text-slate-900'
@@ -187,7 +188,7 @@ export function PageEditor({ doc, pageIndex, session, addTextMode, onDirty, fitT
             // text-slate-900 is pinned (not text-ink) for the same reason as the span above:
             // this box sits on the white canvas regardless of site theme, and would
             // otherwise inherit body's theme-flipping text-ink and vanish in dark mode.
-            className="absolute min-w-8 border border-dashed border-accent bg-white/80 px-0.5 text-slate-900 outline-none"
+            className={`absolute min-w-8 border border-dashed border-accent bg-white/80 px-0.5 text-slate-900 outline-none ${REPLAY_MASK}`}
             style={{
               left: b.x * scale,
               top: (pageHeightPt - b.y) * scale - b.fontSize * scale,

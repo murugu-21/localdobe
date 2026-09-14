@@ -16,8 +16,8 @@
  * pass a file name, page text, password, or any file content into an event —
  * counts, byte sizes, durations, and fixed option values only. `message` is
  * scrubbed by `sanitizeMessage` because engine errors sometimes embed a name.
- * See `src/pages/privacy.astro` §4 and the `ph-no-capture` wrapper in
- * `src/components/astro/ToolPageShell.astro`.
+ * Session replays hide the same things through the markers in `src/lib/replay.ts`,
+ * applied by the tool components. See `src/pages/privacy.astro` §4.
  */
 
 import { onFirstInteraction } from './first-interaction';
@@ -256,10 +256,15 @@ export async function initAnalytics(
       // also be switched on in the PostHog project's replay settings.
       disable_session_recording: true,
       session_recording: {
-        // Tool work areas carry `ph-no-capture` (PostHog's default blockClass),
-        // which replaces the whole subtree with a placeholder in the replay,
-        // and `maskAllInputs` is pinned here so typed values stay masked
-        // regardless of the project's dashboard masking mode.
+        // Tool components mark document-derived content with the classes in
+        // `src/lib/replay.ts`: file names and document text carry `ph-mask`
+        // (PostHog's default maskTextClass — text becomes asterisks, controls
+        // and layout stay visible) and rendered page/image pixels carry
+        // `ph-no-capture` (PostHog's default blockClass — the subtree becomes a
+        // placeholder). The tool work area itself is deliberately unblocked so
+        // replays show the buttons and options. `maskAllInputs` is pinned here
+        // so typed values stay masked regardless of the project's dashboard
+        // masking mode.
         maskAllInputs: true,
       },
       // Error tracking: unhandled errors and rejections become $exception

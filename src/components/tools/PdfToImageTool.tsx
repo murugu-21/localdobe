@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { formatBytes } from '../../lib/format';
 import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
+import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -141,7 +142,7 @@ export default function PdfToImageTool({ format }: Props) {
         <>
           <div className="flex items-center justify-between gap-3">
             <p className="min-w-0 truncate text-sm">
-              <span className="font-medium">{loaded.name}.pdf</span>{' '}
+              <span className={`font-medium ${REPLAY_MASK}`}>{loaded.name}.pdf</span>{' '}
               <span className="text-muted-foreground">· {loaded.pageCount} pages · {formatBytes(loaded.size)}</span>
             </p>
             <Button type="button" variant="ghost" size="sm" data-testid="clear-file" onClick={clear}>
@@ -153,7 +154,7 @@ export default function PdfToImageTool({ format }: Props) {
             {loaded.thumbs.map((src, i) => (
               <div key={i} className="overflow-hidden rounded-lg border-2 border-border">
                 <span className="flex aspect-square items-center justify-center bg-panel/40 p-1">
-                  <img src={src} alt={`Page ${i + 1}`} className="max-h-full max-w-full" />
+                  <img src={src} alt={`Page ${i + 1}`} className={`max-h-full max-w-full ${REPLAY_BLOCK}`} />
                 </span>
                 <span className="block py-1 text-center text-xs text-muted">{i + 1}</span>
               </div>
