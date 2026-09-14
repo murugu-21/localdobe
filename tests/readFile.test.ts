@@ -2,18 +2,28 @@ import { FILE_READ_ERROR, readFileBytes } from '../src/lib/readFile';
 
 interface FakeWindow {
   location: { pathname: string };
-  posthog?: { capture: (event: string, props?: Record<string, unknown>) => void };
+  posthog?: {
+    capture: (event: string, props?: Record<string, unknown>) => void;
+    register: (props: Record<string, unknown>) => void;
+  };
 }
 
-const g = globalThis as unknown as { window?: FakeWindow };
+const g = globalThis as unknown as {
+  window?: FakeWindow;
+  posthog?: FakeWindow['posthog'];
+};
 
 /** Installs a fake `window` with a recording sink; returns what the sink saw. */
 function installWindow(pathname = '/compress-pdf/') {
   const captured: { event: string; props?: Record<string, unknown> }[] = [];
-  g.window = {
-    location: { pathname },
-    posthog: { capture: (event, props) => { captured.push({ event, props }); } },
+  const sink = {
+    capture: (event: string, props?: Record<string, unknown>) => { captured.push({ event, props }); },
+    // client() requires both capture and register, so a half-initialised global
+    // is ignored (matching the reference implementation).
+    register: () => {},
   };
+  g.window = { location: { pathname }, posthog: sink };
+  g.posthog = sink;
   return { captured };
 }
 
@@ -22,7 +32,7 @@ function fakeFile(size: number, arrayBuffer: () => Promise<ArrayBuffer>): File {
   return { size, arrayBuffer } as unknown as File;
 }
 
-afterEach(() => { delete g.window; });
+afterEach(() => { delete g.window; delete g.posthog; });
 
 test('readFileBytes returns the file bytes', async () => {
   const bytes = await readFileBytes(fakeFile(3, async () => new Uint8Array([1, 2, 3]).buffer));

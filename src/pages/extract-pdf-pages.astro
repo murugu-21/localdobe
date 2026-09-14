@@ -21,7 +21,7 @@ const description = 'Extract pages from a PDF online free: tap the pages you wan
 <Base title="Extract Pages from PDF Free — Online, No Upload | localdobe" {description} canonicalPath="/extract-pdf-pages"
   jsonLd={[webAppJsonLd('Extract PDF Pages', '/extract-pdf-pages', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Extract Pages from PDF" sub="Pull just the pages you need into a new PDF — free, no upload, right in your browser.">
-    <SplitTool client:load slot="tool" defaultMerge dropLabel="Choose a PDF to extract pages from" />
+    <SplitTool client:idle slot="tool" defaultMerge dropLabel="Choose a PDF to extract pages from" />
     <h2>How to extract pages from a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

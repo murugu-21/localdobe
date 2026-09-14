@@ -38,7 +38,7 @@ const faq = [
 <Base {title} {description} canonicalPath={path}
   jsonLd={[webAppJsonLd('Compress PDF', path, description), faqJsonLd(faq)]}>
   <ToolPageShell h1={`Compress PDF to ${label}`} sub={`Reduce a PDF to roughly ${label} — in your browser, no upload, no watermark.`}>
-    <CompressTool client:load slot="tool" />
+    <CompressTool client:idle slot="tool" />
     <h2>How to compress a PDF to {label}</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

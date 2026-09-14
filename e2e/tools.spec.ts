@@ -1,6 +1,7 @@
 import { test, expect, type Download, type Page } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { readFile, stat } from 'node:fs/promises';
+import { gotoHydrated } from './navigation';
 
 async function downloadBytes(download: Download): Promise<Buffer> {
   const path = await download.path();
@@ -57,7 +58,7 @@ async function runAndDownload(page: Page): Promise<Download> {
 }
 
 test('merge: 2+1 pages -> 3-page pdf', async ({ page }) => {
-  await page.goto('/merge-pdf');
+  await gotoHydrated(page, '/merge-pdf');
   await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/a.pdf', 'e2e/.fixtures/b.pdf']);
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible();
@@ -66,7 +67,7 @@ test('merge: 2+1 pages -> 3-page pdf', async ({ page }) => {
 });
 
 test('split: extract pages 1-2 of big.pdf', async ({ page }) => {
-  await page.goto('/split-pdf');
+  await gotoHydrated(page, '/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   // "Select pages" is the default tab; typed ranges live behind "Type ranges".
   await page.getByRole('tab', { name: 'Type ranges' }).click();
@@ -78,7 +79,7 @@ test('split: extract pages 1-2 of big.pdf', async ({ page }) => {
 });
 
 test('compress: output smaller than input', async ({ page }) => {
-  await page.goto('/compress-pdf');
+  await gotoHydrated(page, '/compress-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 90_000 });
@@ -89,7 +90,7 @@ test('compress: output smaller than input', async ({ page }) => {
 });
 
 test('compress: shrink-images preset downsamples a scan', async ({ page }) => {
-  await page.goto('/compress-pdf');
+  await gotoHydrated(page, '/compress-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/scan.pdf');
   await page.getByTestId('preset-images').click();
   await expect(page.getByTestId('images-preset-note')).toBeVisible();
@@ -102,7 +103,7 @@ test('compress: shrink-images preset downsamples a scan', async ({ page }) => {
 });
 
 test('compress: lossless presets leave the scan image untouched', async ({ page }) => {
-  await page.goto('/compress-pdf');
+  await gotoHydrated(page, '/compress-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/scan.pdf');
   await page.getByTestId('preset-high').click();
   await page.getByTestId('run-tool').click();
@@ -114,7 +115,7 @@ test('compress: lossless presets leave the scan image untouched', async ({ page 
 });
 
 test('edit: replace text, rotate page, and export', async ({ page }) => {
-  await page.goto('/edit-pdf');
+  await gotoHydrated(page, '/edit-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/edit.pdf');
   const span = page.locator('span[contenteditable]').first();
   await expect(span).toBeVisible({ timeout: 30_000 });
@@ -138,7 +139,7 @@ test('edit: replace text, rotate page, and export', async ({ page }) => {
 });
 
 test('watermark: added text watermark is visibly rendered', async ({ page }) => {
-  await page.goto('/watermark-pdf');
+  await gotoHydrated(page, '/watermark-pdf');
   // opaque.pdf paints its own full-page background (like scans and Word/browser
   // exports); a watermark drawn beneath it renders as a no-op. Real-world docs
   // are the norm here, so visibility must be asserted against this fixture.
@@ -155,7 +156,7 @@ test('watermark: added text watermark is visibly rendered', async ({ page }) => 
 });
 
 test('signatures: signed pdf reports signature evidence, not an engine error', async ({ page }) => {
-  await page.goto('/validate-pdf-signature');
+  await gotoHydrated(page, '/validate-pdf-signature');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/signed.pdf');
   // The trust-pool + signature-parse path only runs for signed PDFs; it must produce
   // a report (even for an unverifiable signature), never an error.
@@ -166,7 +167,7 @@ test('signatures: signed pdf reports signature evidence, not an engine error', a
 });
 
 test('edit: corrupt file shows a visible error', async ({ page }) => {
-  await page.goto('/edit-pdf');
+  await gotoHydrated(page, '/edit-pdf');
   await page.getByTestId('file-input').setInputFiles({
     name: 'broken.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.7 not really a pdf'),
   });
@@ -176,7 +177,7 @@ test('edit: corrupt file shows a visible error', async ({ page }) => {
 });
 
 test('split: multiple typed ranges default to one file per range (zip)', async ({ page }) => {
-  await page.goto('/split-pdf');
+  await gotoHydrated(page, '/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('2-3, 5');
@@ -187,7 +188,7 @@ test('split: multiple typed ranges default to one file per range (zip)', async (
 });
 
 test('split: merge toggle combines typed ranges into ONE pdf', async ({ page }) => {
-  await page.goto('/split-pdf');
+  await gotoHydrated(page, '/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('2-3, 5');
@@ -201,7 +202,7 @@ test('split: merge toggle combines typed ranges into ONE pdf', async ({ page }) 
 });
 
 test('extract-pages: typed ranges default to ONE merged pdf (defaultMerge)', async ({ page }) => {
-  await page.goto('/extract-pdf-pages');
+  await gotoHydrated(page, '/extract-pdf-pages');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   // The extract page mounts SplitTool with the merge toggle pre-enabled — the
   // same "2-3, 5" input that zips on /split-pdf must come back as one PDF here.
@@ -217,7 +218,7 @@ test('extract-pages: typed ranges default to ONE merged pdf (defaultMerge)', asy
 });
 
 test('watermark: unsupported characters are rejected with a clear message', async ({ page }) => {
-  await page.goto('/watermark-pdf');
+  await gotoHydrated(page, '/watermark-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await page.getByTestId('wm-text').fill('机密');
   await page.getByTestId('run-tool').click();
@@ -228,14 +229,14 @@ test('watermark: unsupported characters are rejected with a clear message', asyn
 });
 
 test('signatures: unsigned pdf reports no signatures', async ({ page }) => {
-  await page.goto('/validate-pdf-signature');
+  await gotoHydrated(page, '/validate-pdf-signature');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await expect(page.getByTestId('sig-report')).toBeVisible({ timeout: 90_000 });
   await expect(page.getByTestId('sig-report')).toContainText(/no digital signatures/i);
 });
 
 test('protect then unlock round-trips', async ({ page }) => {
-  await page.goto('/protect-pdf');
+  await gotoHydrated(page, '/protect-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await page.getByTestId('password-input').fill('e2e-secret');
   await page.getByTestId('password-confirm').fill('e2e-secret');
@@ -250,7 +251,7 @@ test('protect then unlock round-trips', async ({ page }) => {
   // Encrypted output must refuse a normal (passwordless) load.
   await expect(PDFDocument.load(await readFile(protectedPath))).rejects.toThrow();
 
-  await page.goto('/unlock-pdf');
+  await gotoHydrated(page, '/unlock-pdf');
   await page.getByTestId('file-input').setInputFiles(protectedPath);
   await page.getByTestId('password-input').fill('e2e-secret');
   await page.getByTestId('run-tool').click();
@@ -260,7 +261,7 @@ test('protect then unlock round-trips', async ({ page }) => {
 });
 
 test('rotate: manual tap rotates one page 90°', async ({ page }) => {
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await expect(page.getByTestId('rotate-thumb-0')).toBeVisible({ timeout: 30_000 });
   await page.getByTestId('rotate-thumb-0').click();
@@ -273,7 +274,7 @@ test('rotate: manual tap rotates one page 90°', async ({ page }) => {
 });
 
 test('rotate: sideways page is auto-detected and corrected to upright', async ({ page }) => {
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/rotated.pdf');
   // First run downloads the 7MB model into the worker — give it time.
   await expect(page.getByTestId('auto-badge-1')).toBeVisible({ timeout: 120_000 });
@@ -288,7 +289,7 @@ test('rotate: sideways page is auto-detected and corrected to upright', async ({
 });
 
 test('rotate: detection finishing with no rotated pages reports upright', async ({ page }) => {
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await expect(page.getByTestId('detect-status')).toContainText(/look upright|unavailable/i, { timeout: 120_000 });
   // Whichever way detection resolves, the CTA must stay disabled with no deltas.
@@ -296,7 +297,7 @@ test('rotate: detection finishing with no rotated pages reports upright', async 
 });
 
 test('rotate: starting over mid-detection does not leak stale auto-fixes into the new file', async ({ page }) => {
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   // big.pdf (40 pages) keeps detection running long enough to click "Start over" mid-flight.
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/big.pdf');
   // Thumbnail + detect-input rendering for all 40 pages happens before detect() starts,
@@ -319,7 +320,7 @@ test('rotate: fully unavailable detector on a small doc shows the degraded notic
   // simulates total model failure on a 2-page document (a.pdf), which can never
   // reach the 3-strikes early-bail threshold.
   await page.route('**/models/doc-ori.onnx', (route) => route.abort());
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   // Regression: without the fix this settles on "All pages look upright" instead.
   await expect(page.getByTestId('detect-status')).toContainText(/unavailable/i, { timeout: 120_000 });
@@ -328,7 +329,7 @@ test('rotate: fully unavailable detector on a small doc shows the degraded notic
 });
 
 test('jpg-to-pdf: mixed images -> fit-size pages in order', async ({ page }) => {
-  await page.goto('/jpg-to-pdf');
+  await gotoHydrated(page, '/jpg-to-pdf');
   await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/photo.jpg', 'e2e/.fixtures/shot.png']);
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
@@ -344,7 +345,7 @@ test('jpg-to-pdf: mixed images -> fit-size pages in order', async ({ page }) => 
 });
 
 test('jpg-to-pdf: reorder changes page order', async ({ page }) => {
-  await page.goto('/jpg-to-pdf');
+  await gotoHydrated(page, '/jpg-to-pdf');
   await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/photo.jpg', 'e2e/.fixtures/shot.png']);
   await page.getByTestId('img-up-1').click(); // moves shot.png (index 1) up to first
   await page.getByTestId('run-tool').click();
@@ -357,7 +358,7 @@ test('jpg-to-pdf: reorder changes page order', async ({ page }) => {
 });
 
 test('jpg-to-pdf: A4 landscape orientation', async ({ page }) => {
-  await page.goto('/jpg-to-pdf');
+  await gotoHydrated(page, '/jpg-to-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/photo.jpg');
   await page.getByTestId('page-size-a4').click();
   await page.getByTestId('run-tool').click();
@@ -370,7 +371,7 @@ test('jpg-to-pdf: A4 landscape orientation', async ({ page }) => {
 });
 
 test('pdf-to-jpg: multi-page -> zip of JPEGs', async ({ page }) => {
-  await page.goto('/pdf-to-jpg');
+  await gotoHydrated(page, '/pdf-to-jpg');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
@@ -388,7 +389,7 @@ test('pdf-to-jpg: multi-page -> zip of JPEGs', async ({ page }) => {
 });
 
 test('rotate: owner-only-encrypted PDF (empty user password) loads and rotates instead of hitting the password dead end', async ({ page }) => {
-  await page.goto('/rotate-pdf');
+  await gotoHydrated(page, '/rotate-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/owner-locked.pdf');
   // pdfjs (thumbnails) opens owner-only-encrypted PDFs fine — this is the path
   // that used to work while pdf-lib's tool run below dead-ended on "password-protected".
@@ -406,7 +407,7 @@ test('rotate: owner-only-encrypted PDF (empty user password) loads and rotates i
 });
 
 test('split: owner-only-encrypted PDF (empty user password) loads and splits instead of hitting the password dead end', async ({ page }) => {
-  await page.goto('/split-pdf');
+  await gotoHydrated(page, '/split-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/owner-locked.pdf');
   await page.getByRole('tab', { name: 'Type ranges' }).click();
   await page.getByTestId('range-input').fill('1');
@@ -419,7 +420,7 @@ test('split: owner-only-encrypted PDF (empty user password) loads and splits ins
 });
 
 test('pdf-to-png: single page at High DPI -> PNG with correct pixel width', async ({ page }) => {
-  await page.goto('/pdf-to-png');
+  await gotoHydrated(page, '/pdf-to-png');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/b.pdf');
   await page.getByTestId('dpi-high').click();
   await page.getByTestId('run-tool').click();

@@ -17,7 +17,7 @@ const description = 'Rotate PDF pages free, with automatic upside-down and sidew
 <Base title="Rotate PDF — auto-detect sideways pages, no upload | localdobe" {description} canonicalPath="/rotate-pdf"
   jsonLd={[webAppJsonLd('Rotate PDF', '/rotate-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Rotate a PDF" sub="Sideways pages are detected and straightened automatically — locally, in your browser.">
-    <RotateTool client:load slot="tool" />
+    <RotateTool client:idle slot="tool" />
     <h2>How to rotate a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

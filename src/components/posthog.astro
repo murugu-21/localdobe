@@ -14,31 +14,17 @@ if (import.meta.env.DEV && !apiHost) {
   );
 }
 ---
+{
+  /* The SDK itself is dynamic-imported by ../lib/analytics.ts on the visitor's
+     first input (or a 10s fallback), so it never touches the initial bundle or
+     a Lighthouse run. The values reach the client through these meta tags
+     rather than a data attribute on the script element: Astro bundles <script>
+     as a module, and document.currentScript is null in module scope. The token
+     is a public project key, so it ships in the page either way. */
+}
 {apiKey && apiHost && (
-  <script is:inline define:vars={{ apiKey, apiHost }}>
-    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split('.');2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement('script')).type='text/javascript',p.crossOrigin='anonymous',p.async=!0,p.src=s.api_host+'/static/array.js',(r=t.getElementsByTagName('script')[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a='posthog',u.people=u.people||[],u.toString=function(t){var e='posthog';return'posthog'!==a&&(e+='.'+a),t||(e+=' (stub)'),e},u.people.toString=function(){return u.toString(1)+'.people (stub)'},o='capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys getNextSurveyStep onSessionId'.split(' '),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-    posthog.init(apiKey, {
-      api_host: apiHost,
-      defaults: '2026-01-30',
-      // Cookies are on (persistence defaults to 'localStorage+cookie'). The random id
-      // they hold is what lets PostHog stitch a visit into a single session and record
-      // a replay — posthog-js cannot build a session id in cookieless mode. The cookie
-      // is first-party and analytics-only; person profiles stay disabled, so no person
-      // record is built and identify() remains a no-op.
-      person_profiles: 'never',
-      // Session replay. Tool work areas carry `ph-no-capture` (PostHog's default
-      // blockClass), which replaces the whole subtree with a placeholder in the
-      // replay, and `maskAllInputs` is pinned here so typed values stay masked
-      // regardless of the project's dashboard masking mode. Recording itself is
-      // switched on in the PostHog project settings ("Record user sessions").
-      session_recording: {
-        maskAllInputs: true,
-      },
-      capture_exceptions: {
-        capture_unhandled_errors: true,
-        capture_unhandled_rejections: true,
-        capture_console_errors: false,
-      },
-    });
-  </script>
+  <>
+    <meta name="ph-token" content={apiKey} />
+    <meta name="ph-host" content={apiHost} />
+  </>
 )}

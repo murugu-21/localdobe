@@ -17,7 +17,7 @@ const description = 'Add a password to a PDF free, with AES-256 encryption runni
 <Base title="Password protect PDF — free AES-256, offline | localdobe" {description} canonicalPath="/protect-pdf"
   jsonLd={[webAppJsonLd('Protect PDF', '/protect-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Password-protect a PDF" sub="Encrypt your PDF with AES-256 — the password never leaves your browser.">
-    <ProtectTool client:load slot="tool" />
+    <ProtectTool client:idle slot="tool" />
     <h2>How to password-protect a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

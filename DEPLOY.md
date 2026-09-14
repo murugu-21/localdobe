@@ -38,14 +38,20 @@ file. Verify this after the first deploy (step 4 below).
 PostHog does both jobs, so a session in the dashboard links the two:
 
 - **Product events.** `src/lib/analytics.ts` — `track(event, props)` — sends to
-  `window.posthog.capture` with properties intact. Nothing in that module throws, so a
-  blocked analytics script can never break a tool. Never pass a file name, document text,
-  or a password into an event; see the privacy note at the top of that file.
-- **Session replay.** `src/components/posthog.astro` enables recording with masking. Tool
-  work areas carry `ph-no-capture` (`src/components/astro/ToolPageShell.astro`), which is
-  PostHog's default `blockClass` — the element and its subtree are replaced by a
-  placeholder in the replay — and `maskAllInputs` is pinned in the config so typed values
-  stay masked regardless of the project's dashboard masking mode. Keep all of that, and
+  `posthog-js`'s `capture` with properties intact. The SDK is dynamic-imported on the
+  visitor's first interaction (or a 10s fallback), so `track` buffers into a `pending`
+  queue until it lands and replays on arrival — an early `tool_viewed` is never lost.
+  Nothing in that module throws, so a blocked analytics script can never break a tool.
+  Never pass a file name, document text, or a password into an event; see the privacy
+  note at the top of that file.
+- **Session replay.** `src/lib/analytics.ts` configures recording with masking, and
+  `initAnalytics` calls `startSessionRecording()` on the visitor's first interaction
+  (the recorder is the heaviest extension; a reader who never interacts never downloads
+  it). Tool work areas carry `ph-no-capture`
+  (`src/components/astro/ToolPageShell.astro`), which is PostHog's default `blockClass`
+  — the element and its subtree are replaced by a placeholder in the replay — and
+  `maskAllInputs` is pinned in the config so typed values stay masked
+  regardless of the project's dashboard masking mode. Keep all of that, and
   set the project's masking mode to **Strict** as well.
 
 Replay needs a session id, and posthog-js refuses to build one in cookieless mode, so the
@@ -54,16 +60,19 @@ PostHog cookie plus a `localStorage` entry, disclosed in `src/pages/privacy.astr
 §5. This replaced Microsoft Clarity on 2026-09-13 — Clarity managed replay with no
 cookies at all, but its replays could not be linked to PostHog events or filtered by them.
 
-`src/components/posthog.astro` inlines the snippet **at build time** from
-`PUBLIC_POSTHOG_PROJECT_TOKEN` and `PUBLIC_POSTHOG_HOST`. Because the site is static, a
+`src/components/posthog.astro` renders the token and host as `<meta name="ph-token">` /
+`<meta name="ph-host">` tags **at build time** from `PUBLIC_POSTHOG_PROJECT_TOKEN` and
+`PUBLIC_POSTHOG_HOST`; the head script in `src/layouts/Base.astro` calls `bootAnalytics()`,
+which reads those tags and schedules the dynamic import. Because the site is static, a
 runtime Worker variable does nothing — both must be set as Cloudflare **build** variables
-(the Worker → Settings → Build → Variables and secrets). When either is unset no snippet
-is emitted at all (and `astro dev` throws, to stop the misconfiguration going unnoticed).
+(the Worker → Settings → Build → Variables and secrets). When either is unset no tags are
+emitted at all and analytics no-ops (and `astro dev` throws, to stop the misconfiguration
+going unnoticed).
 
 **Error stack traces are de-minified by source map upload.** The production build runs
 `@posthog/rollup-plugin` (`astro.config.mjs`), enabled only when `POSTHOG_API_KEY` (a
 personal API key with error-tracking write) and `POSTHOG_PROJECT_ID` are set — add both
-to the same Cloudflare **build** variables as the snippet above. They must *not* carry a
+to the same Cloudflare **build** variables as the PostHog variables above. They must *not* carry a
 `PUBLIC_` prefix: that would inline the key into client code. When on, the plugin emits
 hidden source maps, injects a chunk-id comment into every JS chunk, uploads chunks and
 maps to the project, then deletes the `.map` files before deploy, so nothing extra is
@@ -112,7 +121,10 @@ ends in `return !!navigator.webdriver` — with a `navigator.userAgentData.brand
 just above it. Any WebDriver-driven browser (Playwright, Puppeteer, Selenium) therefore
 sends *zero* events while `is_capturing()` still reports `true` and debug mode prints
 nothing, which looks exactly like a broken integration. Overriding the user agent does
-not help; `userAgentData` still says HeadlessChrome. Verify with a raw POST instead:
+not help; `userAgentData` still says HeadlessChrome. (The e2e analytics suite gets around
+this only by wrapping the SDK's `capture` method the moment it is assigned, before the
+bot check can run — it proves the funnel reaches the SDK, not that PostHog ingests it.)
+Verify with a raw POST instead:
 
 ```bash
 curl -sS -X POST https://e.localdobe.com/i/v0/e/ -H 'Content-Type: application/json' \

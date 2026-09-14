@@ -1,23 +1,48 @@
 import { test, expect, type Page } from '@playwright/test';
+import { gotoHydrated } from './navigation';
 
 /**
- * End-to-end proof that the funnel actually reaches PostHog in a real browser.
+ * End-to-end proof that the funnel reaches PostHog in a real browser.
  *
- * PostHog is asserted through its own snippet rather than a stub: before `array.js`
- * loads, `window.posthog` IS the queue array the snippet builds, and `capture(name,
- * props)` pushes `['capture', name, props]` onto it. Blocking the PostHog host below
- * keeps that stub in place for the whole test — and guarantees the suite never sends
- * real events to the production project.
+ * The SDK is the npm posthog-js build, dynamic-imported on the visitor's first
+ * interaction (see src/lib/analytics.ts), so there is no snippet queue to read
+ * anymore. Instead an init script wraps the SDK instance the moment
+ * initAnalytics assigns it to `window.posthog` — assignment happens before the
+ * buffered calls are replayed, so this sees both replayed and live captures.
+ * Off-origin requests stay blocked for the whole run, which keeps the SDK's own
+ * config/flags/event requests from reaching the production project while still
+ * letting the same-origin SDK chunk load.
  */
 
 interface PostHogCall { event: string; props: Record<string, unknown> }
 
+declare global {
+  interface Window {
+    __phCalls?: PostHogCall[];
+  }
+}
+
 async function setUpSinks(page: Page) {
-  // Block every off-origin request for the duration of the test. The point is the
-  // PostHog snippet: leaving `array.js` reachable would both replace the queue this
-  // suite reads AND send real events into the production project. Matching on "not
-  // localhost" rather than on PostHog's hostname keeps that guarantee when
-  // PUBLIC_POSTHOG_HOST changes (e.g. to a reverse-proxy subdomain of localdobe.com).
+  await page.addInitScript(() => {
+    let value: unknown;
+    Object.defineProperty(window, 'posthog', {
+      configurable: true,
+      get: () => value,
+      set: (ph: { capture: (event: string, props?: Record<string, unknown>) => void }) => {
+        value = ph;
+        const original = ph.capture.bind(ph);
+        window.__phCalls = [];
+        ph.capture = (event, props) => {
+          window.__phCalls!.push({ event, props: props ?? {} });
+          return original(event, props);
+        };
+      },
+    });
+  });
+  // Block every off-origin request for the duration of the test. Matching on
+  // "not localhost" rather than on PostHog's hostname keeps that guarantee when
+  // PUBLIC_POSTHOG_HOST changes (e.g. to a reverse-proxy subdomain of
+  // localdobe.com).
   await page.route('**/*', (route) => {
     const { hostname } = new URL(route.request().url());
     return hostname === 'localhost' || hostname === '127.0.0.1'
@@ -26,28 +51,44 @@ async function setUpSinks(page: Page) {
   });
 }
 
-/** Every `capture()` the PostHog snippet queued, in order. */
+/** Every capture the wrapped SDK has seen, in order. */
 async function posthogCalls(page: Page): Promise<PostHogCall[]> {
-  return page.evaluate(() => {
-    const queue = window.posthog as unknown as unknown[][] | undefined;
-    if (!Array.isArray(queue)) return [];
-    return queue
-      .filter((entry) => entry[0] === 'capture')
-      .map((entry) => ({ event: String(entry[1]), props: (entry[2] ?? {}) as Record<string, unknown> }));
-  });
+  return page.evaluate(() => window.__phCalls ?? []);
+}
+
+/** App events only — the SDK adds its own `$pageview`/`$autocapture` traffic. */
+async function appCalls(page: Page): Promise<PostHogCall[]> {
+  return (await posthogCalls(page)).filter((call) => !call.event.startsWith('$'));
+}
+
+/** First user input; boots the SDK and flushes anything buffered before it. */
+async function startAnalytics(page: Page) {
+  await page.mouse.move(5, 5);
+  await expect.poll(() => page.evaluate(() => !!window.posthog)).toBe(true);
 }
 
 function eventNames(calls: PostHogCall[]): string[] {
   return calls.map((c) => c.event);
 }
 
+test('the SDK stays out of the initial load and boots on the first input', async ({ page }) => {
+  await setUpSinks(page);
+  await gotoHydrated(page, '/merge-pdf');
+
+  // Well inside the 10s fallback, with no interaction: nothing should have loaded.
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => !!window.posthog)).toBe(false);
+  expect(await posthogCalls(page)).toEqual([]);
+
+  await startAnalytics(page);
+});
+
 test('merge funnel reaches PostHog in order, from page view to download', async ({ page }) => {
   await setUpSinks(page);
-  await page.goto('/merge-pdf');
+  await gotoHydrated(page, '/merge-pdf');
 
-  // The view fires from ToolPageShell on load, before any interaction.
-  await expect.poll(async () => eventNames(await posthogCalls(page))).toContain('tool_viewed');
-
+  // No interaction yet, so tool_viewed must be buffered until the click below
+  // boots the SDK — the point of the whole deferral.
   await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/a.pdf', 'e2e/.fixtures/b.pdf']);
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible();
@@ -56,7 +97,7 @@ test('merge funnel reaches PostHog in order, from page view to download', async 
   await page.getByTestId('download-result').click();
   await downloadPromise;
 
-  const calls = await posthogCalls(page);
+  const calls = await appCalls(page);
   expect(eventNames(calls)).toEqual([
     'tool_viewed',
     'file_selected',
@@ -84,26 +125,29 @@ test('merge funnel reaches PostHog in order, from page view to download', async 
 
 test('a rejected file is recorded instead of vanishing', async ({ page }) => {
   await setUpSinks(page);
-  await page.goto('/jpg-to-pdf');
+  await gotoHydrated(page, '/jpg-to-pdf');
   // The image dropzone rejects PDFs, which is the drop-off worth seeing.
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await startAnalytics(page);
 
-  await expect.poll(async () => eventNames(await posthogCalls(page))).toContain('file_rejected');
-  const rejected = (await posthogCalls(page)).find((c) => c.event === 'file_rejected')!;
+  await expect.poll(async () => eventNames(await appCalls(page))).toContain('file_rejected');
+  const rejected = (await appCalls(page)).find((c) => c.event === 'file_rejected')!;
   expect(rejected.props).toMatchObject({ tool: 'jpg-to-pdf', reason: 'wrong_type' });
-  expect(eventNames(await posthogCalls(page))).not.toContain('file_selected');
+  expect(eventNames(await appCalls(page))).not.toContain('file_selected');
 });
 
 test('an engine failure is recorded with a message that carries no file name', async ({ page }) => {
   await setUpSinks(page);
-  await page.goto('/unlock-pdf');
+  await gotoHydrated(page, '/unlock-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   // a.pdf is not encrypted, so decryption fails — a real error path, not a stub.
   await page.getByTestId('password-input').fill('not-the-password');
   await page.getByTestId('run-tool').click();
   await expect(page.getByRole('alert')).toBeVisible();
+  await startAnalytics(page);
 
-  const failed = (await posthogCalls(page)).find((c) => c.event === 'tool_failed')!;
+  await expect.poll(async () => eventNames(await appCalls(page))).toContain('tool_failed');
+  const failed = (await appCalls(page)).find((c) => c.event === 'tool_failed')!;
   expect(failed.props.tool).toBe('unlock-pdf');
   expect(failed.props.has_password).toBe(true);
   expect(String(failed.props.message)).not.toContain('a.pdf');
@@ -112,20 +156,21 @@ test('an engine failure is recorded with a message that carries no file name', a
 test('nav clicks record the destination tool and the surface they came from', async ({ page }) => {
   await setUpSinks(page);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
+  await gotoHydrated(page, '/');
 
-  // Suppress the navigation itself: the events are queued on the page that is about to
-  // be unloaded, so letting the browser follow the link would discard them before they
-  // could be read. A capture-phase preventDefault still lets the delegated listener
-  // (which is on document, in the bubble phase) run exactly as it does in production.
+  // Suppress the navigation itself: the events are captured on the page that is
+  // about to be unloaded. A capture-phase preventDefault still lets the
+  // delegated listener (which is on document, in the bubble phase) run exactly
+  // as it does in production.
   await page.evaluate(() => {
     document.addEventListener('click', (e) => e.preventDefault(), true);
   });
 
   await page.locator('aside').getByRole('link', { name: 'Compress PDF' }).click();
   await page.locator('footer').getByRole('link', { name: /sponsor localdobe/i }).click();
+  await startAnalytics(page);
 
-  const calls = await posthogCalls(page);
+  const calls = await appCalls(page);
   const nav = calls.find((c) => c.event === 'nav_tool_clicked')!;
   // The click happened on '/', which is not a tool page, so the event names its
   // destination rather than carrying a `tool` of its own.
@@ -138,12 +183,13 @@ test('nav clicks record the destination tool and the surface they came from', as
 
 test('no event ever carries a file name', async ({ page }) => {
   await setUpSinks(page);
-  await page.goto('/jpg-to-pdf');
+  await gotoHydrated(page, '/jpg-to-pdf');
   await page.getByTestId('file-input').setInputFiles(['e2e/.fixtures/photo.jpg', 'e2e/.fixtures/shot.png']);
   await page.getByTestId('run-tool').click();
   await expect(page.getByTestId('download-result')).toBeVisible();
+  await startAnalytics(page);
 
-  const posthog = await posthogCalls(page);
+  const posthog = await appCalls(page);
   // Guard against passing vacuously: this assertion is only meaningful if events
   // actually fired, so prove the funnel ran before asserting what it did not contain.
   expect(eventNames(posthog)).toContain('images_converted_to_pdf');
@@ -165,12 +211,13 @@ test('an unreadable file is a handled failure, not an unhandled rejection', asyn
     File.prototype.arrayBuffer = () =>
       Promise.reject(new DOMException('The requested file could not be read', 'NotReadableError'));
   });
-  await page.goto('/compress-pdf');
+  await gotoHydrated(page, '/compress-pdf');
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  await startAnalytics(page);
 
   await expect(page.getByRole('alert')).toContainText(/could not read that file/i);
-  await expect.poll(async () => eventNames(await posthogCalls(page))).toContain('tool_failed');
-  const failed = (await posthogCalls(page)).find((c) => c.event === 'tool_failed')!;
+  await expect.poll(async () => eventNames(await appCalls(page))).toContain('tool_failed');
+  const failed = (await appCalls(page)).find((c) => c.event === 'tool_failed')!;
   expect(failed.props).toMatchObject({ tool: 'compress-pdf', reason: 'read_failed' });
   expect(pageErrors).toEqual([]);
 });

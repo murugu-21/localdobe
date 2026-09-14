@@ -17,7 +17,7 @@ const description = 'Reduce a PDF file size without losing quality — free, no 
 <Base title="Compress PDF — free, offline, no watermark | localdobe" {description} canonicalPath="/compress-pdf"
   jsonLd={[webAppJsonLd('Compress PDF', '/compress-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Compress a PDF" sub="Shrink your PDF with a real compression engine running in your browser.">
-    <CompressTool client:load slot="tool" />
+    <CompressTool client:idle slot="tool" />
     <h2>How to compress a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

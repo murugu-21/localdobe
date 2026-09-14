@@ -17,7 +17,7 @@ const description = 'Convert PNG images to PDF free, with no upload and no water
 <Base title="PNG to PDF — convert images free, no upload | localdobe" {description} canonicalPath="/png-to-pdf"
   jsonLd={[webAppJsonLd('PNG to PDF', '/png-to-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Convert PNG to PDF" sub="Turn screenshots and PNG graphics into a single PDF — locally, in your browser.">
-    <ImageToPdfTool client:load slot="tool" />
+    <ImageToPdfTool client:idle slot="tool" />
     <h2>How to convert PNG to PDF</h2>
     <ol>
       <li>Drop your PNG files into the box above (or click to browse) — screenshots, graphics, or scans all work.</li>

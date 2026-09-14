@@ -17,7 +17,7 @@ const description = 'Convert PDF pages to JPG images free, with no upload and no
 <Base title="PDF to JPG — export pages free, no upload | localdobe" {description} canonicalPath="/pdf-to-jpg"
   jsonLd={[webAppJsonLd('PDF to JPG', '/pdf-to-jpg', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Convert PDF to JPG" sub="Export every page of a PDF as a JPG image — locally, in your browser.">
-    <PdfToImageTool client:load format="jpeg" slot="tool" />
+    <PdfToImageTool client:idle format="jpeg" slot="tool" />
     <h2>How to convert a PDF to JPG</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

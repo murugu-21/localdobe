@@ -44,12 +44,16 @@ export default defineConfig({
       },
       workbox: {
         globDirectory: 'dist',
-        // Precache the app shell: pages, JS, CSS, fonts, images, and small hashed wasm
-        // assets (e.g. the ~4.6MB pdfium.wasm bundled via `?url` import into _astro/) —
-        // NOT the 20MB pdfcpu.wasm, which lives under /wasm/ and is excluded below.
+        // Precache the app shell: pages, JS, CSS, fonts, images, and the remaining
+        // small assets. The 4.4MB pdfium.wasm (bundled into _astro/ via `?url`) and the
+        // 1.3MB pdf.worker.min.mjs are excluded below — they are only needed once a PDF
+        // is opened (pdfium for edit-pdf exports, the worker for any page render), so
+        // they load on first use instead of on the first visit to any page. The 20MB
+        // pdfcpu.wasm lives under /wasm/ and is excluded too.
         globPatterns: ['**/*.{html,js,mjs,css,ttf,woff,woff2,svg,png,ico,txt,xml,webmanifest,wasm}'],
-        globIgnores: ['wasm/**', 'models/**'],
-        // pdfcpu.wasm and ort wasm files cache on first use so most visitors never download them.
+        globIgnores: ['wasm/**', 'models/**', '_astro/**/*.wasm', '_astro/pdf.worker.min.*.mjs'],
+        // pdfium.wasm, the pdf.js worker, pdfcpu.wasm, and ort wasm files cache on first
+        // use so most visitors never download them.
         runtimeCaching: [
           {
             urlPattern: /\/wasm\/.*\.(wasm|mjs)$/,
@@ -60,6 +64,16 @@ export default defineConfig({
             urlPattern: /\/models\/.*\.onnx$/,
             handler: 'CacheFirst',
             options: { cacheName: 'onnx-models', expiration: { maxEntries: 4 } },
+          },
+          {
+            urlPattern: /\/_astro\/.*\.wasm$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'astro-wasm', expiration: { maxEntries: 8 } },
+          },
+          {
+            urlPattern: /\/_astro\/pdf\.worker\..*\.mjs$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'astro-pdf-worker', expiration: { maxEntries: 4 } },
           },
         ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

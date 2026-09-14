@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import geistLatin from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import { pwaInfo } from 'virtual:pwa-info';
 import { toolGroups } from '../lib/tools';
 import PostHog from '../components/posthog.astro';
@@ -25,6 +26,15 @@ const supportEmail = 'murugu2001@gmail.com';
   <head>
     <meta charset="utf-8" />
     <PostHog />
+    <script>
+      // Reads the meta tags PostHog.astro renders and schedules the SDK load on
+      // the visitor's first interaction (see ../lib/analytics.ts). A module
+      // script in the head, so it runs before the body scripts that start
+      // tracking events — everything they capture is buffered until the SDK
+      // lands rather than dropped.
+      import { bootAnalytics } from '../lib/analytics';
+      bootAnalytics();
+    </script>
     <script is:inline>
       // Blocking (no-FOUC) theme init: an explicit user choice in localStorage wins;
       // otherwise follow the OS/browser prefers-color-scheme. Runs before first paint —
@@ -38,6 +48,7 @@ const supportEmail = 'murugu2001@gmail.com';
       })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" as="font" type="font/woff2" href={geistLatin} crossorigin />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

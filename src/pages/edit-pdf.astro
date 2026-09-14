@@ -18,7 +18,7 @@ const description = 'Edit text in a PDF free — no upload, no watermark, no Acr
 <Base title="Edit PDF text — free, local, no watermark | localdobe" {description} canonicalPath="/edit-pdf"
   jsonLd={[webAppJsonLd('Edit PDF', '/edit-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Edit a PDF" sub="Click any text and retype it. Add new text, rotate and resize pages. All in your browser.">
-    <EditTool client:load slot="tool" />
+    <EditTool client:idle slot="tool" />
     <h2>How to edit a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>

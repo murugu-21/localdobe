@@ -17,7 +17,7 @@ const description = 'Remove a password from a PDF you own — free, offline, in 
 <Base title="Unlock PDF — remove a known password, free | localdobe" {description} canonicalPath="/unlock-pdf"
   jsonLd={[webAppJsonLd('Unlock PDF', '/unlock-pdf', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Unlock a PDF" sub="Remove the password from a PDF you own — locally, using the password you know.">
-    <UnlockTool client:load slot="tool" />
+    <UnlockTool client:idle slot="tool" />
     <h2>How to unlock a PDF</h2>
     <ol>
       <li>Drop your password-protected PDF into the box above (or click to browse).</li>

@@ -17,7 +17,7 @@ const description = 'Convert PDF pages to PNG images free, with no upload and no
 <Base title="PDF to PNG — export pages free, no upload | localdobe" {description} canonicalPath="/pdf-to-png"
   jsonLd={[webAppJsonLd('PDF to PNG', '/pdf-to-png', description), faqJsonLd(faq)]}>
   <ToolPageShell h1="Convert PDF to PNG" sub="Export every page of a PDF as a lossless PNG image — locally, in your browser.">
-    <PdfToImageTool client:load format="png" slot="tool" />
+    <PdfToImageTool client:idle format="png" slot="tool" />
     <h2>How to convert a PDF to PNG</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>
