@@ -1,6 +1,6 @@
 import { loadPdf } from '../errors';
 import type { FontClass } from './fontMatch';
-import type { NewTextBox, ResizeSpec, TextEdit } from './session';
+import type { NewTextBox, PageSlot, ResizeSpec, TextEdit } from './session';
 
 const COVER_PAD = 1; // pt of margin around the original glyph box
 
@@ -10,10 +10,18 @@ const PAPER: Record<'a4' | 'letter', [number, number]> = {
 };
 
 export interface ExportChanges {
+  /** Text edits, addressed by SOURCE page index — applied before any page insert/delete. */
   edits: TextEdit[];
+  /** New text boxes, addressed by index into `pages` (the final page list). */
   boxes: NewTextBox[];
+  /** Rotations, addressed by index into `pages` (the final page list). */
   rotations: { page: number; rotation: number }[];
   resize: ResizeSpec | null;
+  /**
+   * The final page structure (order plus inserted blank pages). Omitted keeps every
+   * source page in order, which is what callers without page editing want.
+   */
+  pages?: readonly PageSlot[];
 }
 
 /** Original-glyph footprint for a text edit — the region PDFium is asked to clear. `eps` is
@@ -36,6 +44,17 @@ export interface ExportResult {
   fallbackCount: number;
 }
 
+/**
+ * pdf-lib 1.17.1's `removePage` forgets to invalidate the document's page cache (unlike
+ * `insertPage`, which does). Any page object served before a removal keeps being returned
+ * for the index that shifted into its place, so edits/rotations/boxes would be written to
+ * an orphaned page and silently dropped on save. Invalidate after removals, mirroring what
+ * the library itself does on insert.
+ */
+function invalidatePageCache(doc: import('pdf-lib').PDFDocument) {
+  (doc as unknown as { pageCache: { invalidate(): void } }).pageCache.invalidate();
+}
+
 export async function exportEditedPdf(
   src: Uint8Array,
   changes: ExportChanges,
@@ -50,12 +69,18 @@ export async function exportEditedPdf(
   //    risks the >=50%-coverage match eating into a neighboring word on the same line.
   //    Widening for the replacement text still happens below, but only for the fallback
   //    cover rectangle, which is a purely visual concern.
+  //    Edits on a page the user deleted are dropped first: their source-page index would
+  //    otherwise address whatever page now sits there.
+  const keptSources = changes.pages
+    ? new Set(changes.pages.flatMap((slot) => (slot.source === null ? [] : [slot.source])))
+    : null;
+  const edits = keptSources ? changes.edits.filter((e) => keptSources.has(e.page)) : changes.edits;
   let workingBytes = src;
-  let removed: boolean[] = changes.edits.map(() => false);
-  if (changes.edits.length > 0) {
+  let removed: boolean[] = edits.map(() => false);
+  if (edits.length > 0) {
     try {
       const { removeTextInRects, REMOVAL_EPS } = await import('./removeText');
-      const targets = changes.edits.map((e) => ({ page: e.page, ...removalRect(e, REMOVAL_EPS) }));
+      const targets = edits.map((e) => ({ page: e.page, ...removalRect(e, REMOVAL_EPS) }));
       const result = await removeTextInRects(src, targets);
       workingBytes = result.bytes;
       removed = result.removed;
@@ -81,9 +106,10 @@ export async function exportEditedPdf(
     return f;
   }
 
-  // 1. Text edits and new boxes — content-space coordinates, so they must be drawn
-  //    before rotation/resize transforms.
-  for (const [i, e] of changes.edits.entries()) {
+  // 1. Text edits — content-space coordinates, so they must be drawn before rotation/resize
+  //    transforms, and before the page structure changes below (their `page` addresses the
+  //    source document).
+  for (const [i, e] of edits.entries()) {
     const page = doc.getPage(e.page);
     const f = await font(e.fontClass);
     if (!removed[i]) {
@@ -102,6 +128,34 @@ export async function exportEditedPdf(
     }
   }
 
+  // 2. Page structure — deletions and inserted blank pages. Text edits above already live
+  //    on their source pages, and the UI only ever deletes pages or inserts new ones, so
+  //    the kept source pages stay in ascending order and can be matched to the final list
+  //    by removing the gaps and inserting blanks at their final positions.
+  if (changes.pages) {
+    const sources = changes.pages.flatMap((slot) => (slot.source === null ? [] : [slot.source]));
+    const kept = new Set(sources);
+    const ascending = sources.every((src, i) => i === 0 || src > sources[i - 1]);
+    const valid = changes.pages.length > 0 && kept.size === sources.length && ascending
+      && sources.every((src) => src >= 0 && src < doc.getPageCount());
+    if (!valid) throw new Error('Page changes could not be applied — reload the file and try again.');
+    for (let i = doc.getPageCount() - 1; i >= 0; i--) {
+      if (!kept.has(i)) doc.removePage(i);
+    }
+    invalidatePageCache(doc);
+    changes.pages.forEach((slot, index) => {
+      if (slot.source === null) doc.insertPage(index, [slot.width, slot.height]);
+    });
+  }
+
+  // 3. Rotations — delta on top of the page's existing /Rotate, addressed by final index.
+  for (const { page: idx, rotation } of changes.rotations) {
+    const page = doc.getPage(idx);
+    const angle = (((page.getRotation().angle + rotation) % 360) + 360) % 360;
+    page.setRotation(degrees(angle));
+  }
+
+  // 4. New text boxes — final page indexes, content-space coordinates like the edits above.
   for (const b of changes.boxes) {
     const page = doc.getPage(b.page);
     page.drawText(b.text, {
@@ -112,14 +166,8 @@ export async function exportEditedPdf(
     });
   }
 
-  // 2. Rotations — delta on top of the page's existing /Rotate.
-  for (const { page: idx, rotation } of changes.rotations) {
-    const page = doc.getPage(idx);
-    const angle = (((page.getRotation().angle + rotation) % 360) + 360) % 360;
-    page.setRotation(degrees(angle));
-  }
-
-  // 3. Resize — scale content and boxes; 'fit' centers content on an exact target box.
+  // 5. Resize — scale content and boxes (including inserted blank pages); 'fit' centers
+  //    content on an exact target box.
   if (changes.resize) {
     const resize = changes.resize;
     for (const page of doc.getPages()) {

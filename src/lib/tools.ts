@@ -89,7 +89,7 @@ export const toolGroups: ToolGroup[] = [
       {
         href: '/edit-pdf/',
         name: 'Edit PDF',
-        desc: 'Retype any text, add new text, rotate and resize pages.',
+        desc: 'Retype any text, add new text, rotate, delete, insert and resize pages.',
         icon: '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
       },
       {

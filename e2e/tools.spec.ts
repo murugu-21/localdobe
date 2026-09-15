@@ -138,6 +138,45 @@ test('edit: replace text, rotate page, and export', async ({ page }) => {
   expect(text).not.toContain('Hello World from localdobe');
 });
 
+test('edit: delete a page and insert a blank one before exporting', async ({ page }) => {
+  await gotoHydrated(page, '/edit-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf'); // "Alpha 1" / "Alpha 2"
+  await expect(page.locator('canvas')).toHaveCount(2, { timeout: 30_000 });
+  // Delete "Alpha 2", then add a blank page after what is now the only page.
+  await page.getByRole('button', { name: 'Delete page 2' }).click();
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Add page after page 1' }).click();
+  const blank = page.getByTestId('blank-page');
+  await expect(blank).toBeVisible();
+  // Click-to-add-text must work on the inserted page too (it has no pdf.js viewport).
+  await page.getByTestId('toggle-add-text').click();
+  await blank.click({ position: { x: 120, y: 80 } });
+  const box = page.getByTestId('new-text-box');
+  await expect(box).toBeVisible();
+  await box.click();
+  await box.pressSequentially('Added on a blank page');
+  await page.getByTestId('run-tool').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = new Uint8Array(await downloadBytes(await runAndDownload(page)));
+  expect((await PDFDocument.load(bytes)).getPageCount()).toBe(2);
+  const texts = await extractPageTexts(bytes);
+  expect(texts[0]).toContain('Alpha 1');
+  expect(texts[1]).toContain('Added on a blank page'); // the inserted page kept its new text
+
+  // Deleting the source page leaves only the inserted page, whose box index shifts down
+  // to 0 — the box must stay put with its text intact, not vanish from the preview.
+  await page.getByRole('button', { name: 'Delete page 1' }).click();
+  await expect(page.locator('canvas')).toHaveCount(0);
+  await expect(page.getByTestId('new-text-box')).toHaveText('Added on a blank page');
+});
+
+test('edit: the last remaining page cannot be deleted', async ({ page }) => {
+  await gotoHydrated(page, '/edit-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/edit.pdf'); // one page
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: 30_000 });
+  await expect(page.getByRole('button', { name: 'Delete page 1' })).toBeDisabled();
+});
+
 test('watermark: added text watermark is visibly rendered', async ({ page }) => {
   await gotoHydrated(page, '/watermark-pdf');
   // opaque.pdf paints its own full-page background (like scans and Word/browser

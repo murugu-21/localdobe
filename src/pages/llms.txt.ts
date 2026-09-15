@@ -5,7 +5,7 @@ const TOOLS = [
   ['Merge PDF', '/merge-pdf/', 'Combine multiple PDFs into one, in any order.'],
   ['Split PDF', '/split-pdf/', 'Extract pages or ranges, or split every page into its own file.'],
   ['Compress PDF', '/compress-pdf/', 'Shrink PDF file size by removing redundancy; quality is never reduced.'],
-  ['Edit PDF', '/edit-pdf/', 'Click any text and retype it (original text is genuinely removed), add text, rotate and resize pages.'],
+  ['Edit PDF', '/edit-pdf/', 'Click any text and retype it (original text is genuinely removed), add text, rotate, delete or insert pages, and resize.'],
   ['Watermark & Stamp', '/watermark-pdf/', 'Add text or image watermarks/stamps, or remove existing ones.'],
   ['Validate PDF Signature', '/validate-pdf-signature/', 'Check digital signature integrity, view signer evidence, remove signatures.'],
   ['Protect PDF', '/protect-pdf/', 'Encrypt a PDF with a password (AES-256).'],

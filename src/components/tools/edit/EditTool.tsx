@@ -28,6 +28,7 @@ export default function EditTool() {
   const [result, setResult] = useState<Uint8Array | null>(null);
   const [fallbackCount, setFallbackCount] = useState(0);
   const [fitTick, setFitTick] = useState(0);
+  const [structureTick, setStructureTick] = useState(0);
   const session = useRef(new EditSession());
   const docRef = useRef<PDFDocumentProxy | null>(null);
 
@@ -67,15 +68,18 @@ export default function EditTool() {
         void closePdf(previous).catch(() => {});
       }
       const nextDoc = await openPdf(bytes);
+      const nextSession = new EditSession();
+      nextSession.setPageCount(nextDoc.numPages);
+      session.current = nextSession;
       setDoc(nextDoc);
       setSrcBytes(bytes);
       setName(file.name.replace(/\.pdf$/i, ''));
-      session.current = new EditSession();
       setDirty(false);
       setAddTextMode(false);
       setResizeValue('none');
       setResult(null);
       setFallbackCount(0);
+      setStructureTick(0);
     } catch {
       track('tool_failed', { message: 'could not open pdf', reason: 'load_failed', input_bytes: file.size });
       setError('Could not open this PDF. It may be corrupt or password-protected (see /unlock-pdf).');
@@ -99,6 +103,21 @@ export default function EditTool() {
     setError(null);
     setResult(null);
     setFallbackCount(0);
+    setStructureTick(0);
+  }
+
+  function deletePage(index: number) {
+    if (!session.current.deletePage(index)) return;
+    track('tool_option_changed', { option: 'delete_page' });
+    setStructureTick((t) => t + 1);
+    setDirty(!session.current.isEmpty);
+  }
+
+  function insertPage(index: number, width: number, height: number) {
+    session.current.insertBlankPage(index, width, height);
+    track('tool_option_changed', { option: 'insert_page' });
+    setStructureTick((t) => t + 1);
+    setDirty(!session.current.isEmpty);
   }
 
   function onResizeChange(value: string) {
@@ -118,6 +137,7 @@ export default function EditTool() {
       edit_count: editCount,
       new_text_box_count: boxCount,
       resize_applied: resizeValue !== 'none',
+      structure_changed: session.current.structureChanged,
       input_bytes: srcBytes.length,
     });
     const startedAt = Date.now();
@@ -128,6 +148,7 @@ export default function EditTool() {
         boxes: session.current.boxes,
         rotations: session.current.rotations,
         resize: session.current.resize,
+        pages: session.current.pages,
       }, fetchFont);
       setResult(bytes);
       setFallbackCount(n);
@@ -136,6 +157,7 @@ export default function EditTool() {
         edit_count: editCount,
         new_text_box_count: boxCount,
         resize_applied: resizeValue !== 'none',
+        structure_changed: session.current.structureChanged,
         input_bytes: srcBytes.length,
         output_bytes: bytes.length,
         duration_ms: Date.now() - startedAt,
@@ -181,9 +203,12 @@ export default function EditTool() {
             </div>
           )}
           <div className="overflow-x-auto rounded-xl bg-surface p-4">
-            {Array.from({ length: doc.numPages }, (_, i) => (
-              <PageEditor key={i} doc={doc} pageIndex={i} session={session.current} fitTick={fitTick}
-                addTextMode={addTextMode} onDirty={() => setDirty(!session.current.isEmpty)} />
+            {session.current.pages.map((slot, i) => (
+              <PageEditor key={slot.id} doc={doc} slot={slot} displayIndex={i} session={session.current} fitTick={fitTick}
+                structureTick={structureTick} addTextMode={addTextMode}
+                onDirty={() => setDirty(!session.current.isEmpty)}
+                onInsertPage={(width, height) => insertPage(i + 1, width, height)}
+                onDeletePage={() => deletePage(i)} />
             ))}
           </div>
           <p className="mt-4 text-xs text-muted">

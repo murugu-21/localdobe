@@ -1,5 +1,5 @@
 import { makePdf, extractPageTexts } from './helpers';
-import { EditSession, type TextEdit } from '../src/lib/pdf/edit/session';
+import { EditSession, type NewTextBox, type PageSlot, type TextEdit } from '../src/lib/pdf/edit/session';
 import { exportEditedPdf } from '../src/lib/pdf/edit/export';
 import { readFile } from 'node:fs/promises';
 import type { FontClass } from '../src/lib/pdf/edit/fontMatch';
@@ -238,6 +238,89 @@ describe('exportEditedPdf', () => {
   });
 });
 
+describe('exportEditedPdf page structure', () => {
+  const slot = (source: number | null, width = 0, height = 0): PageSlot =>
+    ({ id: source === null ? `blank-${width}x${height}` : `page-${source}`, source, width, height });
+
+  test('deleted pages are gone and the remaining pages keep their content', async () => {
+    const src = await makePdf(['One', 'Two', 'Three']);
+    const { bytes } = await exportEditedPdf(src, { ...noChanges, pages: [slot(0), slot(2)] }, fetchFont);
+    const { PDFDocument } = await import('pdf-lib');
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(2);
+    const texts = await extractPageTexts(bytes);
+    expect(texts[0]).toContain('One');
+    expect(texts[1]).toContain('Three');
+    expect(texts.join(' ')).not.toContain('Two');
+  });
+
+  test('inserted blank page lands at its position with the given size', async () => {
+    const src = await makePdf(['One', 'Two']);
+    const pages = [slot(0), slot(null, 300, 400), slot(1)];
+    const { bytes } = await exportEditedPdf(src, { ...noChanges, pages }, fetchFont);
+    const { PDFDocument } = await import('pdf-lib');
+    const doc = await PDFDocument.load(bytes);
+    expect(doc.getPageCount()).toBe(3);
+    expect(doc.getPage(1).getSize()).toEqual({ width: 300, height: 400 });
+    const texts = await extractPageTexts(bytes);
+    expect(texts[0]).toContain('One');
+    expect(texts[1].trim()).toBe('');
+    expect(texts[2]).toContain('Two');
+  });
+
+  test('edits address the source page while rotations and boxes address the final list', async () => {
+    const src = await makePdf(['One', 'Two']);
+    // Delete page 1: "Two" becomes final page 0, but the edit still names source page 1.
+    const { bytes } = await exportEditedPdf(src, {
+      ...noChanges,
+      pages: [slot(1)],
+      edits: [{ ...edit('Replaced Words'), page: 1, itemKey: '1:0' }],
+      rotations: [{ page: 0, rotation: 90 }],
+      boxes: [{ page: 0, x: 100, y: 300, text: 'On final page', fontSize: 18, fontClass: 'serif', color: { r: 0, g: 0, b: 0 } }],
+    }, fetchFont);
+    const { PDFDocument } = await import('pdf-lib');
+    const doc = await PDFDocument.load(bytes);
+    expect(doc.getPageCount()).toBe(1);
+    expect(doc.getPage(0).getRotation().angle).toBe(90);
+    const [text] = await extractPageTexts(bytes);
+    expect(text).toContain('Replaced Words');
+    expect(text).toContain('On final page');
+    expect(text).not.toContain('Two');
+  });
+
+  test('deleting every source page leaves just the inserted blank page', async () => {
+    const src = await makePdf(['One']);
+    const { bytes } = await exportEditedPdf(src, { ...noChanges, pages: [slot(null, 612, 792)] }, fetchFont);
+    const { PDFDocument } = await import('pdf-lib');
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1);
+  });
+
+  test('an edit on a deleted page is ignored, not applied to whatever page took its index', async () => {
+    const src = await makePdf(['One', 'Two']);
+    const { bytes, fallbackCount } = await exportEditedPdf(src, {
+      ...noChanges,
+      pages: [slot(1)],
+      edits: [{ ...edit('Stale'), page: 0, itemKey: '0:0' }],
+    }, fetchFont);
+    const texts = await extractPageTexts(bytes);
+    expect(texts[0]).toContain('Two');
+    expect(texts.join(' ')).not.toContain('Stale');
+    expect(fallbackCount).toBe(0);
+  });
+
+  test('percent resize also scales an inserted blank page', async () => {
+    const src = await makePdf(['One']);
+    const { bytes } = await exportEditedPdf(src, {
+      ...noChanges,
+      pages: [slot(0), slot(null, 300, 400)],
+      resize: { kind: 'percent', value: 50 },
+    }, fetchFont);
+    const { PDFDocument } = await import('pdf-lib');
+    const doc = await PDFDocument.load(bytes);
+    expect(doc.getPage(1).getSize().width).toBeCloseTo(150);
+    expect(doc.getPage(1).getSize().height).toBeCloseTo(200);
+  });
+});
+
 describe('EditSession rotation/resize', () => {
   test('rotation accumulates and normalizes; isEmpty accounts for it', () => {
     const s = new EditSession();
@@ -264,5 +347,89 @@ describe('EditSession boxesRaw', () => {
     s.updateBox(0, { text: 'Now filled' });
     expect(s.boxesRaw).toHaveLength(1);
     expect(s.boxes).toHaveLength(1);
+  });
+});
+
+describe('EditSession page structure', () => {
+  const box = (page: number): NewTextBox =>
+    ({ page, x: 10, y: 10, text: 'Box', fontSize: 12, fontClass: 'sans', color: { r: 0, g: 0, b: 0 } });
+
+  test('deletePage keeps other pages edits, shifts boxes and rotations up', () => {
+    const s = new EditSession();
+    s.setPageCount(3);
+    s.recordEdit({ ...edit('Replaced'), page: 2, itemKey: '2:0' });
+    s.addBox(box(2));
+    s.rotatePage(2, 90);
+    s.rotatePage(0, 90);
+    expect(s.deletePage(1)).toBe(true);
+    expect(s.pages.map((p) => p.source)).toEqual([0, 2]);
+    // Text edits address source pages, so the page-2 edit survives untouched.
+    expect(s.edits).toHaveLength(1);
+    expect(s.edits[0].page).toBe(2);
+    // The page-2 box/rotation now sit at list position 1.
+    expect(s.boxes.find((b) => b.page === 1)).toBeTruthy();
+    expect(s.rotationOf(1)).toBe(90);
+    expect(s.rotationOf(0)).toBe(90);
+    expect(s.structureChanged).toBe(true);
+    expect(s.isEmpty).toBe(false);
+  });
+
+  test('deletePage drops the deleted page text edits', () => {
+    const s = new EditSession();
+    s.setPageCount(2);
+    s.recordEdit({ ...edit('Replaced'), page: 1, itemKey: '1:0' });
+    s.recordEdit({ ...edit('Other'), page: 0, itemKey: '0:0' });
+    expect(s.deletePage(1)).toBe(true);
+    expect(s.edits).toHaveLength(1);
+    expect(s.edits[0].page).toBe(0);
+  });
+
+  test('deletePage refuses to remove the last remaining page', () => {
+    const s = new EditSession();
+    s.setPageCount(1);
+    expect(s.deletePage(0)).toBe(false);
+    expect(s.pages).toHaveLength(1);
+    expect(s.structureChanged).toBe(false);
+  });
+
+  test('insertBlankPage shifts boxes and rotations down and dirties the session', () => {
+    const s = new EditSession();
+    s.setPageCount(2);
+    expect(s.isEmpty).toBe(true);
+    s.addBox(box(1));
+    s.rotatePage(1, 90);
+    s.insertBlankPage(1, 200, 300);
+    expect(s.pages.map((p) => p.source)).toEqual([0, null, 1]);
+    expect(s.pages[1].width).toBe(200);
+    expect(s.pages[1].height).toBe(300);
+    expect(s.boxes[0].page).toBe(2);
+    expect(s.rotationOf(2)).toBe(90);
+    expect(s.rotationOf(1)).toBe(0);
+    expect(s.structureChanged).toBe(true);
+    expect(s.isEmpty).toBe(false);
+  });
+
+  test('boxes keep a stable id when page insert/delete shifts their index', () => {
+    const s = new EditSession();
+    s.setPageCount(3);
+    s.addBox(box(2));
+    s.addBox(box(0));
+    const [first, second] = [s.boxesRaw[0].id, s.boxesRaw[1].id];
+    expect(first).toBeTruthy();
+    expect(first).not.toBe(second);
+    s.insertBlankPage(0, 100, 100);
+    s.deletePage(0); // removes the inserted blank again, shifting the boxes back
+    expect(s.boxesRaw.map((b) => b.id)).toEqual([first, second]);
+    expect(s.boxesRaw[0].page).toBe(2);
+  });
+
+  test('setPageCount resets the structure state', () => {
+    const s = new EditSession();
+    s.setPageCount(2);
+    s.deletePage(0);
+    s.setPageCount(1);
+    expect(s.pages.map((p) => p.source)).toEqual([0]);
+    expect(s.structureChanged).toBe(false);
+    expect(s.isEmpty).toBe(true);
   });
 });

@@ -10,20 +10,20 @@ const faq = [
   { q: 'Will the font match exactly?', a: 'Usually very closely. Your replacement text is written in fonts that line up letter-for-letter with the ones behind most documents (like Arial, Times New Roman, and Courier). Unusual decorative fonts are approximated.' },
   { q: 'Is my document uploaded?', a: 'No. Rendering, editing, and export all run in your browser.' },
   { q: 'Does it add a watermark?', a: 'Never. Your exported PDF contains only your document and your edits.' },
-  { q: 'Can I rotate or resize pages?', a: 'Yes. Each page has rotate buttons (90° steps), and the toolbar’s page-size menu scales the whole document by percentage or fits it to A4/Letter.' },
+  { q: 'Can I rotate, delete, or add pages?', a: 'Yes. Each page has rotate buttons (90° steps) plus a delete button, and an “Add page below” button inserts a blank page after it (matching the page’s size and orientation). The toolbar’s page-size menu scales the whole document by percentage or fits it to A4/Letter.' },
   { q: 'Can I edit a PDF without signing up?', a: 'Yes. No account, no signup, no upload. Open the tool, click your text, retype it, and export — everything runs locally in your browser.' },
 ];
-const description = 'Edit text in a PDF free — no upload, no watermark, no Acrobat. Click any text and type, rotate and resize pages; everything happens locally in your browser.';
+const description = 'Edit text in a PDF free — no upload, no watermark, no Acrobat. Click any text and type, rotate, delete or insert pages, and resize; everything happens locally in your browser.';
 ---
 <Base title="Edit PDF text — free, local, no watermark | localdobe" {description} canonicalPath="/edit-pdf"
   jsonLd={[webAppJsonLd('Edit PDF', '/edit-pdf', description), faqJsonLd(faq)]}>
-  <ToolPageShell h1="Edit a PDF" sub="Click any text and retype it. Add new text, rotate and resize pages. All in your browser.">
+  <ToolPageShell h1="Edit a PDF" sub="Click any text and retype it. Add new text, rotate, delete or insert pages. All in your browser.">
     <EditTool client:idle slot="tool" />
     <h2>How to edit a PDF</h2>
     <ol>
       <li>Drop your PDF into the box above (or click to browse).</li>
       <li>Click any existing text to edit it in place, or click <strong>+ Add text</strong> and then click the page to place a new text box.</li>
-      <li>Rotate a page with the ⟲ ⟳ buttons in its corner, or scale the whole document with the page-size menu.</li>
+      <li>Rotate a page with the ⟲ ⟳ buttons in its corner, delete one with the trash button, or add a blank page with <strong>+ Add page below</strong>. The page-size menu scales the whole document instead.</li>
       <li>Click <strong>Export PDF</strong> and download the result.</li>
     </ol>
     <h2>How in-browser PDF editing works</h2>
