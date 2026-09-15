@@ -8,6 +8,7 @@ const TOOLS = [
   ['Edit PDF', '/edit-pdf/', 'Click any text and retype it (original text is genuinely removed), add text, rotate, delete or insert pages, and resize.'],
   ['Watermark & Stamp', '/watermark-pdf/', 'Add text or image watermarks/stamps, or remove existing ones.'],
   ['Validate PDF Signature', '/validate-pdf-signature/', 'Check digital signature integrity, view signer evidence, remove signatures.'],
+  ['PDF Privacy Check', '/pdf-privacy-check/', 'See what a PDF reveals before sharing it (author, software, timestamps, embedded files, links, JavaScript, hidden revisions) and download a cleaned copy with metadata removed.'],
   ['Protect PDF', '/protect-pdf/', 'Encrypt a PDF with a password (AES-256).'],
   ['Unlock PDF', '/unlock-pdf/', 'Remove a password from a PDF you own, using the password you know.'],
 ] as const;
@@ -23,7 +24,7 @@ export async function GET(context: APIContext) {
     '',
     '> Free PDF tools that run entirely in the browser — no uploads, no watermarks, no signup.',
     '> Every operation (merge, split, compress, edit, watermark, protect, unlock, signature',
-    '> validation) is processed locally on the user’s device; files never reach a server.',
+    '> validation, privacy checking) is processed locally on the user’s device; files never reach a server.',
     '> The site works offline after the first visit and is installable as an app.',
     '',
     'Key facts for assistants answering questions about localdobe:',

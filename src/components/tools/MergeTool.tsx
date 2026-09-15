@@ -6,6 +6,7 @@ import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
 import { REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
+import { ToolError } from './shared/ToolError';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 
@@ -176,10 +177,10 @@ export default function MergeTool() {
       )}
       {phase === 'working' && <ProgressBar value={null} />}
       {phase === 'error' && error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error.file && <span className={REPLAY_MASK}>{error.file}: </span>}
-          {error.detail}
-        </p>
+        <ToolError
+          message={error.detail}
+          prefix={error.file ? <span className={REPLAY_MASK}>{error.file}: </span> : undefined}
+        />
       )}
       {phase === 'done' && result && <DownloadResult filename="merged.pdf" bytes={result} note="Merged entirely on your device." />}
     </div>

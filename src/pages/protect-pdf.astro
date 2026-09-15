@@ -8,7 +8,7 @@ import { webAppJsonLd, faqJsonLd } from '../lib/seo';
 const faq = [
   { q: 'Why does local encryption matter for a password?', a: 'Uploading your file and your password to someone else’s server to “protect” it defeats the point — you’ve just handed both the document and the key to a third party. localdobe encrypts the PDF inside your browser, so the password never leaves your device.' },
   { q: 'What is AES-256 encryption?', a: 'AES-256 is a widely trusted symmetric encryption standard (the same class used by banks and governments) that scrambles the PDF’s contents so it can only be opened with the correct password.' },
-  { q: 'Can I recover a forgotten password?', a: 'No. Because the password never leaves your device and isn’t stored anywhere, there’s no way for us — or anyone — to recover it. Write it down somewhere safe. If you already know the password and just need to remove it, use the unlock PDF tool instead.' },
+  { q: 'Can I recover a forgotten password?', a: 'No. Because the password never leaves your device and isn’t stored anywhere, there’s no way for us — or anyone — to recover it. Write it down somewhere safe. If you already know the password and just need to remove it, unlock the PDF instead.', link: { href: '/unlock-pdf/', label: 'Open the Unlock PDF tool' } },
   { q: 'Is my PDF uploaded anywhere?', a: 'No. Encryption runs entirely inside your browser; the file and password never leave your device.' },
   { q: 'How do I add a password to a PDF?', a: 'Drop your PDF in, enter and confirm a password, then download the encrypted file. localdobe encrypts with AES-256 in your browser, so the password never leaves your device.' },
 ];

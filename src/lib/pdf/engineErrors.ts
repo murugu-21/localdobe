@@ -1,4 +1,5 @@
 import type { PdfcpuCmd } from '../../workers/pdfcpu.worker';
+import { UNLOCK_PDF_HINT } from '../toolLinks';
 
 /**
  * Translates raw pdfcpu engine errors into plain language before they reach the UI.
@@ -21,10 +22,10 @@ export function friendlyEngineError(cmd: PdfcpuCmd, raw: string): string {
     if (passwordNeeded || /password/i.test(raw)) return 'That password didn’t work. Double-check it — unlocking needs the exact password the file was protected with.';
   }
   if (cmd === 'encrypt' && /this file is encrypted/i.test(raw)) {
-    return 'This PDF is already password-protected. Unlock it first (see the Unlock tool) if you want to set a new password.';
+    return `This PDF is already password-protected. Unlock it first with ${UNLOCK_PDF_HINT} if you want to set a new password.`;
   }
   if (passwordNeeded || /this file is encrypted/i.test(raw)) {
-    return 'This PDF is password-protected. Remove the password first with the Unlock tool, then try again.';
+    return `This PDF is password-protected. Remove the password first with ${UNLOCK_PDF_HINT}, then try again.`;
   }
 
   if (cmd === 'watermark' && /no watermarks found/i.test(raw)) {

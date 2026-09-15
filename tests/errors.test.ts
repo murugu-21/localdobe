@@ -62,6 +62,19 @@ test('non-encrypted invalid bytes yield PdfToolError invalid; decrypt never call
   expect(calls).toBe(0);
 });
 
+test('the encrypted error carries the marker ToolError turns into an Unlock link', async () => {
+  const enc = await makeEncryptedPdf();
+  const decrypt: DecryptFn = async () => {
+    throw new Error('decrypt worker unavailable');
+  };
+
+  const err = await loadPdf(enc, undefined, decrypt).catch((e) => e);
+
+  expect(err).toBeInstanceOf(PdfToolError);
+  // The marker is what src/components/tools/shared/ToolError.tsx linkifies.
+  expect(err.message).toContain('(/unlock-pdf)');
+});
+
 test('a plain valid PDF loads without ever calling decrypt', async () => {
   let calls = 0;
   const decrypt: DecryptFn = async (bytes) => {

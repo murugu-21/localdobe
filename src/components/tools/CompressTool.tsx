@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { FileDropzone } from './shared/FileDropzone';
+import { ToolError } from './shared/ToolError';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 import { track } from '../../lib/analytics';
@@ -129,7 +130,7 @@ export default function CompressTool() {
           )}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <ToolError message={error} />}
       {phase === 'done' && out && file && (smaller ? (
         <DownloadResult
           filename={`${file.name}-compressed.pdf`}

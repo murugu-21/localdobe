@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolPageShell from '../components/astro/ToolPageShell.astro';
+import Faq from '../components/astro/Faq.astro';
+import PrivacyTool from '../components/tools/PrivacyTool';
+import { webAppJsonLd, faqJsonLd } from '../lib/seo';
+
+const faq = [
+  { q: 'How do I see what metadata a PDF contains?', a: 'Drop the PDF into the checker above. It reads the file on your device and lists everything it carries: author and company fields, the software that made it, creation and edit times, custom fields, XMP metadata, document IDs, embedded files, links, scripts and annotations.' },
+  { q: 'How do I remove metadata from a PDF before sending it?', a: 'After the check, click “Clean & download”. The clean copy is rewritten from the document’s current pages with author, software, timestamps, custom fields, XMP, file IDs, earlier saved revisions and leftover objects removed. Page content and links are left alone.' },
+  { q: 'Can a PDF contain hidden data even after you delete something?', a: 'Yes — and it is the most under-appreciated PDF risk. PDFs save changes by appending, so when a tool deletes or “redacts” text, the earlier revision usually remains in the file and can be recovered with a recovery tool. The checker counts the saved revisions and the clean copy drops all of them.' },
+  { q: 'Is it safe to open a PDF that contains JavaScript?', a: 'Not automatically. PDFs can carry embedded scripts, and some run the moment the file opens. Real-world PDF malware has used exactly this path. If the checker reports JavaScript, only open or forward the file if you trust where it came from; the clean copy can strip the scripts.' },
+  { q: 'What do the Creator and Producer fields reveal?', a: 'Creator and Producer name the exact application — and often the version and platform — that produced the file, such as a specific Word or InDesign release, a scanner driver, or a print-to-PDF pipeline. They are a software fingerprint of the machine and workflow behind the document.' },
+  { q: 'Does checking a PDF upload it anywhere?', a: 'No. The scan and the clean copy both run entirely in your browser tab. Nothing is transmitted, logged or stored — you can verify it by disconnecting from the internet after the page loads.' },
+  { q: 'Does removing metadata break the PDF?', a: 'No. The clean copy keeps every page exactly as it is — text, images, links and annotations included. Only document properties, identifiers, scripts you chose to remove, and data that was not part of the visible document are dropped. A digital signature, however, will no longer validate after cleaning, because the signed bytes changed.' },
+];
+const description = 'See exactly what a PDF reveals before you send it: author, software, timestamps, embedded files, links, JavaScript, and hidden earlier revisions. Free, local, nothing uploaded.';
+---
+
+<Base title="PDF privacy check — see what a PDF reveals before you send | localdobe" {description} canonicalPath="/pdf-privacy-check"
+  jsonLd={[webAppJsonLd('PDF privacy check', '/pdf-privacy-check', description), faqJsonLd(faq)]}>
+  <ToolPageShell h1="PDF privacy check" sub="Before you send a PDF, see exactly what you’re sharing — checked on your device, never uploaded.">
+    <PrivacyTool client:idle slot="tool" />
+    <h2>What a PDF can carry without you knowing</h2>
+    <p>A PDF is more than its pages. The format lets producers attach a surprising amount of extra information to a document, and almost none of it is visible when you open the file or attach it to an email:</p>
+    <ul>
+      <li><strong>Author names and usernames</strong> — from the “Author” field to Windows and macOS file paths baked into the producing software’s strings.</li>
+      <li><strong>Software fingerprints</strong> — the Creator and Producer fields name the exact application, version and platform that made the file.</li>
+      <li><strong>Timestamps</strong> — creation and modification times, and XMP metadata dates that can reveal a document’s whole working history.</li>
+      <li><strong>Embedded files</strong> — whole attachments packed inside the PDF, extractable by any reader.</li>
+      <li><strong>Links</strong> — including campaign and tracking URLs added by the sender’s tools.</li>
+      <li><strong>JavaScript</strong> — scripts that can run the moment the file opens.</li>
+      <li><strong>Annotations</strong> — comments, highlights and stamps that carry their own author and timestamps.</li>
+      <li><strong>Hidden objects</strong> — layers switched off by default, invisible text, and objects nothing references any more.</li>
+      <li><strong>Document history</strong> — XMP edit logs, persistent document IDs, and earlier saved revisions.</li>
+    </ul>
+    <p>Individually these look harmless. Together they can identify who wrote a document, on what machine, with which software, and when — and, after a careless “redaction”, still contain the very text that was supposed to be removed.</p>
+    <h2>Why the analysis has to happen locally</h2>
+    <p>The documents worth checking are exactly the ones you should not hand to a stranger’s server: contracts, HR files, medical and legal paperwork, anything under NDA. Most “free PDF metadata remover” sites upload your file to inspect it — which means the document, and all of the sensitive metadata you were trying to find, passes through someone else’s infrastructure first. localdobe reads the file inside your browser tab. Nothing is transmitted, and the clean copy is produced on your device too.</p>
+    <p>That matters more for this tool than for any other: the whole point is trusting the thing that inspects your private file. There is no server to trust here — you can disconnect from the internet after the page has loaded and everything still works. For the wider picture, read <a href="/blog/are-online-pdf-tools-safe/">what actually happens to your files on online PDF tools</a>.</p>
+    <h2>What the clean copy changes — and what it leaves alone</h2>
+    <p>“Clean &amp; download” rewrites the PDF from its current pages. Standard document properties, XMP metadata, file identifiers, earlier saved revisions and unreferenced leftovers are gone; scripts and embedded files can be removed with a click. What stays is the document itself: every page renders exactly as before, and links and annotations are untouched.</p>
+    <p>Because the output is a new file, a digital signature on the original will not validate against it. If the PDF is signed and you need the signature to survive, check its evidence with the <a href="/validate-pdf-signature/">signature tool</a> first and do not send a cleaned copy. Once the file is clean, you can lock it down with <a href="/protect-pdf/">AES-256 encryption</a> — and if the PDF asks for a password you already know, <a href="/unlock-pdf/">unlock it</a> before checking.</p>
+    <Faq items={faq} />
+  </ToolPageShell>
+</Base>

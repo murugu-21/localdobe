@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState, rgb } from 'pdf-lib';
+import { PDFDict, PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts, concatTransformationMatrix, degrees, drawObject, popGraphicsState, pushGraphicsState, rgb } from 'pdf-lib';
 
 declare global {
   // Provided by wasm_exec.js and the Go program respectively (see pdfcpu.worker.ts).
@@ -10,11 +10,11 @@ declare global {
 }
 
 // Runs the real pdfcpu wasm engine directly under Node (globalSetup is Node, not
-// a browser), to owner-only-encrypt a fixture the same way pdfcpu itself would:
-// an EMPTY user password with restrictions locked behind an owner password. This
-// reproduces the exact shape of the IRCC-style PDFs the auto-decrypt fix targets
-// (pdfjs opens them fine; pdf-lib refuses without the fix).
-async function pdfcpuEncryptOwnerOnly(bytes: Uint8Array, ownerPw: string): Promise<Uint8Array> {
+// a browser). `userPw: ''` produces the IRCC-style owner-only lock the
+// auto-decrypt fix targets (pdfjs opens it fine; pdf-lib refuses without the
+// fix). A non-empty user password produces a file that genuinely needs a
+// password to open — the path that must point readers at the Unlock tool.
+async function pdfcpuEncrypt(bytes: Uint8Array, userPw: string, ownerPw: string): Promise<Uint8Array> {
   if (typeof globalThis.__pdfcpuEncrypt !== 'function') {
     await import('../src/workers/go/wasm_exec.js');
     const go = new globalThis.Go();
@@ -26,7 +26,7 @@ async function pdfcpuEncryptOwnerOnly(bytes: Uint8Array, ownerPw: string): Promi
     }
     if (typeof globalThis.__pdfcpuEncrypt !== 'function') throw new Error('pdfcpu wasm failed to start');
   }
-  const res = globalThis.__pdfcpuEncrypt(bytes, JSON.stringify({ userPw: '', ownerPw }));
+  const res = globalThis.__pdfcpuEncrypt(bytes, JSON.stringify({ userPw, ownerPw }));
   if (!res.ok) throw new Error(res.error);
   return res.bytes;
 }
@@ -107,11 +107,73 @@ export default async function globalSetup() {
   await writeFile('e2e/.fixtures/a.pdf', await make(['Alpha 1', 'Alpha 2']));
   await writeFile('e2e/.fixtures/b.pdf', await make(['Beta 1']));
 
+  // Identity + hidden content for the privacy checker: author and company
+  // fields, an embedded attachment, an auto-running script, and a link
+  // annotation — enough to exercise every scan section the tool renders.
+  async function makePrivacy(): Promise<Uint8Array> {
+    const doc = await PDFDocument.create({ updateMetadata: false });
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const page = doc.addPage([612, 792]);
+    page.drawText('Privacy fixture', { x: 72, y: 700, size: 14, font });
+    doc.setAuthor('Jane Fixture');
+    doc.setCreator('Fixture Writer 1.0');
+    (doc.context.lookup(doc.context.trailerInfo.Info) as PDFDict).set(
+      PDFName.of('Company'),
+      PDFString.of('Fixture Corp'),
+    );
+
+    const embeddedRef = doc.context.register(
+      doc.context.flateStream('attachment payload', { Type: 'EmbeddedFile', Subtype: 'text/plain' }),
+    );
+    const filespecRef = doc.context.register(
+      doc.context.obj({
+        Type: 'Filespec',
+        F: PDFString.of('invoice.pdf'),
+        UF: PDFString.of('invoice.pdf'),
+        EF: doc.context.obj({ F: embeddedRef }),
+      }),
+    );
+    doc.catalog.set(
+      PDFName.of('Names'),
+      doc.context.obj({
+        EmbeddedFiles: doc.context.register(
+          doc.context.obj({ Names: [PDFString.of('invoice.pdf'), filespecRef] }),
+        ),
+      }),
+    );
+    doc.catalog.set(
+      PDFName.of('OpenAction'),
+      doc.context.register(doc.context.obj({ S: 'JavaScript', JS: PDFString.of('app.alert("e2e")') })),
+    );
+    page.node.set(
+      PDFName.of('Annots'),
+      doc.context.obj([
+        doc.context.register(
+          doc.context.obj({
+            Type: 'Annot',
+            Subtype: 'Link',
+            Rect: [72, 72, 200, 100],
+            A: doc.context.obj({ S: 'URI', URI: PDFString.of('https://example.com/e2e') }),
+          }),
+        ),
+      ]),
+    );
+
+    return doc.save({ useObjectStreams: false });
+  }
+  await writeFile('e2e/.fixtures/privacy.pdf', await makePrivacy());
+
   // Owner-password-only encryption (empty user password): pdfjs opens it fine
   // (thumbnails/detection work) but pdf-lib refuses without the auto-decrypt fix.
   await writeFile(
     'e2e/.fixtures/owner-locked.pdf',
-    await pdfcpuEncryptOwnerOnly(await make(['Owner-locked 1', 'Owner-locked 2']), 'e2e-owner-secret'),
+    await pdfcpuEncrypt(await make(['Owner-locked 1', 'Owner-locked 2']), '', 'e2e-owner-secret'),
+  );
+  // Real user-password encryption: nothing opens it without the password, so
+  // every tool must offer the Unlock tool as a link, not a dead text path.
+  await writeFile(
+    'e2e/.fixtures/user-locked.pdf',
+    await pdfcpuEncrypt(await make(['User-locked 1']), 'e2e-user-secret', 'e2e-owner-secret'),
   );
   await writeFile('e2e/.fixtures/big.pdf', await make(Array.from({ length: 40 }, (_, i) => `Page ${i + 1}`), 80));
   await writeFile('e2e/.fixtures/edit.pdf', await make(['Hello World from localdobe']));

@@ -8,6 +8,7 @@ import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
+import { ToolError } from './shared/ToolError';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 
@@ -274,7 +275,7 @@ export default function WatermarkTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <ToolError message={error} />}
       {phase === 'done' && result && file && (
         <DownloadResult filename={`${file.name}-${suffix}.pdf`} bytes={result} note="Processed entirely on your device." />
       )}

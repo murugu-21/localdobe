@@ -5,6 +5,7 @@ import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { REPLAY_MASK } from '../../lib/replay';
 import { FileDropzone } from './shared/FileDropzone';
+import { ToolError } from './shared/ToolError';
 import { DownloadResult } from './shared/DownloadResult';
 import { ProgressBar } from './shared/ProgressBar';
 import type { SignatureReport } from '../../lib/pdf/signatureReport';
@@ -104,7 +105,7 @@ export default function SignatureTool() {
         </div>
       )}
       {phase === 'working' && <ProgressBar value={null} />}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <ToolError message={error} />}
       {phase === 'done' && report && (
         <>
           {report.length === 0 && (

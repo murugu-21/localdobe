@@ -51,6 +51,7 @@ const TOOL_SLUGS = [
   'protect-pdf',
   'unlock-pdf',
   'validate-pdf-signature',
+  'pdf-privacy-check',
 ] as const;
 
 export type ToolId = (typeof TOOL_SLUGS)[number];
@@ -88,7 +89,9 @@ export type AnalyticsEvent =
   | 'pdf_converted_to_image'
   | 'images_converted_to_pdf'
   | 'pdf_signatures_checked'
-  | 'pdf_signatures_removed';
+  | 'pdf_signatures_removed'
+  | 'pdf_privacy_checked'
+  | 'pdf_privacy_cleaned';
 
 const MESSAGE_MAX = 120;
 /** Any path-ish or bare token ending in a document/image extension. */

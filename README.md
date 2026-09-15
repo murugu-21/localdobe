@@ -3,9 +3,9 @@
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/murugu-21)
 
 Free PDF tools that run entirely in your browser. Merge, split, compress, edit, watermark/stamp,
-check-or-remove signatures, and password-protect/unlock PDFs — no file is ever uploaded to a
-server. localdobe.com is a static site; every tool executes client-side and works offline once
-you've visited it.
+check-or-remove signatures, check what a file reveals (and strip it), and password-protect/unlock
+PDFs — no file is ever uploaded to a server. localdobe.com is a static site; every tool executes
+client-side and works offline once you've visited it.
 
 ## Documentation
 
@@ -22,6 +22,7 @@ you've visited it.
 | Edit | `/edit-pdf` | Click-to-edit text in place, rotate, delete/insert and resize pages |
 | Watermark & Stamp | `/watermark-pdf` | Add a text/image watermark or stamp; remove existing ones |
 | Signatures | `/validate-pdf-signature` | Validate digital signatures, inspect evidence, or remove them |
+| Privacy Check | `/pdf-privacy-check` | See what a PDF reveals before sharing it — author/software/timestamps, embedded files, links, JavaScript, annotations, hidden layers and earlier revisions — then download a cleaned copy with the metadata and extras removed |
 | Protect | `/protect-pdf` | Encrypt a PDF with AES-256 |
 | Unlock | `/unlock-pdf` | Remove a password you already know |
 
@@ -61,9 +62,9 @@ pushing (deploys are handled by Cloudflare's git integration, which only runs th
 Astro 5 static build (SSG, no server at runtime)
 ├─ .astro pages/layouts — shell, SEO tags, JSON-LD, content (landing, tool pages, blog)
 ├─ React islands (client:load) — one per tool (MergeTool, SplitTool, CompressTool, EditTool,
-│  WatermarkTool, SignatureTool, ProtectTool, UnlockTool), built with shadcn/ui components
-├─ src/lib/pdf/* — tool logic: pdf-lib for merge/split/edit/render, pdfjs-dist v6 for thumbnails
-│  and text extraction, thin client wrappers (pdfcpuClient.ts) around the worker below
+│  WatermarkTool, SignatureTool, ProtectTool, UnlockTool, PrivacyTool), built with shadcn/ui components
+├─ src/lib/pdf/* — tool logic: pdf-lib for merge/split/edit/render/privacy scan + clean, pdfjs-dist v6
+│  for thumbnails and text extraction, thin client wrappers (pdfcpuClient.ts) around the worker below
 ├─ src/workers/pdfcpu.worker.ts — a Web Worker hosting pdfcpu (Go) compiled to WebAssembly
 │  (public/wasm/pdfcpu.wasm, ~20 MB, committed as a build artifact — see wasm/pdfcpu/README.md).
 │  Handles optimize/compress, watermark/stamp, signature validate+remove, and encrypt/decrypt.

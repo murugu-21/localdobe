@@ -11,7 +11,10 @@ faq:
   - q: 'Do the pages I don’t select end up anywhere?'
     a: 'No. Splitting copies only the selected pages into the new file, and with a local tool the unselected pages never leave the original document on your device.'
   - q: 'What if the confidential PDF is password-protected?'
-    a: 'PDFs with only editing restrictions open and split automatically. If the file needs a password to open, remove it first with the Unlock PDF tool — the password, like the document, never leaves your browser.'
+    a: 'PDFs with only editing restrictions open and split automatically. If the file needs a password to open, unlock it first — the password, like the document, never leaves your browser.'
+    link:
+      href: /unlock-pdf/
+      label: Unlock the PDF first
 ---
 
 The documents people most often need to split are precisely the ones they'd least like to hand to a stranger. Your accountant needs two pages of a twelve-page bank statement. A landlord wants the income section of your tax return, not the whole thing. A lawyer needs the signature page of a contract; an insurer needs one report out of a thick medical file. In every case the whole point of splitting is to share *less* — so it's worth making sure the splitting step itself doesn't quietly share *everything*.

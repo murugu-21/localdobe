@@ -9,7 +9,12 @@ const blog = defineCollection({
     description: z.string().min(70).max(160),
     pubDate: z.coerce.date(),
     tags: z.array(z.string()).default([]),
-    faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+    faq: z.array(z.object({
+      q: z.string(),
+      a: z.string(),
+      // Optional CTA rendered after the answer. Not part of the FAQPage schema.
+      link: z.object({ href: z.string(), label: z.string() }).optional(),
+    })).optional(),
   }),
 });
 

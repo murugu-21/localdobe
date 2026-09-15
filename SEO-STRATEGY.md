@@ -36,6 +36,7 @@ One tool page captures its whole long-tail cluster via visible FAQ + `FAQPage` s
 | `/protect-pdf/` | password protect pdf | add a password to a pdf, encrypt pdf (AES-256) |
 | `/watermark-pdf/` | add watermark to pdf | add a text watermark to a pdf, add watermark online free |
 | `/validate-pdf-signature/` | validate pdf signature | validate pdf signature online, pdf signature verification, check pdf signature |
+| `/pdf-privacy-check/` | see pdf metadata | **what metadata does a pdf contain**, remove metadata from a pdf, see what a pdf reveals before sending, pdf hidden data / pdf javascript / pdf embedded files |
 | `/edit-pdf/` | edit pdf | edit pdf without signing up, edit text in pdf, edit pdf no signup |
 
 Split + compress are the current traffic leaders and the highest-ROI clusters (see changelog).
@@ -99,6 +100,11 @@ Rules that keep this legitimate (not a content farm):
 
 ## Changelog
 
+- **2026-09-15** — Added `/pdf-privacy-check/` — a local PDF privacy scanner (metadata, XMP, embedded
+  files, links, JavaScript, annotations, hidden layers, invisible text, earlier revisions, leftover
+  objects) with an on-device “clean copy” (strips metadata/XMP/IDs/revisions; optional script and
+  attachment removal). Targets the privacy-concern cluster and feeds the tool suite (“clean → check
+  signature → protect”).
 - **2026-08-19** — Canonicalized every internal link to trailing-slash form across `.astro`
   pages, `src/lib/tools.ts`, `src/layouts/Base.astro` (footer/nav), and all blog `.md`
   (removes 308 hops sitewide).

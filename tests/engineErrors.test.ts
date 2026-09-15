@@ -3,8 +3,13 @@ import { friendlyEngineError } from '../src/lib/pdf/engineErrors';
 const PW = 'optimize: prepare PDF context: read context: encryption setup: please provide the correct password';
 
 test('encrypted input on non-unlock tools points at the Unlock tool', () => {
-  expect(friendlyEngineError('optimize', PW)).toMatch(/password-protected.*Unlock/i);
-  expect(friendlyEngineError('watermark', PW.replace('optimize', 'add watermarks'))).toMatch(/Unlock/);
+  expect(friendlyEngineError('optimize', PW)).toMatch(/password-protected.*unlock/i);
+  expect(friendlyEngineError('watermark', PW.replace('optimize', 'add watermarks'))).toMatch(/unlock/i);
+});
+
+test('the password guidance carries the marker ToolError turns into a link', () => {
+  expect(friendlyEngineError('optimize', PW)).toContain('(/unlock-pdf)');
+  expect(friendlyEngineError('encrypt', 'encrypt: read context: this file is encrypted')).toContain('(/unlock-pdf)');
 });
 
 test('wrong password on unlock stays a password message', () => {

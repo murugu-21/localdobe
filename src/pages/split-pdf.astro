@@ -11,7 +11,7 @@ const faq = [
   { q: 'How do I split every page into its own file?', a: 'Choose the “Split all” tab. You’ll get a zip with one PDF per page, created locally.' },
   { q: 'Do multiple ranges become one file or many?', a: 'Each range downloads as its own PDF by default. Flip on “Merge into a single PDF” to combine everything you picked into one document instead.' },
   { q: 'Is there a file size or page limit?', a: 'No arbitrary limits. Because nothing is uploaded, there’s no server quota — the only bound is your device’s memory, and even large scanned documents with hundreds of pages split fine.' },
-  { q: 'Can I split a password-protected PDF?', a: 'PDFs with only editing restrictions (an owner password) open and split automatically. If the PDF requires a password to open, remove it first with the free Unlock PDF tool, then split the unlocked copy — both steps happen locally in your browser.' },
+  { q: 'Can I split a password-protected PDF?', a: 'PDFs with only editing restrictions (an owner password) open and split automatically. If the PDF requires a password to open, unlock it first, then split the unlocked copy — both steps happen locally in your browser.', link: { href: '/unlock-pdf/', label: 'Unlock the PDF first' } },
   { q: 'Does splitting reduce quality?', a: 'No. Pages are copied losslessly — fonts, images, and vectors are untouched.' },
   { q: 'Does it work on Mac, Windows, iPhone, and Android?', a: 'Yes. It runs in any modern browser — Windows, macOS, Linux, ChromeOS, iOS, and Android — with nothing to install.' },
   { q: 'Can I split a PDF without uploading it?', a: 'Yes. The split happens entirely in your browser — your file never leaves your device, and nothing is transmitted, logged, or stored.' },

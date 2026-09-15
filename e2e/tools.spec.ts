@@ -1,5 +1,5 @@
 import { test, expect, type Download, type Page } from '@playwright/test';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFName } from 'pdf-lib';
 import { readFile, stat } from 'node:fs/promises';
 import { gotoHydrated } from './navigation';
 
@@ -272,6 +272,37 @@ test('signatures: unsigned pdf reports no signatures', async ({ page }) => {
   await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
   await expect(page.getByTestId('sig-report')).toBeVisible({ timeout: 90_000 });
   await expect(page.getByTestId('sig-report')).toContainText(/no digital signatures/i);
+});
+
+test('password-protected PDFs offer a real Unlock link wherever the error appears', async ({ page }) => {
+  await gotoHydrated(page, '/split-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/user-locked.pdf');
+  // A user-password PDF cannot be opened at all — the advice to unlock it must
+  // be a link to the tool, not a path left in the message text.
+  const alert = page.getByRole('alert');
+  await expect(alert).toBeVisible({ timeout: 60_000 });
+  await expect(alert.getByRole('link', { name: /unlock pdf tool/i })).toHaveAttribute('href', '/unlock-pdf/');
+});
+
+test('privacy: scan reports what the file reveals and the clean copy strips it', async ({ page }) => {
+  await gotoHydrated(page, '/pdf-privacy-check');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/privacy.pdf');
+  await expect(page.getByTestId('privacy-summary')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByTestId('privacy-summary')).toContainText(/review before you send/i);
+  await expect(page.getByTestId('privacy-finding').filter({ hasText: 'Author name' })).toContainText('Jane Fixture');
+  await expect(page.getByTestId('privacy-finding').filter({ hasText: 'Embedded files' })).toContainText('invoice.pdf');
+  await expect(page.getByTestId('privacy-finding').filter({ hasText: 'JavaScript' })).toBeVisible();
+
+  await page.getByTestId('clean-pdf').click();
+  await expect(page.getByTestId('download-result')).toBeVisible({ timeout: 60_000 });
+  const bytes = new Uint8Array(await downloadBytes(await runAndDownload(page)));
+  const doc = await PDFDocument.load(bytes, { updateMetadata: false });
+  expect(doc.getAuthor()).toBeUndefined();
+  expect(doc.getCreator()).toBeUndefined();
+  expect(doc.catalog.get(PDFName.of('OpenAction'))).toBeUndefined();
+  const names = doc.catalog.get(PDFName.of('Names'));
+  expect(names).toBeUndefined();
+  expect(doc.getPageCount()).toBe(1);
 });
 
 test('protect then unlock round-trips', async ({ page }) => {

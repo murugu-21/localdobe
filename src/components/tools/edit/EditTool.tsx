@@ -5,6 +5,8 @@ import { FILE_READ_ERROR, readFileBytes } from '../../../lib/readFile';
 import { FileDropzone } from '../shared/FileDropzone';
 import { DownloadResult } from '../shared/DownloadResult';
 import { ProgressBar } from '../shared/ProgressBar';
+import { ToolError } from '../shared/ToolError';
+import { UNLOCK_PDF_HINT } from '../../../lib/toolLinks';
 import { PageEditor } from './PageEditor';
 import { ExportBar, RESIZE_OPTIONS } from './ExportBar';
 import { EditSession } from '../../../lib/pdf/edit/session';
@@ -82,7 +84,7 @@ export default function EditTool() {
       setStructureTick(0);
     } catch {
       track('tool_failed', { message: 'could not open pdf', reason: 'load_failed', input_bytes: file.size });
-      setError('Could not open this PDF. It may be corrupt or password-protected (see /unlock-pdf).');
+      setError(`Could not open this PDF. It may be corrupt, or password-protected — if it needs a password, remove it first with ${UNLOCK_PDF_HINT}.`);
     }
   }
 
@@ -181,7 +183,7 @@ export default function EditTool() {
       {!doc && <FileDropzone label="Choose a PDF to edit" onFiles={onFile} />}
       {/* Rendered outside the doc block: open failures (corrupt or password-protected
           files) leave doc null, and their error must still be visible. */}
-      {error && <p role="alert" className="my-4 text-sm text-destructive">{error}</p>}
+      {error && <ToolError message={error} className="my-4" />}
       {doc && (
         <>
           <ExportBar dirty={dirty} exporting={exporting} addTextMode={addTextMode} resizeValue={resizeValue}

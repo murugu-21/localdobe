@@ -6,6 +6,8 @@ import { track } from '../../lib/analytics';
 import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { formatBytes } from '../../lib/format';
 import { REPLAY_BLOCK, REPLAY_MASK } from '../../lib/replay';
+import { ToolError } from './shared/ToolError';
+import { UNLOCK_PDF_HINT } from '../../lib/toolLinks';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
 import { ProgressBar } from './shared/ProgressBar';
@@ -79,7 +81,7 @@ export default function RotateTool() {
       void detect(next, gen); // Un-awaited: classification runs in the background while the UI stays interactive.
     } catch {
       track('tool_failed', { message: 'could not read pdf', reason: 'load_failed', input_bytes: file.size });
-      setError('Could not read this PDF. It may be corrupt or password-protected.');
+      setError(`Could not read this PDF. It may be corrupt, or password-protected — unlock it with ${UNLOCK_PDF_HINT} and try again.`);
       setPhase('error');
     } finally {
       if (doc && closePdf) void closePdf(doc).catch(() => {});
@@ -305,7 +307,7 @@ export default function RotateTool() {
           {phase === 'working' && <ProgressBar value={null} />}
         </>
       )}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <ToolError message={error} />}
       {phase === 'done' && result && (
         <DownloadResult filename={result.filename} bytes={result.bytes} note="Rotated entirely on your device." />
       )}

@@ -7,6 +7,7 @@ import { FILE_READ_ERROR, readFileBytes } from '../../lib/readFile';
 import { REPLAY_BLOCK } from '../../lib/replay';
 import { DownloadResult } from './shared/DownloadResult';
 import { FileDropzone } from './shared/FileDropzone';
+import { ToolError } from './shared/ToolError';
 import { ProgressBar } from './shared/ProgressBar';
 
 interface Entry { file: File; id: number; url: string }
@@ -229,7 +230,7 @@ export default function ImageToPdfTool() {
         </Button>
       )}
       {phase === 'working' && <ProgressBar value={null} />}
-      {phase === 'error' && error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {phase === 'error' && error && <ToolError message={error} />}
       {phase === 'done' && result && (
         <DownloadResult filename={result.filename} bytes={result.bytes} note="Converted entirely on your device." />
       )}

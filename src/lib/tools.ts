@@ -121,6 +121,12 @@ export const toolGroups: ToolGroup[] = [
         desc: "Validate a PDF’s digital signature and inspect the evidence.",
         icon: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
       },
+      {
+        href: '/pdf-privacy-check/',
+        name: 'PDF Privacy Check',
+        desc: 'See what a PDF reveals — metadata, scripts, hidden revisions — before you share it.',
+        icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="11" cy="15" r="2.5"/><path d="m13 17 2.5 2.5"/>',
+      },
     ],
   },
 ];
