@@ -16,7 +16,9 @@ const POSTHOG_API_KEY = process.env.POSTHOG_API_KEY?.trim();
 const POSTHOG_PROJECT_ID = process.env.POSTHOG_PROJECT_ID?.trim();
 
 export default defineConfig({
-  site: 'https://localdobe.com',
+  // Canonical origin for sitemap, canonical tags and Open Graph URLs. Self-hosted
+  // copies override it at build time (see Dockerfile and SELF-HOSTING.md).
+  site: process.env.SITE_URL?.trim() || 'https://localdobe.com',
   integrations: [
     react(),
     sitemap(),

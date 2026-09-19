@@ -107,7 +107,8 @@ dependencies. Serve it from any web server and every tool works.
 
 ```bash
 git lfs install && git clone https://github.com/murugu-21/localdobe.git && cd localdobe
-bun install && bun run build      # then serve dist/
+docker build --build-arg SITE_URL=https://pdf.example.com -t localdobe .
+docker run -d -p 8080:80 localdobe          # or: bun install && bun run build, then serve dist/
 ```
 
 See **`SELF-HOSTING.md`** for the full guide: Git LFS (the WASM engines and the orientation

@@ -8,6 +8,33 @@ code, and no outbound request from the site unless you configure analytics.
 localdobe.com itself deploys to Cloudflare Workers via git integration; that setup is in
 [`DEPLOY.md`](DEPLOY.md). This page covers hosting on anything else.
 
+## Quickest: Docker
+
+The repo ships a multi-stage `Dockerfile` that builds the site with Bun and serves it with
+nginx, using the headers described further down. The final image is about 50 MB.
+
+```bash
+git lfs install
+git clone https://github.com/murugu-21/localdobe.git
+cd localdobe
+docker build --build-arg SITE_URL=https://pdf.example.com -t localdobe .
+docker run -d --restart unless-stopped -p 8080:80 localdobe   # http://localhost:8080/
+```
+
+Or with Compose, after editing `SITE_URL` in `docker-compose.yml`:
+
+```bash
+docker compose up -d --build
+```
+
+`SITE_URL` is the origin baked into canonical tags, the sitemap and Open Graph URLs. Leave it
+out and the pages advertise localdobe.com. The build refuses to run on a checkout where the
+Git LFS files are still pointers, so a missing `git lfs install` fails fast instead of shipping
+a site whose tools break at runtime.
+
+Put your usual TLS-terminating proxy in front. The container listens on port 80, sends
+relative redirects, and has a health check on `/`.
+
 ## Requirements
 
 - **Git with Git LFS** (`git lfs install`). The pdfcpu WebAssembly engine, the ONNX runtime
@@ -53,7 +80,7 @@ someone else's domain:
 
 | What | Where | Why |
 | --- | --- | --- |
-| `site` | `astro.config.mjs` | Canonical tags, sitemap, RSS and Open Graph URLs are built from it. |
+| `SITE_URL` | Environment variable at build time (`SITE_URL=https://pdf.example.com bun run build`, or the Docker build arg) | Canonical tags, sitemap, RSS and Open Graph URLs are built from it. Defaults to `https://localdobe.com`. |
 | `Sitemap:` line | `public/robots.txt` | Hardcoded to `https://localdobe.com/sitemap-index.xml`. |
 | PWA `name` / `short_name` | `astro.config.mjs` (the `AstroPWA` block) | What the installed app is called. |
 | Support email and repo links | `src/layouts/Base.astro`, `src/pages/about.astro`, `src/pages/privacy.astro` | Footer and trust pages. |
@@ -83,7 +110,7 @@ Two things matter for correctness. The service worker (`/sw.js`) and the web man
 not be cached long-term, or visitors keep running an old version after you deploy. The hashed
 assets under `/_astro/`, `/wasm/` and `/fonts/` can be cached for a year. `public/_headers`
 expresses this in the format Cloudflare and Netlify read natively; on other servers, replicate
-it as below.
+it as below. The Docker image already does, via `docker/nginx.conf`.
 
 ### nginx
 
@@ -158,6 +185,8 @@ bun install
 bun run build
 # redeploy dist/
 ```
+
+With Docker: `git pull && git lfs pull && docker compose up -d --build`.
 
 Because `sw.js` is served with `no-cache`, browsers that already have the old service worker
 pick up the new build on their next visit and swap to it on the following page load.

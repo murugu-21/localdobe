@@ -1,0 +1,15 @@
+# Keep the build context small and free of secrets.
+node_modules
+dist
+.git
+.env
+.env.*
+!.env.example
+test-results
+playwright-report
+e2e
+tests
+.superpowers
+.astro
+# Go source for the pdfcpu engine; the compiled .wasm under public/ is what the build uses.
+wasm

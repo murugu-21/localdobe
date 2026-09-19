@@ -1,0 +1,11 @@
+services:
+  localdobe:
+    build:
+      context: .
+      args:
+        # Canonical origin baked into the pages. Change to your own host.
+        SITE_URL: https://localdobe.com
+    image: localdobe:local
+    ports:
+      - "8080:80"
+    restart: unless-stopped
