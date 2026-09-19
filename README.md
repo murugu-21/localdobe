@@ -11,6 +11,7 @@ client-side and works offline once you've visited it.
 
 - [`SEO-STRATEGY.md`](SEO-STRATEGY.md) — keyword/GEO strategy, page→keyword mapping, intent traps, and the technical SEO foundation (trailing-slash canonicals, sitemap, schema).
 - [`DEPLOY.md`](DEPLOY.md) — deployment via Cloudflare Workers Builds (push to `main`).
+- [`SELF-HOSTING.md`](SELF-HOSTING.md) — run your own copy on any static host (build steps, nginx/Caddy configs, cache headers, what to change so it stops pointing at localdobe.com).
 
 ## Tools
 
@@ -99,13 +100,23 @@ make build
 node smoke.mjs
 ```
 
-## Deploying
+## Deploying and self-hosting
 
-localdobe.com deploys to Cloudflare Workers static assets (`wrangler.jsonc`) via Cloudflare's
-direct git integration (Workers Builds) on every push to `main`. Note that `public/wasm/pdfcpu.wasm`
-is tracked with Git LFS. One-time manual setup (connecting the repo in the Cloudflare dashboard, DNS)
-is required before the first deploy — see **`DEPLOY.md`** for the full checklist and cache-header
-details (`public/_headers`).
+The build output (`dist/`) is a plain static site: no server code, no database, no runtime
+dependencies. Serve it from any web server and every tool works.
+
+```bash
+git lfs install && git clone https://github.com/murugu-21/localdobe.git && cd localdobe
+bun install && bun run build      # then serve dist/
+```
+
+See **`SELF-HOSTING.md`** for the full guide: Git LFS (the WASM engines and the orientation
+model live there), cache headers for nginx/Caddy/Netlify, opt-in analytics, and the handful of
+values to change so your copy doesn't point at localdobe.com.
+
+localdobe.com itself deploys to Cloudflare Workers static assets (`wrangler.jsonc`) via
+Cloudflare's direct git integration on every push to `main`; that setup, plus the PostHog
+proxy and source-map upload, is documented in **`DEPLOY.md`**.
 
 ## Sponsor
 

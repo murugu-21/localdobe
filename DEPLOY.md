@@ -1,5 +1,8 @@
 # Deployment
 
+This file covers the public instance at localdobe.com. To run your own copy on any static
+host, see [`SELF-HOSTING.md`](SELF-HOSTING.md).
+
 localdobe.com is a static, client-side-only site (Astro build output) served from
 Cloudflare Workers static assets, configured in `wrangler.jsonc`. Deploys run via
 **Cloudflare's direct git integration (Workers Builds)** — Cloudflare clones the
