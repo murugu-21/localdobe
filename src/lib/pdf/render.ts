@@ -8,6 +8,39 @@ import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 // without checking those polyfills still exist.
 let pdfjsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
 
+// WebKit (Safari/iOS) only gained `ReadableStream.prototype[Symbol.asyncIterator]`
+// in 26.4, and the legacy build cannot polyfill a Web API. pdf.js reads text
+// content with `for await` over a stream, so on older WebKit every edit-tool
+// page load dies with `undefined is not a function (near '...e of t...')`.
+// Install the pdf.js project's own fallback (mozilla/pdf.js#20973) before any
+// call site; it must be present before `page.getTextContent()` runs.
+export function ensureReadableStreamAsyncIterator(): void {
+  if (typeof ReadableStream === 'undefined') return;
+  const proto = ReadableStream.prototype;
+  // lib.dom types `[Symbol.asyncIterator]` as always present, so the runtime
+  // presence check needs an untyped read.
+  const untypedProto = proto as unknown as Record<symbol, unknown>;
+  if (typeof untypedProto[Symbol.asyncIterator] === 'function') return;
+  Object.defineProperty(proto, Symbol.asyncIterator, {
+    configurable: true,
+    writable: true,
+    value: async function* (this: ReadableStream<unknown>) {
+      const reader = this.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) return;
+          yield value;
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    },
+  });
+}
+
+ensureReadableStreamAsyncIterator();
+
 export function getPdfjs() {
   pdfjsPromise ??= import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
     pdfjs.GlobalWorkerOptions.workerSrc = new URL(
