@@ -1,4 +1,4 @@
-import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
+import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from 'pdfjs-dist';
 
 // The LEGACY build is load-bearing, not a preference. The default build calls
 // Map.prototype.getOrInsertComputed directly, a method too new for many browsers
@@ -75,17 +75,55 @@ export async function closePdf(doc: PDFDocumentProxy): Promise<void> {
   await doc.loadingTask.destroy();
 }
 
+/**
+ * pdf.js tracks every canvas with a render in flight and refuses to start a second
+ * one on it — `Cannot use the same canvas during multiple render() operations` —
+ * unless the previous task was cancelled or completed. The edit tool re-renders one
+ * persistent canvas whenever a page is rotated or the window resizes, so a fast
+ * second render can overlap the first. Remember the in-flight task per canvas and
+ * cancel it before the next render starts; pdf.js clears its canvas-in-use mark
+ * synchronously inside `cancel()`, so the replacement can begin immediately.
+ */
+const inFlightRenders = new WeakMap<HTMLCanvasElement, { task: RenderTask; settled: boolean }>();
+
+/** True for pdf.js's expected, non-error result of cancelling a render task. */
+function isRenderCancelled(err: unknown): boolean {
+  return err instanceof Error && err.name === 'RenderingCancelledException';
+}
+
 export async function renderPageToCanvas(
   page: PDFPageProxy,
   canvas: HTMLCanvasElement,
   scale: number,
   rotationDelta?: number,
 ): Promise<void> {
+  const previous = inFlightRenders.get(canvas);
+  // Never cancel a task that already settled — pdf.js would run its completion
+  // callback (and operator-list abort) a second time. `settled` flips in the first
+  // promise callback, so a later caller can only observe it as still-running if the
+  // task really is still drawing.
+  if (previous && !previous.settled) previous.task.cancel();
   const rotation = (((page.rotate + (rotationDelta ?? 0)) % 360) + 360) % 360;
   const viewport = page.getViewport({ scale, rotation });
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('canvas 2d context unavailable');
-  await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+  const task = page.render({ canvas, canvasContext: ctx, viewport });
+  const record = { task, settled: false };
+  inFlightRenders.set(canvas, record);
+  void task.promise.then(
+    () => { record.settled = true; },
+    () => { record.settled = true; },
+  );
+  try {
+    await task.promise;
+  } catch (err) {
+    // Expected when a newer render replaced this one (or the document was closed
+    // mid-render). A genuine render failure still reaches the caller.
+    if (!isRenderCancelled(err)) throw err;
+  } finally {
+    // Only clear our own entry: a replacement render may already own the canvas.
+    if (inFlightRenders.get(canvas) === record) inFlightRenders.delete(canvas);
+  }
 }

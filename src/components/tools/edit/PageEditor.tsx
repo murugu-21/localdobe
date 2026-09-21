@@ -88,6 +88,10 @@ export function PageEditor({ doc, slot, displayIndex, session, addTextMode, onDi
       const base = page.getViewport({ scale: 1, rotation: pageRotation });
       const s = clampScale(avail / base.width);
       await renderPageToCanvas(page, canvasRef.current, s, rotDelta);
+      // The render helper cancels a superseded render on this canvas, so after
+      // awaiting, a newer effect may already own the page state. Stop here rather
+      // than overwriting it with this run's stale viewport/scale.
+      if (cancelled) return;
       const viewport = page.getViewport({ scale: s, rotation: pageRotation });
       viewportRef.current = viewport;
       const paper = page.getViewport({ scale: 1 });
