@@ -5,6 +5,7 @@
   "engines": {
     "node": ">=24.0.0"
   },
+  "packageManager": "bun",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -52,10 +53,10 @@
     "@types/node": "^26.6.4",
     "@vite-pwa/astro": "^1.2.0",
     "@vitest/coverage-v8": "^5.0.3",
+    "cf": "^1.0.0-beta.12",
     "shadcn": "^4.21.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.147.0"
+    "vitest": "^5.0.3"
   },
   "overrides": {
     "@vite-pwa/astro": {
