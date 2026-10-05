@@ -198,8 +198,8 @@ export default function EditTool() {
               <DownloadResult filename={`${name}-edited.pdf`} bytes={result} note="Edited entirely on your device." />
               {fallbackCount > 0 && (
                 <p className="mt-2 text-center text-xs text-muted">
-                  For {fallbackCount} edit{fallbackCount === 1 ? '' : 's'}, the original text couldn’t be
-                  cleanly removed, so it was covered with a solid rectangle instead.
+                  {/* One string so a page translator can't strand the plural "s" text node (see RotateTool). */}
+                  {`For ${fallbackCount} edit${fallbackCount === 1 ? '' : 's'}, the original text couldn’t be cleanly removed, so it was covered with a solid rectangle instead.`}
                 </p>
               )}
             </div>

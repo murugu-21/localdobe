@@ -285,8 +285,11 @@ export default function RotateTool() {
                     style={{ transform: `rotate(${deltas[i]}deg)` }}
                   />
                 </span>
+                {/* One string, not `{i + 1}{rotated && '…'}`: a conditional sibling text
+                    node crashes React's removeChild once a page translator has swapped
+                    the text nodes out. A lone string child is updated via textContent. */}
                 <span className="block py-1 text-center text-xs text-muted">
-                  {i + 1}{deltas[i] % 360 !== 0 && ` · ${deltas[i]}°`}
+                  {deltas[i] % 360 !== 0 ? `${i + 1} · ${deltas[i]}°` : `${i + 1}`}
                 </span>
               </button>
             ))}

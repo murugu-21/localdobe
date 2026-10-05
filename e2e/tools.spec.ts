@@ -2,6 +2,7 @@ import { test, expect, type Download, type Page } from '@playwright/test';
 import { PDFDocument, PDFName } from 'pdf-lib';
 import { readFile, stat } from 'node:fs/promises';
 import { gotoHydrated } from './navigation';
+import { translatePage } from './translator';
 
 async function downloadBytes(download: Download): Promise<Buffer> {
   const path = await download.path();
@@ -341,6 +342,23 @@ test('rotate: manual tap rotates one page 90°', async ({ page }) => {
   const doc = await PDFDocument.load(new Uint8Array(bytes));
   expect(doc.getPage(0).getRotation().angle).toBe(90);
   expect(doc.getPage(1).getRotation().angle).toBe(0); // untouched
+});
+
+test('rotate: tapping a page back to 0° survives a page translator', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await gotoHydrated(page, '/rotate-pdf');
+  await page.getByTestId('file-input').setInputFiles('e2e/.fixtures/a.pdf');
+  const thumb = page.getByTestId('rotate-thumb-0');
+  await expect(thumb).toBeVisible({ timeout: 30_000 });
+  await translatePage(page);
+  // 90 → 180 → 270 → 0: the last tap drops the " · N°" suffix from the label.
+  for (const deg of [90, 180, 270, 0]) {
+    await thumb.click();
+    await expect(thumb).toHaveAttribute('aria-label', `Rotate page 1 (currently ${deg} degrees)`);
+  }
+  await expect(thumb).toHaveText('1');
+  expect(errors).toEqual([]);
 });
 
 test('rotate: sideways page is auto-detected and corrected to upright', async ({ page }) => {
